@@ -19,7 +19,7 @@
 
 #include "../ObjectInterface.h"
 #include "../ObjectInterfacePerModule.h"
-#include "../IObject.h"
+#include "IObject.h"
 #include "../IRuntimeObjectSystem.h"
 
 
@@ -79,7 +79,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
 
 	m_ProtectedPhase = PHASE_CONSTRUCTNEW;
 	TConstructors& constructorsNew = m_pObjectFactorySystem->m_Constructors;
-
+    std::vector<IObject*> constructedObjects;
 	//swap old constructors with new ones and create new objects
 	for( size_t i = 0; i < m_ConstructorsToAdd.size(); ++i )
 	{
@@ -182,7 +182,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
 			{
                 // if a singleton was newly constructed in earlier phase, pass true to init.
 				pObject->Init( bSingletonConstructed[i] );
-
+                constructedObjects.push_back(pObject);
 				if( m_bTestSerialization && ( m_ConstructorsOld.size() <= i || m_ConstructorsOld[ i ] != constructorsNew[ i ] ) )
 				{
 					//test serialize out for all new objects, we assume old objects are OK.
@@ -217,6 +217,10 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
 			assert( 0 == pOldConstructor->GetNumberConstructedObjects() );
 		}
 	}
+    for(size_t i =0; i < constructedObjects.size(); ++i)
+    {
+        constructedObjects[i]->updateNotifiers();
+    }
 }
 
 bool ObjectFactorySystem::HandleRedoUndo( const TConstructors& constructors )

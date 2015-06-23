@@ -7,7 +7,7 @@ option(BUILD_EXAMPLES "Build example applications" ON)
 option(GLFW_SYSTEM    "Use the operating system glfw library" OFF)
 
 find_package(OpenGL REQUIRED)
-
+include_directories("include")
 if(UNIX AND NOT APPLE)
 	set(BUILD_TYPE SHARED)
 else()

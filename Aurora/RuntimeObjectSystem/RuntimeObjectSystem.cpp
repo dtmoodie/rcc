@@ -112,6 +112,38 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
 	includeDir = includeDir.ParentPath() / Path("RuntimeCompiler");
 	AddIncludeDir(includeDir.c_str());
 
+#ifdef RCC_INCLUDES
+    {
+        std::string str(RCC_INCLUDES);
+        std::string::size_type pos = str.find_first_of('+');
+        std::string::size_type prevPos = 0;
+        while(pos != std::string::npos)
+        {
+            AddIncludeDir(str.substr(prevPos,pos-prevPos).c_str());
+            prevPos = pos+1;
+            pos = str.find_first_of('+', pos+1);
+
+        }
+    }
+#endif
+#ifdef RCC_LIBRARY_DIRS
+    {
+        std::string str(RCC_LIBRARY_DIRS);
+        std::string::size_type pos = str.find_first_of('+');
+        std::string::size_type prevPos = 0;
+        if(pos == std::string::npos && str.size())
+        {
+            AddLibraryDir(str.c_str());
+        }
+        while(pos != std::string::npos)
+        {
+            AddLibraryDir(str.substr(prevPos,pos-prevPos).c_str());
+            prevPos = pos+1;
+            pos = str.find_first_of('+', pos+1);
+        }
+
+    }
+#endif
 	return true;
 }
 

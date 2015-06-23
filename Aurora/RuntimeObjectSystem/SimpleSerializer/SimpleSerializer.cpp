@@ -17,7 +17,7 @@
 
 #include "SimpleSerializer.h"
 #include <assert.h>
-#include "../../RuntimeObjectSystem/IObject.h"
+#include <IObject.h>
 
 SimpleSerializer::SimpleSerializer()
 	: m_numProperties(0)
