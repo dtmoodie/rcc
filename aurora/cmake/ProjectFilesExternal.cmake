@@ -2,6 +2,13 @@
 #
 # RuntimeCompiler Source
 #
+MACRO(ADD_RCC_PROJECT name)
+
+
+
+ENDMACRO()
+
+
 
 aux_source_directory(Aurora/RuntimeCompiler RuntimeCompiler_SRCS)
 aux_source_directory(Aurora/RuntimeCompiler/SimpleFileWatcher SimpleFileWatcher_SRCS)
@@ -37,6 +44,4 @@ if(UNIX)
 else()
 	list(REMOVE_ITEM RuntimeObjectSystem_SRCS "Aurora/RuntimeObjectSystem/RuntimeObjectSystem_PlatformPosix.cpp")
 endif()
-message(${RuntimeCompiler_SRCS})
-message(${RuntimeObjectSystem_SRCS})
 
