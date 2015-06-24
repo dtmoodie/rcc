@@ -75,12 +75,28 @@ endif()
 
 include(Aurora/cmake/ProjectFilesExternal.cmake)
 include_directories(${IObject_INCLUDE})
+FIND_PACKAGE(CUDA)
+message(STATUS 
+"======================== RCC Reporting ==========================
+	IObject include dir: ${IObject_INCLUDE}
+	
+	RCC includes: ${RCC_INCLUDE_DEPENDENCIES}
+	
+	RCC Lib Dirs: ${RCC_LIBRARY_DIRS}
 
-message(STATUS "IObject include dir: ${IObject_INCLUDE}")
+	NVCC: ${CUDA_TOOLKIT_ROOT_DIR}
+=================================================================="
+)
 
 add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
 add_library(RuntimeObjectSystem ${BUILD_TYPE} ${RuntimeObjectSystem_SRCS})
-
+IF(CUDA_FOUND)
+	IF(WIN32)
+		ADD_DEFINITIONS( -DNVCC_PATH="${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc.exe")
+	ELSE(WIN32)
+		ADD_DEFINITIONS( -DNVCC_PATH="${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
+	ENDIF(WIN32)
+ENDIF()
 target_link_libraries(RuntimeObjectSystem RuntimeCompiler)
 
 if(UNIX)
