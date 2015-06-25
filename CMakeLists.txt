@@ -75,6 +75,8 @@ endif()
 
 include(Aurora/cmake/ProjectFilesExternal.cmake)
 include_directories(${IObject_INCLUDE})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler)
 FIND_PACKAGE(CUDA)
 message(STATUS 
 "======================== RCC Reporting ==========================
