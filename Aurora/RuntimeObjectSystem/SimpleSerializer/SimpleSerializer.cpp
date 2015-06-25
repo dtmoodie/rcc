@@ -90,6 +90,7 @@ void SimpleSerializer::Serialize( IObject* pObject )
 	m_CurrentSerialization = m_map.find(ownerId);
 
 	m_pCurrentObject->Serialize( this );
+	m_pCurrentObject->SerializeNotifiers(this);
 
 	//reset m_pCurrentObject
 	m_pCurrentObject = 0;
