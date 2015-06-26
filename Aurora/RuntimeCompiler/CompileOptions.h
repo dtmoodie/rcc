@@ -47,3 +47,7 @@ inline RCppOptimizationLevel GetActualOptimizationLevel( RCppOptimizationLevel o
 	}
 	return optimizationLevel_;
 }
+inline const char* GetActualOptimizationLevelString( RCppOptimizationLevel optimizationLevel_ )
+{
+    return RCppOptimizationLevelStrings[GetActualOptimizationLevel(optimizationLevel_)];
+}

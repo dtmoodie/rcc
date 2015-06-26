@@ -102,6 +102,8 @@ template<> struct RuntimeSourceDependency<0> : public IRuntimeSourceDependencyLi
 // The RUNTIME_COMPILER_SOURCEDEPENDENCY macro will return the name of the current file, which should be a header file.
 // The runtime system will strip off the extension and add .cpp
 #define RUNTIME_COMPILER_SOURCEDEPENDENCY namespace { RUNTIME_COMPILER_SOURCEDEPENDENCY_BASE( __FILE__, __COUNTER__ ) }
+#define ADD_RUNTIME_SOURCE_DEPENDENCY_ABS(filename)     namespace { RUNTIME_COMPILER_SOURCEDEPENDENCY_BASE( filename, __COUNTER__ ) }
+#define ADD_RUNTIME_SOURCE_DEPENDENCY_REL(filename)     namespace { RUNTIME_COMPILER_SOURCEDEPENDENCY_BASE( __FILE__ "#" filename "#" , __COUNTER__ ) }
 
 }
 #else

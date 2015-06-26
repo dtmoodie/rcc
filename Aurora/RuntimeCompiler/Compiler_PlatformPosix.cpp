@@ -211,6 +211,10 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
 		compileString += "-Os ";
 		break;
 	case RCCPPOPTIMIZATIONLEVEL_NOT_SET:;
+
+    case RCCPPOPTIMIZATIONLEVEL_SIZE:
+        compileString += "-O3 ";
+        break;
 	}
 	
     // include directories
