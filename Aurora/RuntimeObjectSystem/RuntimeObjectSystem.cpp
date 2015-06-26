@@ -580,15 +580,13 @@ void RuntimeObjectSystem::SetupRuntimeFileTracking(const IAUDynArray<IObjectCons
 			if( pSourceDependency )
 			{
                 FileSystemUtils::Path pathInc = compileDir / pSourceDependency;
-                pathInc = FindFile( pathInc.GetCleanPath() );
-                FileSystemUtils::Path pathSrc = pathInc;
-                // Don't strip path of cuda source dependencies
-
-                if (pathSrc.m_string[pathSrc.m_string.size() - 1] == '#')
+                // Fix for incorrect parsing of relative source dependency addition
+                std::string m_string(pSourceDependency);
+                if (m_string[m_string.size() - 1] == '#')
                 {
-                    auto idx = pathSrc.m_string.find_first_of('#');
-                    auto base = pathSrc.m_string.substr(0, idx);
-                    auto file = pathSrc.m_string.substr(idx);
+                    auto idx = m_string.find_first_of('#');
+                    auto base = m_string.substr(0, idx);
+                    auto file = m_string.substr(idx);
                     file = file.substr(1, file.size() - 2);
 #ifdef _MSC_VER
                     idx = base.find_last_of('\\');
@@ -596,9 +594,12 @@ void RuntimeObjectSystem::SetupRuntimeFileTracking(const IAUDynArray<IObjectCons
                     idx = base.find_last_of('/');
 #endif
                     base = base.substr(0, idx);
-                    pathSrc.m_string = base + "\\" + file;
+                    pathInc.m_string = base + "\\" + file;
 
                 }
+                pathInc = FindFile( pathInc.GetCleanPath() );
+                FileSystemUtils::Path pathSrc = pathInc;
+                // Don't strip path of cuda source dependencies
                 if(pathSrc.Extension() == ".cu" || pathSrc.Extension() == ".cuh")
                 {
 
