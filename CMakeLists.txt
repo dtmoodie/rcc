@@ -75,33 +75,31 @@ endif()
 
 include(Aurora/cmake/ProjectFilesExternal.cmake)
 include_directories(${IObject_INCLUDE})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem)
 FIND_PACKAGE(CUDA)
 message(STATUS 
-"======================== RCC Reporting ==========================
-	IObject include dir: ${IObject_INCLUDE}
-	
-	RCC includes: ${RCC_INCLUDE_DEPENDENCIES}
-	
-	RCC Lib Dirs: ${RCC_LIBRARY_DIRS}
+"============== RCC Reporting =========
+    IObject include dir: ${IObject_INCLUDE}
 
-	NVCC: ${CUDA_TOOLKIT_ROOT_DIR}
-=================================================================="
+    RCC includes: ${RCC_INCLUDE_DEPENDENCIES}
+
+    RCC Lib Dirs: ${RCC_LIBRARY_DIRS}
+
+    NVCC: ${CUDA_TOOLKIT_ROOT_DIR}
+
+"
 )
 
-add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
-add_library(RuntimeObjectSystem ${BUILD_TYPE} ${RuntimeObjectSystem_SRCS})
 IF(CUDA_FOUND)
-	IF(WIN32)
-		ADD_DEFINITIONS( -DNVCC_PATH="${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc.exe")
-	ELSE(WIN32)
-		ADD_DEFINITIONS( -DNVCC_PATH="${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
-	ENDIF(WIN32)
+    IF(WIN32)
+        ADD_DEFINITIONS( -DNVCC_PATH="${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc.exe")
+    ELSE(WIN32)
+        ADD_DEFINITIONS( -DNVCC_PATH="${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
+    ENDIF(WIN32)
 ENDIF()
-target_link_libraries(RuntimeObjectSystem RuntimeCompiler)
 
-if(UNIX)
-	target_link_libraries(RuntimeObjectSystem dl)
-endif()
+
 
 SET(RCC_INCLUDE_DIRS "${IObject_INCLUDE};${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem;${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler" PARENT_SCOPE)
 
@@ -111,3 +109,12 @@ STRING(REGEX REPLACE ";" "+" RCC_LIBRARY_DIRS "${RCC_LIBRARY_DIRS}" )
 
 ADD_DEFINITIONS( -DRCC_INCLUDES="${RCC_INCLUDE_DEPENDENCIES}" )
 ADD_DEFINITIONS( -DRCC_LIBRARY_DIRS="${RCC_LIBRARY_DIRS}" )
+
+
+add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
+add_library(RuntimeObjectSystem ${BUILD_TYPE} ${RuntimeObjectSystem_SRCS})
+target_link_libraries(RuntimeObjectSystem RuntimeCompiler)
+
+if(UNIX)
+        target_link_libraries(RuntimeObjectSystem dl)
+endif()
