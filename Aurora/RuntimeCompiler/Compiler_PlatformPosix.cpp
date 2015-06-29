@@ -192,8 +192,11 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     m_pImplData->m_PipeStdOut[0] = 0;
     close( m_pImplData->m_PipeStdErr[0] );
     m_pImplData->m_PipeStdErr[0] = 0;
-
+#ifdef NVCC_PATH
+    std::string compileString = compilerLocation + " " + "-g --compiler-options '-fPIC -fvisibility=hidden -shared' ";
+#else
 	std::string compileString = compilerLocation + " " + "-g -fPIC -fvisibility=hidden -shared ";
+#endif
 
 #ifndef __LP64__
 	compileString += "-m32 ";
@@ -227,7 +230,9 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     for( size_t i = 0; i < libraryDirList.size(); ++i )
 	{
         compileString += "-L\"" + libraryDirList[i].m_string + "\" ";
+#ifndef NVCC_PATH
         compileString += "-F\"" + libraryDirList[i].m_string + "\" ";
+#endif
     }
     
     // output file

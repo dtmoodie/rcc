@@ -594,7 +594,11 @@ void RuntimeObjectSystem::SetupRuntimeFileTracking(const IAUDynArray<IObjectCons
                     idx = base.find_last_of('/');
 #endif
                     base = base.substr(0, idx);
+#ifdef _MSC_VER
                     pathInc.m_string = base + "\\" + file;
+#else
+                    pathInc.m_string = base + "/" + file;
+#endif
 
                 }
                 pathInc = FindFile( pathInc.GetCleanPath() );
