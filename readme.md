@@ -1,3 +1,7 @@
+This fork focuses on improving ease of integration with CMake build scripts and adding NVCC support.
+
+
+
 # Runtime Compiled C++ sample code
 
 - Code: https://github.com/RuntimeCompiledCPlusPlus/RuntimeCompiledCPlusPlus
