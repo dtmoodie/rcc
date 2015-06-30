@@ -332,10 +332,16 @@ void Compiler::RunCompile(	const std::vector<FileSystemUtils::Path>&	filesToComp
 	bool bHaveLinkOptions = ( 0 != compilerOptions_.linkOptions.length() );
 	if( compilerOptions_.libraryDirList.size() ||  bHaveLinkOptions )
 	{
+#ifndef NVCC_PATH
 		linkOptions = " /link ";
+#endif
 		for( size_t i = 0; i < compilerOptions_.libraryDirList.size(); ++i )
 		{
+#ifdef NVCC_PATH
+			linkOptions += " -L\"" + compilerOptions_.libraryDirList[i].m_string + "\"";
+#else
 			linkOptions += " /LIBPATH:\"" + compilerOptions_.libraryDirList[i].m_string + "\"";
+#endif
 		}
 
 		if( bHaveLinkOptions )
@@ -358,7 +364,11 @@ void Compiler::RunCompile(	const std::vector<FileSystemUtils::Path>&	filesToComp
 	std::string strIncludeFiles;
 	for( size_t i = 0; i < compilerOptions_.includeDirList.size(); ++i )
 	{
+#ifdef NVCC_PATH
+		strIncludeFiles += " -I\"" + compilerOptions_.includeDirList[i].m_string + "\"";
+#else
 		strIncludeFiles += " /I \"" + compilerOptions_.includeDirList[i].m_string + "\"";
+#endif
 	}
 
 
@@ -397,11 +407,21 @@ char* pCharTypeFlags = "";
 #endif
 
 	// /MP - use multiple processes to compile if possible. Only speeds up compile for multiple files and not link
+#ifdef NVCC_PATH
+	std::string cmdToSend = "\"" NVCC_PATH "\"" " -ccbin cl -Xcompiler \"/MP /EHa" + flags + pCharTypeFlags + "\""
+		+ strIncludeFiles + " " + strFilesToCompile + strLinkLibraries + linkOptions 
+		+ " -DWIN32 -D_WIN32 " + 
+		+ "-o " + moduleName_.m_string
+		+ "\n echo ";
+#else
 	std::string cmdToSend = "cl " + flags + pCharTypeFlags
 		+ " /MP /Fo\"" + compilerOptions_.intermediatePath.m_string + "\\\\\" "
 		+ "/D WIN32 /EHa /Fe" + moduleName_.m_string;
 	cmdToSend += " " + strIncludeFiles + " " + strFilesToCompile + strLinkLibraries + linkOptions
 		+ "\necho ";
+#endif
+		
+
 	if( m_pImplData->m_pLogger ) m_pImplData->m_pLogger->LogInfo( "%s", cmdToSend.c_str() ); // use %s to prevent any tokens in compile string being interpreted as formating
 	cmdToSend += c_CompletionToken + "\n";
 	WriteInput( m_pImplData->m_CmdProcessInputWrite, cmdToSend );

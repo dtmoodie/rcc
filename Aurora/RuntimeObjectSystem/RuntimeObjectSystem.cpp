@@ -604,9 +604,9 @@ void RuntimeObjectSystem::SetupRuntimeFileTracking(const IAUDynArray<IObjectCons
                 pathInc = FindFile( pathInc.GetCleanPath() );
                 FileSystemUtils::Path pathSrc = pathInc;
                 // Don't strip path of cuda source dependencies
-                if(pathSrc.Extension() == ".cu" || pathSrc.Extension() == ".cuh")
+                if(pathSrc.Extension() == ".cuh")
                 {
-
+					pathSrc.ReplaceExtension(".cu");
                 }else
                 {
                     pathSrc.ReplaceExtension( ".cpp" );
