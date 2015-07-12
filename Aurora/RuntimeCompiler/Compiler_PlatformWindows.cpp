@@ -408,7 +408,7 @@ char* pCharTypeFlags = "";
 
 	// /MP - use multiple processes to compile if possible. Only speeds up compile for multiple files and not link
 #ifdef NVCC_PATH
-	std::string cmdToSend = "\"" NVCC_PATH "\"" " -ccbin cl -Xcompiler \"/MP /EHa" + flags + pCharTypeFlags + "\""
+	std::string cmdToSend = "\"" NVCC_PATH "\"" " -ccbin cl -Xcompiler \"/MP /EHs" + flags + pCharTypeFlags + "\""
 		+ strIncludeFiles + " " + strFilesToCompile + strLinkLibraries + linkOptions 
 		+ " -DWIN32 -D_WIN32 " + 
 		+ "-o " + moduleName_.m_string

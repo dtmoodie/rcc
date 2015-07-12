@@ -19,12 +19,13 @@
 
 #ifndef RUNTIMEOBJECTSYSTEM_INCLUDED
 #define RUNTIMEOBJECTSYSTEM_INCLUDED
-
+#include "../RCC_defs.h"
 #include "../RuntimeCompiler/IFileChangeNotifier.h"
 #include "../RuntimeCompiler/BuildTool.h"
 #include "../RuntimeCompiler/AUArray.h"
 #include "ObjectInterface.h"
 #include "IRuntimeObjectSystem.h"
+
 
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
@@ -36,12 +37,15 @@
 #include <vector>
 #include <map>
 
+
+
+
 #include "../RuntimeCompiler/FileSystemUtils.h"
 
 struct ICompilerLogger;
 struct IObjectFactorySystem;
 
-class RuntimeObjectSystem : public IRuntimeObjectSystem, IFileChangeListener
+class RCC_EXPORTS RuntimeObjectSystem : public IRuntimeObjectSystem, IFileChangeListener
 {
 public:
 	RuntimeObjectSystem();

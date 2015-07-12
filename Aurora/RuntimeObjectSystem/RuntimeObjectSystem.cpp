@@ -122,7 +122,6 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
             AddIncludeDir(str.substr(prevPos,pos-prevPos).c_str());
             prevPos = pos+1;
             pos = str.find_first_of('+', pos+1);
-
         }
     }
 #endif

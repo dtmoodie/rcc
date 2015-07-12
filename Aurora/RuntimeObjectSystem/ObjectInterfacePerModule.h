@@ -19,7 +19,7 @@
 
 #ifndef OBJECTINTERFACEPERMODULE_INCLUDED
 #define OBJECTINTERFACEPERMODULE_INCLUDED
-
+#include "../RCC_defs.h"
 #include "ObjectInterface.h"
 #include "RuntimeInclude.h"
 #include "RuntimeLinkLibrary.h"
