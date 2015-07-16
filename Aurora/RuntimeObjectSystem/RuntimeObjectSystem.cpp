@@ -29,6 +29,7 @@
 #include "ObjectInterfacePerModule.h"
 #include <algorithm>
 #include "IObject.h"
+#include <fstream>
 
 #ifndef _WIN32
 //TODO: fix below in a better generic fashion.
@@ -111,38 +112,31 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
 	//also add the runtime compiler dir to list of dirs
 	includeDir = includeDir.ParentPath() / Path("RuntimeCompiler");
 	AddIncludeDir(includeDir.c_str());
-
-#ifdef RCC_INCLUDES
-    {
-        std::string str(RCC_INCLUDES);
-        std::string::size_type pos = str.find_first_of('+');
-        std::string::size_type prevPos = 0;
-        while(pos != std::string::npos)
-        {
-            AddIncludeDir(str.substr(prevPos,pos-prevPos).c_str());
-            prevPos = pos+1;
-            pos = str.find_first_of('+', pos+1);
-        }
-    }
-#endif
-#ifdef RCC_LIBRARY_DIRS
-    {
-        std::string str(RCC_LIBRARY_DIRS);
-        std::string::size_type pos = str.find_first_of('+');
-        std::string::size_type prevPos = 0;
-        if(pos == std::string::npos && str.size())
-        {
-            AddLibraryDir(str.c_str());
-        }
-        while(pos != std::string::npos)
-        {
-            AddLibraryDir(str.substr(prevPos,pos-prevPos).c_str());
-            prevPos = pos+1;
-            pos = str.find_first_of('+', pos+1);
-        }
-
-    }
-#endif
+	std::ifstream ifstream;
+	ifstream.open("RCC_Config.txt");
+	if (ifstream.is_open())
+	{
+		std::string includes;
+		std::getline(ifstream, includes);
+		std::string::size_type pos = includes.find_first_of(';');
+		std::string::size_type prevPos = 0;
+		while (pos != std::string::npos)
+		{
+			AddIncludeDir(includes.substr(prevPos, pos - prevPos).c_str());
+			prevPos = pos + 1;
+			pos = includes.find_first_of(';', pos + 1);
+		}
+		std::string link_dirs;
+		std::getline(ifstream, link_dirs);
+		pos = link_dirs.find_first_of(';');
+		prevPos = 0;
+		while (pos != std::string::npos)
+		{
+			AddLibraryDir(link_dirs.substr(prevPos, pos - prevPos).c_str());
+			prevPos = pos + 1;
+			pos = link_dirs.find_first_of(';', pos + 1);
+		}
+	}
 	return true;
 }
 
