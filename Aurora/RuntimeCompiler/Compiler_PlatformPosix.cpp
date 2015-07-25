@@ -211,7 +211,11 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
 		compileString += "-O0 ";
 		break;
 	case RCCPPOPTIMIZATIONLEVEL_PERF:
+#ifdef NVCC_PATH
+        compileString += "-O2 ";
+#else
 		compileString += "-Os ";
+#endif
 		break;
 	case RCCPPOPTIMIZATIONLEVEL_NOT_SET:;
 
