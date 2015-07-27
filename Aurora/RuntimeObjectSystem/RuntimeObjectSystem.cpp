@@ -136,7 +136,10 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
 			prevPos = pos + 1;
 			pos = link_dirs.find_first_of(';', pos + 1);
 		}
-	}
+    }else
+    {
+        std::cout << "Unable to find RCC_Config.txt" << std::endl;
+    }
 	return true;
 }
 

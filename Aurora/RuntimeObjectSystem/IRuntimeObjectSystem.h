@@ -21,7 +21,8 @@
 #define IRUNTIMEOBJECTSYSTEM_INCLUDED
 
 #include "../RuntimeCompiler/CompileOptions.h"
-
+#include <string>
+#include <vector>
 struct ICompilerLogger;
 struct IObjectFactorySystem;
 struct IFileChangeNotifier;
@@ -101,6 +102,8 @@ struct IRuntimeObjectSystem : public ITestBuildNotifier
     virtual void SetCompilerLocation        (   const char* path,       unsigned short projectId_ = 0 ) = 0;
     virtual void SetOptimizationLevel( RCppOptimizationLevel optimizationLevel_,	unsigned short projectId_ = 0 ) = 0;
     virtual RCppOptimizationLevel GetOptimizationLevel(					unsigned short projectId_ = 0 ) = 0;
+    virtual std::vector<FileSystemUtils::Path>& GetIncludeDirList(unsigned short projectId_ = 0) = 0;
+    virtual std::vector<FileSystemUtils::Path>& GetLinkDirList(unsigned short projectId_ = 0) = 0;
 
 	// Intermediate Dir has DEBUG in debug or RELEASE plus project optimization level appended to it.
 	// defaults to current directory plus /Runtime

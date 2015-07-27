@@ -136,11 +136,15 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
 
     std::string compilerLocation = compilerOptions_.compilerLocation.m_string;
     if (compilerLocation.size()==0){
+#ifndef NVCC_PATH
 #ifdef __clang__
         compilerLocation = "clang++ ";
 #else // default to g++
         compilerLocation = "g++ ";
 #endif //__clang__
+#else
+      compilerLocation = NVCC_PATH;
+#endif
     }
 
     //NOTE: Currently doesn't check if a prior compile is ongoing or not, which could lead to memory leaks
@@ -250,7 +254,9 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
 	}
 	if( pLinkOptions && strlen(pLinkOptions) )
 	{
+#ifndef NVCC_PATH
 		compileString += "-Wl,";
+#endif
 		compileString += pLinkOptions;
 		compileString += " ";
 	}
