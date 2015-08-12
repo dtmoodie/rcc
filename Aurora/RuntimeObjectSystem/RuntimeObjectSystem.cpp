@@ -113,7 +113,25 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
 	includeDir = includeDir.ParentPath() / Path("RuntimeCompiler");
 	AddIncludeDir(includeDir.c_str());
 	std::ifstream ifstream;
+#ifdef _MSC_VER
+#ifdef _DEBUG
+	ifstream.open("../Debug/RCC_Config.txt");
+#else
+	ifstream.open("../RelWithDebInfo/RCC_Config.txt");
+#endif
+#else
 	ifstream.open("RCC_Config.txt");
+#endif
+	if (!ifstream.is_open())
+	{
+#ifdef _MSC_VER
+#ifdef _DEBUG
+		ifstream.open("Debug/RCC_Config.txt");
+#else
+		ifstream.open("RelWithDebInfo/RCC_Config.txt");
+#endif
+#endif
+	}
 	if (ifstream.is_open())
 	{
 		std::string includes;
