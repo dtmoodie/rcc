@@ -283,17 +283,17 @@ void Compiler::Initialise( ICompilerLogger * pLogger )
 }
 
 
-void Compiler::RunCompile(	const std::vector<FileSystemUtils::Path>&	filesToCompile_,
-							const CompilerOptions&						compilerOptions_,
-							std::vector<FileSystemUtils::Path>			linkLibraryList_,
-							const FileSystemUtils::Path&				moduleName_ )
+void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&	filesToCompile_,
+	const CompilerOptions&						compilerOptions_,
+	std::vector<FileSystemUtils::Path>			linkLibraryList_,
+	const FileSystemUtils::Path&				moduleName_)
 {
-    if( m_pImplData->m_VSPath.empty() )
-    {
-        if (m_pImplData->m_pLogger) { m_pImplData->m_pLogger->LogError("No Supported Compiler for RCC++ found, cannot compile changes.\n"); }
-    	m_pImplData->m_bCompileIsComplete = true;
-        return;
-    }
+	if (m_pImplData->m_VSPath.empty())
+	{
+		if (m_pImplData->m_pLogger) { m_pImplData->m_pLogger->LogError("No Supported Compiler for RCC++ found, cannot compile changes.\n"); }
+		m_pImplData->m_bCompileIsComplete = true;
+		return;
+	}
 	m_pImplData->m_bCompileIsComplete = false;
 	//optimization and c runtime
 #ifdef _DEBUG
@@ -302,8 +302,8 @@ void Compiler::RunCompile(	const std::vector<FileSystemUtils::Path>&	filesToComp
 	std::string flags = "/nologo /Zi /FC /MD /LD ";	//also need debug information in release
 #endif
 
-	RCppOptimizationLevel optimizationLevel = GetActualOptimizationLevel( compilerOptions_.optimizationLevel );
-	switch( optimizationLevel )
+	RCppOptimizationLevel optimizationLevel = GetActualOptimizationLevel(compilerOptions_.optimizationLevel);
+	switch (optimizationLevel)
 	{
 	case RCCPPOPTIMIZATIONLEVEL_DEFAULT:
 		assert(false);
@@ -313,35 +313,48 @@ void Compiler::RunCompile(	const std::vector<FileSystemUtils::Path>&	filesToComp
 	case RCCPPOPTIMIZATIONLEVEL_PERF:
 		flags += "/O2 /Oi ";
 
-// Add improved debugging options if available: http://randomascii.wordpress.com/2013/09/11/debugging-optimized-codenew-in-visual-studio-2012/
+		// Add improved debugging options if available: http://randomascii.wordpress.com/2013/09/11/debugging-optimized-codenew-in-visual-studio-2012/
 #if   (_MSC_VER >= 1700)
-		flags += "/d2Zi+ ";
+		flags += "/d2Zi+ /Zo ";
 #endif
 		break;
 	case RCCPPOPTIMIZATIONLEVEL_NOT_SET:;
 	}
 
-	if( NULL == m_pImplData->m_CmdProcessInfo.hProcess )
+	if (NULL == m_pImplData->m_CmdProcessInfo.hProcess)
 	{
 		m_pImplData->InitialiseProcess();
 	}
 
 	flags += compilerOptions_.compileOptions;
-
-	std::string linkOptions;
-	bool bHaveLinkOptions = ( 0 != compilerOptions_.linkOptions.length() );
-	if( compilerOptions_.libraryDirList.size() ||  bHaveLinkOptions )
-	{
-#ifndef NVCC_PATH
-		linkOptions = " /link ";
-#endif
-		for( size_t i = 0; i < compilerOptions_.libraryDirList.size(); ++i )
-		{
+	bool useNVCC = false;
 #ifdef NVCC_PATH
-			linkOptions += " -L\"" + compilerOptions_.libraryDirList[i].m_string + "\"";
-#else
-			linkOptions += " /LIBPATH:\"" + compilerOptions_.libraryDirList[i].m_string + "\"";
+	for (int i = 0; i < filesToCompile_.size(); ++i)
+	{
+		if (filesToCompile_[i].Extension() == ".cu")
+			useNVCC = true;
+	}
 #endif
+	std::string linkOptions;
+	bool bHaveLinkOptions = (0 != compilerOptions_.linkOptions.length());
+	if (compilerOptions_.libraryDirList.size() || bHaveLinkOptions)
+	{	
+		if(!useNVCC)
+		{
+			linkOptions = " /link ";
+		}
+
+		for (size_t i = 0; i < compilerOptions_.libraryDirList.size(); ++i)
+		{
+			if (useNVCC)
+			{
+				linkOptions += " -L\"" + compilerOptions_.libraryDirList[i].m_string + "\"";
+			}
+			else
+			{
+				linkOptions += " /LIBPATH:\"" + compilerOptions_.libraryDirList[i].m_string + "\"";
+			}
+			
 		}
 
 		if( bHaveLinkOptions )
@@ -364,11 +377,14 @@ void Compiler::RunCompile(	const std::vector<FileSystemUtils::Path>&	filesToComp
 	std::string strIncludeFiles;
 	for( size_t i = 0; i < compilerOptions_.includeDirList.size(); ++i )
 	{
-#ifdef NVCC_PATH
-		strIncludeFiles += " -I\"" + compilerOptions_.includeDirList[i].m_string + "\"";
-#else
-		strIncludeFiles += " /I \"" + compilerOptions_.includeDirList[i].m_string + "\"";
-#endif
+		if (useNVCC)
+		{
+			strIncludeFiles += " -I\"" + compilerOptions_.includeDirList[i].m_string + "\"";
+		}
+		else
+		{
+			strIncludeFiles += " /I \"" + compilerOptions_.includeDirList[i].m_string + "\"";
+		}
 	}
 
 
@@ -407,20 +423,25 @@ char* pCharTypeFlags = "";
 #endif
 
 	// /MP - use multiple processes to compile if possible. Only speeds up compile for multiple files and not link
+	std::string cmdToSend;
+	if (useNVCC)
+	{
 #ifdef NVCC_PATH
-	std::string cmdToSend = "\"" NVCC_PATH "\"" " -ccbin cl -Xcompiler \"/MP /EHs" + flags + pCharTypeFlags + "\""
+	cmdToSend = "\"" NVCC_PATH "\"" " -ccbin cl -Xcompiler \"/MP /EHs" + flags + pCharTypeFlags + "\""
 		+ strIncludeFiles + " " + strFilesToCompile + strLinkLibraries + linkOptions 
 		+ " -DWIN32 -D_WIN32 " + 
 		+ "-o " + moduleName_.m_string
 		+ "\n echo ";
-#else
-	std::string cmdToSend = "cl " + flags + pCharTypeFlags
-		+ " /MP /Fo\"" + compilerOptions_.intermediatePath.m_string + "\\\\\" "
-		+ "/D WIN32 /EHa /Fe" + moduleName_.m_string;
-	cmdToSend += " " + strIncludeFiles + " " + strFilesToCompile + strLinkLibraries + linkOptions
-		+ "\necho ";
 #endif
-		
+	}
+	else
+	{
+		cmdToSend = "cl " + flags + pCharTypeFlags
+			+ " /MP /Fo\"" + compilerOptions_.intermediatePath.m_string + "\\\\\" "
+			+ "/D WIN32 /EHa /Fe" + moduleName_.m_string;
+		cmdToSend += " " + strIncludeFiles + " " + strFilesToCompile + strLinkLibraries + linkOptions
+			+ "\necho ";
+	}
 
 	if( m_pImplData->m_pLogger ) m_pImplData->m_pLogger->LogInfo( "%s", cmdToSend.c_str() ); // use %s to prevent any tokens in compile string being interpreted as formating
 	cmdToSend += c_CompletionToken + "\n";
