@@ -29,7 +29,6 @@
 #include "ObjectInterfacePerModule.h"
 #include <algorithm>
 #include "IObject.h"
-#include <fstream>
 
 #ifndef _WIN32
 //TODO: fix below in a better generic fashion.
@@ -112,52 +111,7 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
 	//also add the runtime compiler dir to list of dirs
 	includeDir = includeDir.ParentPath() / Path("RuntimeCompiler");
 	AddIncludeDir(includeDir.c_str());
-	std::ifstream ifstream;
-#ifdef _MSC_VER
-#ifdef _DEBUG
-	ifstream.open("../Debug/RCC_Config.txt");
-#else
-	ifstream.open("../RelWithDebInfo/RCC_Config.txt");
-#endif
-#else
-	ifstream.open("RCC_Config.txt");
-#endif
-	if (!ifstream.is_open())
-	{
-#ifdef _MSC_VER
-#ifdef _DEBUG
-		ifstream.open("Debug/RCC_Config.txt");
-#else
-		ifstream.open("RelWithDebInfo/RCC_Config.txt");
-#endif
-#endif
-	}
-	if (ifstream.is_open())
-	{
-		std::string includes;
-		std::getline(ifstream, includes);
-		std::string::size_type pos = includes.find_first_of(';');
-		std::string::size_type prevPos = 0;
-		while (pos != std::string::npos)
-		{
-			AddIncludeDir(includes.substr(prevPos, pos - prevPos).c_str());
-			prevPos = pos + 1;
-			pos = includes.find_first_of(';', pos + 1);
-		}
-		std::string link_dirs;
-		std::getline(ifstream, link_dirs);
-		pos = link_dirs.find_first_of(';');
-		prevPos = 0;
-		while (pos != std::string::npos)
-		{
-			AddLibraryDir(link_dirs.substr(prevPos, pos - prevPos).c_str());
-			prevPos = pos + 1;
-			pos = link_dirs.find_first_of(';', pos + 1);
-		}
-    }else
-    {
-        std::cout << "Unable to find RCC_Config.txt" << std::endl;
-    }
+
 	return true;
 }
 
@@ -407,8 +361,8 @@ void RuntimeObjectSystem::StartRecompile()
 		}
 	}
 
-	Path intermediateFolder = GetIntermediateFolder(	m_Projects[ project ].m_CompilerOptions.intermediatePath,
-														m_Projects[ project ].m_CompilerOptions.optimizationLevel );
+	m_Projects[ project ].m_CompilerOptions.intermediatePath = GetIntermediateFolder(	m_Projects[ project ].m_CompilerOptions.baseIntermediatePath,
+																						m_Projects[ project ].m_CompilerOptions.optimizationLevel );
 
 
     m_pBuildTool->BuildModule(  ourBuildFileList,
@@ -590,59 +544,57 @@ void RuntimeObjectSystem::SetupRuntimeFileTracking(const IAUDynArray<IObjectCons
         //add source dependency file mappings
 		for (size_t num = 0; num <= constructors_[i]->GetMaxNumSourceDependencies(); ++num)
 		{
-			const char* pSourceDependency = constructors_[i]->GetSourceDependency(num);
-			if( pSourceDependency )
+			SourceDependencyInfo sourceDependency = constructors_[i]->GetSourceDependency(num);
+			FileSystemUtils::Path pathInc[2];	// array of potential include files for later checks
+			if( sourceDependency.filename )
 			{
-                FileSystemUtils::Path pathInc = compileDir / pSourceDependency;
-                // Fix for incorrect parsing of relative source dependency addition
-                std::string m_string(pSourceDependency);
-                if (m_string[m_string.size() - 1] == '#')
-                {
-                    auto idx = m_string.find_first_of('#');
-                    auto base = m_string.substr(0, idx);
-                    auto file = m_string.substr(idx);
-                    file = file.substr(1, file.size() - 2);
-#ifdef _MSC_VER
-                    idx = base.find_last_of('\\');
-#else
-                    idx = base.find_last_of('/');
-#endif
-                    base = base.substr(0, idx);
-#ifdef _MSC_VER
-                    pathInc.m_string = base + "\\" + file;
-#else
-                    pathInc.m_string = base + "/" + file;
-#endif
-
-                }
-                pathInc = FindFile( pathInc.GetCleanPath() );
-                FileSystemUtils::Path pathSrc = pathInc;
-                // Don't strip path of cuda source dependencies
-                if(pathSrc.Extension() == ".cuh")
-                {
-					pathSrc.ReplaceExtension(".cu");
-                }else
-                {
-                    pathSrc.ReplaceExtension( ".cpp" );
-                }
+				FileSystemUtils::Path pathSrc;
+				if( sourceDependency.relativeToPath )
+				{
+					pathSrc = sourceDependency.relativeToPath;
+					if( pathSrc.HasExtension() )
+					{
+						pathInc[1] = compileDir / pathSrc;
+						pathSrc =  compileDir / pathSrc.ParentPath() / sourceDependency.filename;
+					}
+					else
+					{
+						pathSrc =  compileDir / pathSrc / sourceDependency.filename;
+					}
+				}
+				else
+				{
+					pathSrc = compileDir / sourceDependency.filename;
+				}
+                pathSrc.ToOSCanonicalCase();
+                pathSrc = pathSrc.DelimitersToOSDefault();
+				pathInc[0] = pathSrc;
+				if( sourceDependency.extension )
+				{
+					pathSrc.ReplaceExtension( sourceDependency.extension );
+				}
+				pathSrc = FindFile( pathSrc.GetCleanPath() );
 				TFileToFilePair sourcePathPair;
 				sourcePathPair.first = filePath;
 				sourcePathPair.second = pathSrc;
                 project.m_RuntimeSourceDependencyMap.insert( sourcePathPair );
                 
                 // if the include file with a source dependancy is logged as an runtime include, then we mark this .cpp as compile dependencies on change
-                TFileToFilesEqualRange range = project.m_RuntimeIncludeMap.equal_range( pathInc );
-                if( range.first != range.second )
-                {
-                    // add source file to runtime file list
-                    AddToRuntimeFileList( pathSrc.c_str(), projectId );
+				for( int inc=0; inc<2; ++inc )
+				{
+					TFileToFilesEqualRange range = project.m_RuntimeIncludeMap.equal_range( pathInc[inc] );
+					if( range.first != range.second )
+					{
+						// add source file to runtime file list
+						AddToRuntimeFileList( pathSrc.c_str(), projectId );
 
-					// also add this as a source dependency, so it gets force compiled on change of header (and not just compiled)
-					TFileToFilePair includePathPair;
-					includePathPair.first = pathInc;
-					includePathPair.second = pathSrc;
-					project.m_RuntimeIncludeMap.insert( includePathPair );
-                }
+						// also add this as a source dependency, so it gets force compiled on change of header (and not just compiled)
+						TFileToFilePair includePathPair;
+						includePathPair.first = pathInc[inc];
+						includePathPair.second = pathSrc;
+						project.m_RuntimeIncludeMap.insert( includePathPair );
+					}
+				}
 			}
 		}
 	}
@@ -699,7 +651,7 @@ RCppOptimizationLevel RuntimeObjectSystem::GetOptimizationLevel(					unsigned sh
 
 void RuntimeObjectSystem::SetIntermediateDir(            const char* path_,      unsigned short projectId_ )
 {
-	GetProject( projectId_ ).m_CompilerOptions.intermediatePath = path_;
+	GetProject( projectId_ ).m_CompilerOptions.baseIntermediatePath = path_;
 }
 
 void RuntimeObjectSystem::CleanObjectFiles() const
@@ -712,7 +664,7 @@ void RuntimeObjectSystem::CleanObjectFiles() const
 					optimizationLevel < RCCPPOPTIMIZATIONLEVEL_SIZE;
 					++optimizationLevel )
 			{
-				Path intermediateFolder = GetIntermediateFolder( m_Projects[ proj ].m_CompilerOptions.intermediatePath, RCppOptimizationLevel( optimizationLevel ) );
+				Path intermediateFolder = GetIntermediateFolder( m_Projects[ proj ].m_CompilerOptions.baseIntermediatePath, RCppOptimizationLevel( optimizationLevel ) );
 				m_pBuildTool->Clean( intermediateFolder );
 			}
 		}

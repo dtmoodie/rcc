@@ -68,6 +68,7 @@ Compiler::Compiler()
 
 Compiler::~Compiler()
 {
+	delete m_pImplData;
 }
 
 std::string Compiler::GetObjectFileExtension() const
@@ -227,6 +228,26 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
         compileString += "-O3 ";
         break;
 	}
+    
+	// Check for intermediate directory, create it if required
+	// There are a lot more checks and robustness that could be added here
+	if( !compilerOptions_.intermediatePath.Exists() )
+	{
+		bool success = compilerOptions_.intermediatePath.CreateDir();
+		if( success && m_pImplData->m_pLogger ) { m_pImplData->m_pLogger->LogInfo("Created intermediate folder \"%s\"\n", compilerOptions_.intermediatePath.c_str()); }
+		else if( m_pImplData->m_pLogger ) { m_pImplData->m_pLogger->LogError("Error creating intermediate folder \"%s\"\n", compilerOptions_.intermediatePath.c_str()); }
+	}
+
+	FileSystemUtils::Path	output = moduleName_;
+	bool bCopyOutput = false;
+	if( compilerOptions_.intermediatePath.Exists() )
+	{
+		// add save object files
+        compileString = "cd \"" + compilerOptions_.intermediatePath.m_string + "\"\n" + compileString + " --save-temps ";
+		output = compilerOptions_.intermediatePath / "a.out";
+		bCopyOutput = true;
+	}
+	
 	
     // include directories
     for( size_t i = 0; i < includeDirList.size(); ++i )
@@ -243,8 +264,11 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
 #endif
     }
     
-    // output file
-    compileString += "-o " + moduleName_.m_string + " ";
+	if( !bCopyOutput )
+	{
+	    // output file
+	    compileString += "-o " + output.m_string + " ";
+	}
 
 
 	if( pCompileOptions )
@@ -272,7 +296,12 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     {
         compileString += " " + linkLibraryList_[i].m_string + " ";
     }
-    
+
+	if( bCopyOutput )
+	{
+        compileString += "\n mv \"" + output.m_string + "\" \"" + moduleName_.m_string + "\"\n";
+	}
+
     
     std::cout << compileString << std::endl << std::endl;
 
