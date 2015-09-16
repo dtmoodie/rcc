@@ -35,7 +35,10 @@
 #define MAX_PATH 256
 #include <dlfcn.h>
 #endif
-
+#include <fstream>
+#include <string>
+#include <iostream>
+#include <sstream>
 using FileSystemUtils::Path;
 
 FileSystemUtils::Path RuntimeObjectSystem::ProjectSettings::ms_DefaultIntermediatePath;
@@ -112,6 +115,40 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
 	includeDir = includeDir.ParentPath() / Path("RuntimeCompiler");
 	AddIncludeDir(includeDir.c_str());
 
+	std::ifstream config_file;
+	config_file.open("RCC_config.txt");
+	if (!config_file.is_open())
+	{
+#ifdef _DEBUG
+		config_file.open("../Debug/RCC_config.txt");
+#else
+		config_file.open("../RelWithDebInfo/RCC_config.txt");
+#endif
+	}
+	if (config_file.is_open())
+	{
+		{
+			std::stringstream ss;
+			std::string line, token;
+			std::getline(config_file, line);
+			ss << line;
+			while (std::getline(ss, token, ';'))
+			{
+				AddIncludeDir(token.c_str());
+			}
+		}
+		{
+			std::stringstream ss;
+			std::string line, token;
+			std::getline(config_file, line);
+			ss.str();
+			ss << line;
+			while (std::getline(ss, token, ';'))
+			{
+				AddLibraryDir(token.c_str());
+			}
+		}
+	}
 	return true;
 }
 
