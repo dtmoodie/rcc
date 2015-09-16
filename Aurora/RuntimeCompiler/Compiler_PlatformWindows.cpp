@@ -288,6 +288,14 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&	filesToCompi
 	std::vector<FileSystemUtils::Path>			linkLibraryList_,
 	const FileSystemUtils::Path&				moduleName_)
 {
+	bool useNVCC = false;
+#ifdef NVCC_PATH
+	for (int i = 0; i < filesToCompile_.size(); ++i)
+	{
+		if (filesToCompile_[i].Extension() == ".cu")
+			useNVCC = true;
+	}
+#endif
 	if (m_pImplData->m_VSPath.empty())
 	{
 		if (m_pImplData->m_pLogger) { m_pImplData->m_pLogger->LogError("No Supported Compiler for RCC++ found, cannot compile changes.\n"); }
@@ -297,9 +305,10 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&	filesToCompi
 	m_pImplData->m_bCompileIsComplete = false;
 	//optimization and c runtime
 #ifdef _DEBUG
-	std::string flags = "/nologo /Zi /FC /MDd /LDd ";
+	std::string flags= "/nologo /Zi /FC /MDd /LDd ";
+
 #else
-	std::string flags = "/nologo /Zi /FC /MD /LD ";	//also need debug information in release
+	std::string flags =  "/nologo /Zi /FC /MD /LD ";
 #endif
 
 	RCppOptimizationLevel optimizationLevel = GetActualOptimizationLevel(compilerOptions_.optimizationLevel);
@@ -327,14 +336,7 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&	filesToCompi
 	}
 
 	flags += compilerOptions_.compileOptions;
-	bool useNVCC = false;
-#ifdef NVCC_PATH
-	for (int i = 0; i < filesToCompile_.size(); ++i)
-	{
-		if (filesToCompile_[i].Extension() == ".cu")
-			useNVCC = true;
-	}
-#endif
+
 	std::string linkOptions;
 	bool bHaveLinkOptions = (0 != compilerOptions_.linkOptions.length());
 	if (compilerOptions_.libraryDirList.size() || bHaveLinkOptions)
@@ -375,15 +377,20 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&	filesToCompi
 
 	//create include path search string
 	std::string strIncludeFiles;
-	for( size_t i = 0; i < compilerOptions_.includeDirList.size(); ++i )
+	std::set<std::string> uniqueIncludes;
+	for (size_t i = 0; i < compilerOptions_.includeDirList.size(); ++i)
+	{
+		uniqueIncludes.insert(compilerOptions_.includeDirList[i].m_string);
+	}
+	for (auto& include : uniqueIncludes)
 	{
 		if (useNVCC)
 		{
-			strIncludeFiles += " -I\"" + compilerOptions_.includeDirList[i].m_string + "\"";
+			strIncludeFiles += " -I\"" + include + "\"";
 		}
 		else
 		{
-			strIncludeFiles += " /I \"" + compilerOptions_.includeDirList[i].m_string + "\"";
+			strIncludeFiles += " /I \"" + include + "\"";
 		}
 	}
 
@@ -427,7 +434,7 @@ char* pCharTypeFlags = "";
 	if (useNVCC)
 	{
 #ifdef NVCC_PATH
-	cmdToSend = "\"" NVCC_PATH "\"" " -ccbin cl -Xcompiler \"/MP /EHs" + flags + pCharTypeFlags + "\""
+	cmdToSend = "\"" NVCC_PATH "\"" " -ccbin cl -Xcompiler \"/MP /EHs " + flags + pCharTypeFlags + "\""
 		+ strIncludeFiles + " " + strFilesToCompile + strLinkLibraries + linkOptions 
 		+ " -DWIN32 -D_WIN32 " + 
 		+ "-o " + moduleName_.m_string
