@@ -348,15 +348,17 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&	filesToCompi
 
 		for (size_t i = 0; i < compilerOptions_.libraryDirList.size(); ++i)
 		{
-			if (useNVCC)
+			if (compilerOptions_.libraryDirList[i].m_string.size())
 			{
-				linkOptions += " -L\"" + compilerOptions_.libraryDirList[i].m_string + "\"";
+				if (useNVCC)
+				{
+					linkOptions += " -L\"" + compilerOptions_.libraryDirList[i].m_string + "\"";
+				}
+				else
+				{
+					linkOptions += " /LIBPATH:\"" + compilerOptions_.libraryDirList[i].m_string + "\"";
+				}
 			}
-			else
-			{
-				linkOptions += " /LIBPATH:\"" + compilerOptions_.libraryDirList[i].m_string + "\"";
-			}
-			
 		}
 
 		if( bHaveLinkOptions )
