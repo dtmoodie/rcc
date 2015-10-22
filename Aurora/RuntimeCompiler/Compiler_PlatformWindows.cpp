@@ -305,10 +305,10 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&	filesToCompi
 	m_pImplData->m_bCompileIsComplete = false;
 	//optimization and c runtime
 #ifdef _DEBUG
-	std::string flags= "/nologo /Zi /FC /MDd /LDd ";
+	std::string flags = "/nologo /Zi /FC /MDd /LDd ";
 
 #else
-	std::string flags =  "/nologo /Zi /FC /MD /LD ";
+	std::string flags = "/nologo /Zi /FC /MD /LD ";
 #endif
 
 	RCppOptimizationLevel optimizationLevel = GetActualOptimizationLevel(compilerOptions_.optimizationLevel);
@@ -340,8 +340,8 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&	filesToCompi
 	std::string linkOptions;
 	bool bHaveLinkOptions = (0 != compilerOptions_.linkOptions.length());
 	if (compilerOptions_.libraryDirList.size() || bHaveLinkOptions)
-	{	
-		if(!useNVCC)
+	{
+		if (!useNVCC)
 		{
 			linkOptions = " /link ";
 		}
@@ -361,19 +361,20 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&	filesToCompi
 			}
 		}
 
-		if( bHaveLinkOptions )
+		if (bHaveLinkOptions)
 		{
 			linkOptions += compilerOptions_.linkOptions;
 		}
 	}
-    // faster linking if available: https://randomascii.wordpress.com/2015/07/27/programming-is-puzzles/
-    #if   (_MSC_VER >= 1800)
-        if( linkOptions.empty() )
-        {
-            linkOptions = " /link ";
-        }
-        linkOptions += "/DEBUG:FASTLINK ";
-    #endif
+	// faster linking if available: https://randomascii.wordpress.com/2015/07/27/programming-is-puzzles/
+	if (_MSC_VER >= 1800 && !useNVCC)
+	{
+		if (linkOptions.empty())
+		{
+			linkOptions = " /link ";
+		}
+		linkOptions += "/DEBUG:FASTLINK ";
+	}
 
 	// Check for intermediate directory, create it if required
 	// There are a lot more checks and robustness that could be added here
