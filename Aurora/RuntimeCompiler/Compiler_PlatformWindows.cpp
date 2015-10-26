@@ -367,7 +367,7 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&	filesToCompi
 		}
 	}
 	// faster linking if available: https://randomascii.wordpress.com/2015/07/27/programming-is-puzzles/
-	if (_MSC_VER >= 1800 && !useNVCC)
+	if (_MSC_VER >= 1900 && !useNVCC)
 	{
 		if (linkOptions.empty())
 		{
