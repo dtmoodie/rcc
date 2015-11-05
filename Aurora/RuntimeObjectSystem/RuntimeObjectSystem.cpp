@@ -114,19 +114,41 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
 	//also add the runtime compiler dir to list of dirs
 	includeDir = includeDir.ParentPath() / Path("RuntimeCompiler");
 	AddIncludeDir(includeDir.c_str());
-
-	std::ifstream config_file;
-	config_file.open("RCC_config.txt");
-	if (!config_file.is_open())
+	if (ParseConfigFile("RCC_config.txt", true) < 0)
 	{
 #ifdef _DEBUG
-		config_file.open("../Debug/RCC_config.txt");
+		ParseConfigFile("../Debug/RCC_config.txt", true);
 #else
-		config_file.open("../RelWithDebInfo/RCC_config.txt");
+		ParseConfigFile("../RelWithDebInfo/RCC_config.txt", true);
 #endif
 	}
+	
+	return true;
+}
+int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
+{
+	std::ifstream config_file;
+	config_file.open(file);
+	if (!config_file.is_open())
+	{
+		return -1;
+	}
+	unsigned short projectId = 0;
 	if (config_file.is_open())
 	{
+		{
+			std::string line;
+			std::getline(config_file, line);
+			projectId = stoi(line);
+			if (!first)
+			{
+				if (projectId < m_Projects.size())
+				{
+					projectId = m_Projects.size();
+				}
+			}
+		}
+		
 		{
 			std::stringstream ss;
 			std::string line, token;
@@ -134,7 +156,7 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
 			ss << line;
 			while (std::getline(ss, token, ';'))
 			{
-				AddIncludeDir(token.c_str());
+				AddIncludeDir(token.c_str(), projectId);
 			}
 		}
 		{
@@ -145,13 +167,12 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
 			ss << line;
 			while (std::getline(ss, token, ';'))
 			{
-				AddLibraryDir(token.c_str());
+				AddLibraryDir(token.c_str(), projectId);
 			}
 		}
 	}
-	return true;
+	return projectId;
 }
-
 
 void RuntimeObjectSystem::OnFileChange(const IAUDynArray<const char*>& filelist)
 {

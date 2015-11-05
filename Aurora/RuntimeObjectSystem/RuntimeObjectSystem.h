@@ -89,7 +89,7 @@ public:
     {
         return GetProject(projectId_).m_CompilerOptions.includeDirList;
     }
-
+	virtual int ParseConfigFile(const char* file, bool first = false);
     virtual std::vector<FileSystemUtils::Path>& GetLinkDirList(unsigned short projectId_ = 0)
     {
         return GetProject(projectId_).m_CompilerOptions.libraryDirList;
@@ -168,6 +168,7 @@ private:
 	typedef std::pair<TFileToFilesMap::iterator,TFileToFilesMap::iterator>  TFileToFilesEqualRange;
 
 	void StartRecompile();
+	bool ParseConfigFile(char* file, unsigned short projId);
 	void SetupRuntimeFileTracking( const IAUDynArray<IObjectConstructor*>& constructors_ );
 
 	// Members set in initialise
