@@ -94,6 +94,10 @@ public:
     {
         return GetProject(projectId_).m_CompilerOptions.libraryDirList;
     }
+    virtual int GetProjectCount()
+    {
+        return m_Projects.size();
+    }
 
 	virtual void SetAutoCompile( bool autoCompile );
 	virtual bool GetAutoCompile() const

@@ -104,6 +104,7 @@ struct IRuntimeObjectSystem : public ITestBuildNotifier
     virtual RCppOptimizationLevel GetOptimizationLevel(					unsigned short projectId_ = 0 ) = 0;
     virtual std::vector<FileSystemUtils::Path>& GetIncludeDirList(unsigned short projectId_ = 0) = 0;
     virtual std::vector<FileSystemUtils::Path>& GetLinkDirList(unsigned short projectId_ = 0) = 0;
+    virtual int GetProjectCount() = 0;
 
 	// Intermediate Dir has DEBUG in debug or RELEASE plus project optimization level appended to it.
 	// defaults to current directory plus /Runtime
