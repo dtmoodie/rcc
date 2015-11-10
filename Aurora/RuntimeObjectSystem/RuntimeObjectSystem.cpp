@@ -160,6 +160,24 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
 			}
 		}
 		{
+
+			std::stringstream ss;
+			std::string line, token;
+			std::getline(config_file, line);
+#ifndef _DEBUG
+			std::getline(config_file, line); // In release mode we read the next line
+#endif
+			ss.str();
+			ss << line;
+			while (std::getline(ss, token, ';'))
+			{
+				AddLibraryDir(token.c_str(), projectId);
+			}
+#ifndef _DEBUG
+			std::getline(config_file, line); // Read the release line and discard
+#endif
+		}
+		{
 			std::stringstream ss;
 			std::string line, token;
 			std::getline(config_file, line);
@@ -167,7 +185,7 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
 			ss << line;
 			while (std::getline(ss, token, ';'))
 			{
-				AddLibraryDir(token.c_str(), projectId);
+				SetAdditionalCompileOptions(token.c_str(), projectId);
 			}
 		}
 	}
