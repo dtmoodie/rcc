@@ -173,7 +173,7 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
 			{
 				AddLibraryDir(token.c_str(), projectId);
 			}
-#ifndef _DEBUG
+#ifdef _DEBUG
 			std::getline(config_file, line); // Read the release line and discard
 #endif
 		}
