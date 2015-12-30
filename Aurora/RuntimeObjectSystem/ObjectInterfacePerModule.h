@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 #include <assert.h>
+#include <IObjectInfo.h>
+#include <boost/preprocessor.hpp>
 
 #ifndef RCCPPOFF
     #define AU_ASSERT( statement )  do { if (!(statement)) { volatile int* p = 0; int a = *p; if(a) {} } } while(0)
@@ -34,6 +36,9 @@
     #define AU_ASSERT( statement ) assert( statement )
 #endif //RCCPPOFF
 
+// ****************************************************************************************
+//                                 PerModuleInterface
+// ****************************************************************************************
 class PerModuleInterface : public IPerModuleInterface
 {
 public:
@@ -82,7 +87,9 @@ private:
 
 
 
-
+// ****************************************************************************************
+//                                 Concrete constructor
+// ****************************************************************************************
 
 template<typename T> class TObjectConstructorConcrete: public IObjectConstructor
 {
@@ -95,7 +102,8 @@ public:
         IRuntimeLinkLibraryList*        pLinkLibraryList,
 #endif
         bool                            bIsSingleton,
-        bool                            bIsAutoConstructSingleton)
+        bool                            bIsAutoConstructSingleton,
+        IObjectInfo*                    pObjectInfo = NULL)
         : m_bIsSingleton(               bIsSingleton )
         , m_bIsAutoConstructSingleton(  bIsAutoConstructSingleton )
 		, m_pModuleInterface(0)
@@ -105,6 +113,7 @@ public:
 		, m_pIncludeFileList(pIncludeFileList_)
 		, m_pSourceDependencyList(pSourceDependencyList_)
 		, m_pLinkLibraryList(pLinkLibraryList)
+        , m_pObjectInfo(pObjectInfo)
 #endif
 	{
 #ifndef RCCPPOFF
@@ -167,6 +176,10 @@ public:
     virtual unsigned short GetProjectId() const
     {
         return m_Project;
+    }
+    virtual IObjectInfo* GetObjectInfo() const
+    {
+        return m_pObjectInfo;
     }
 
 	virtual const char* GetFileName()
@@ -324,6 +337,7 @@ private:
 	ConstructorId                   m_Id;
 	PerModuleInterface*             m_pModuleInterface;
     unsigned short                  m_Project;
+    IObjectInfo*                    m_pObjectInfo;
 #ifndef RCCPPOFF
 	std::string                     m_FileName;
 	IRuntimeIncludeFileList*        m_pIncludeFileList;
@@ -332,7 +346,9 @@ private:
 #endif
 };
 
-
+// ****************************************************************************************
+//                                 Concrete class
+// ****************************************************************************************
 template<typename T> class TActual: public T
 {
 public:
@@ -375,25 +391,40 @@ private:
 	PerTypeObjectId m_Id;
 	static TObjectConstructorConcrete<TActual> m_Constructor;
 };
+// ****************************************************************************************
+//                                 Registration Macros
+// ****************************************************************************************
+
 #ifndef RCCPPOFF
-	#define REGISTERBASE( T, bIsSingleton, bIsAutoConstructSingleton )	\
+	#define REGISTERBASE( T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo )	\
 		static RuntimeIncludeFiles< __COUNTER__ >       g_includeFileList_##T; \
 		static RuntimeSourceDependency< __COUNTER__ >   g_sourceDependencyList_##T; \
 		static RuntimeLinkLibrary< __COUNTER__ >        g_linkLibraryList_##T; \
-	template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( __FILE__, &g_includeFileList_##T, &g_sourceDependencyList_##T, &g_linkLibraryList_##T, bIsSingleton, bIsAutoConstructSingleton );\
+	template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( __FILE__, &g_includeFileList_##T, &g_sourceDependencyList_##T, &g_linkLibraryList_##T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo);\
 	template<> const char* TActual< T >::GetTypeNameStatic() { return #T; } \
 	template class TActual< T >;
 #else
-	#define REGISTERBASE( T, bIsSingleton, bIsAutoConstructSingleton )	\
-	template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( bIsSingleton, bIsAutoConstructSingleton); \
+	#define REGISTERBASE( T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo )	\
+	template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( bIsSingleton, bIsAutoConstructSingleton, pObjectInfo); \
 	template<> const char* TActual< T >::GetTypeNameStatic() { return #T; } \
 	template class TActual< T >;
 #endif
 
 //NOTE: the file macro will only emit the full path if /FC option is used in visual studio or /ZI (Which forces /FC)
-#define REGISTERCLASS( T )	REGISTERBASE( T, false, false )
+#define REGISTERCLASS_1( T )	            REGISTERBASE( T, false, false, NULL )
+#define REGISTERCLASS_2( T, pObjectInfo)	REGISTERBASE( T, false, false, pObjectInfo )
 
-#define REGISTERSINGLETON( T, bIsAutoConstructSingleton )	REGISTERBASE( T, true, bIsAutoConstructSingleton )
+#define REGISTERSINGLETON_2( T, bIsAutoConstructSingleton )	                REGISTERBASE( T, true, bIsAutoConstructSingleton, NULL )
+#define REGISTERSINGLETON_3( T, bIsAutoConstructSingleton, pObjectInfo )	REGISTERBASE( T, true, bIsAutoConstructSingleton, pObjectInfo )
 
+#ifdef _MSC_VER
+#define REGISTERCLASS(...) BOOST_PP_CAT(BOOST_PP_OVERLOAD( REGISTERCLASS_, __VA_ARGS__ )(__VA_ARGS__), BOOST_PP_EMPTY())
+
+#define REGISTERSINGLETON(...) BOOST_PP_CAT(BOOST_PP_OVERLOAD( REGISTERSINGLETON_, __VA_ARGS__ )(__VA_ARGS__), BOOST_PP_EMPTY())
+#else
+#define REGISTERCLASS(...) BOOST_PP_OVERLOAD( REGISTERCLASS_, __VA_ARGS__ )(__VA_ARGS__)
+
+#define REGISTERSINGLETON(...) BOOST_PP_OVERLOAD( REGISTERSINGLETON_, __VA_ARGS__ )(__VA_ARGS__)
+#endif
 
 #endif // OBJECTINTERFACEPERMODULE_INCLUDED

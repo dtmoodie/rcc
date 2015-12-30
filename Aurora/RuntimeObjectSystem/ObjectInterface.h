@@ -25,7 +25,7 @@
 
 struct SystemTable; //This is the interface to your own engine code, which you need to define yourself if required.
 struct IObject;
-
+struct IObjectInfo;
 
 const size_t InvalidId = (size_t)-1;
 typedef size_t PerTypeObjectId;
@@ -81,6 +81,7 @@ struct IObjectConstructor
 	virtual SourceDependencyInfo GetSourceDependency( size_t Num_ ) const = 0;
     virtual void SetProjectId( unsigned short projectId_ ) = 0;
     virtual unsigned short GetProjectId() const = 0;
+    virtual IObjectInfo* GetObjectInfo() const = 0;
 
     // Singleton functions
     virtual bool        GetIsSingleton() const = 0;
