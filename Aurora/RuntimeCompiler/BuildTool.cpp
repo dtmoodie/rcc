@@ -124,3 +124,7 @@ void BuildTool::BuildModule( const std::vector<FileToBuild>&		buildFileList_,
 
 	m_Compiler.RunCompile( compileFileList, compilerOptions_, linkLibraryList_, moduleName_ );
 }
+bool BuildTool::AbortCompile()
+{
+    return m_Compiler.AbortCompile();
+}

@@ -53,6 +53,7 @@ public:
 					  const CompilerOptions&				compilerOptions_,
 					  std::vector<FileSystemUtils::Path>	linkLibraryList_,
                       const FileSystemUtils::Path&			moduleName_ );
+    bool AbortCompile();
 
 	bool GetIsComplete()
 	{

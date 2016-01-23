@@ -58,6 +58,7 @@ public:
 	{
 		return m_bCompiling;
 	}
+    virtual bool AbortCompilation();
 
 	virtual bool GetIsCompiledComplete();
 

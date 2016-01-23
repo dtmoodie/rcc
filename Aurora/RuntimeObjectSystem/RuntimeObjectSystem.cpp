@@ -264,6 +264,15 @@ bool RuntimeObjectSystem::GetIsCompiledComplete()
 {
 	return m_bCompiling && m_pBuildTool->GetIsComplete();
 }
+bool RuntimeObjectSystem::AbortCompilation()
+{
+    if(m_pBuildTool->AbortCompile())
+    {
+        m_bCompiling = false;
+        return true;
+    }    
+    return false;
+}
 
 void RuntimeObjectSystem::CompileAllInProject( bool bForceRecompile, unsigned short projectId_ )
 {

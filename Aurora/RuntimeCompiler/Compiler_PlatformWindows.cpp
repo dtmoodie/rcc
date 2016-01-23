@@ -245,6 +245,11 @@ Compiler::~Compiler()
 	delete m_pImplData;
 }
 
+bool Compiler::AbortCompile()
+{
+    m_pImplData->CleanupProcessAndPipes();
+    return true;
+}
 std::string Compiler::GetObjectFileExtension() const
 {
 	return ".obj";

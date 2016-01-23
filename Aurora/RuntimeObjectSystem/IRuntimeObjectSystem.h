@@ -73,6 +73,7 @@ struct IRuntimeObjectSystem : public ITestBuildNotifier
 	virtual bool Initialise( ICompilerLogger * pLogger, SystemTable* pSystemTable  ) = 0;
 
 	virtual bool GetIsCompiling() = 0;
+    virtual bool AbortCompilation() = 0;
 	virtual bool GetIsCompiledComplete() = 0;
 	virtual bool LoadCompiledModule() = 0;
 	virtual bool GetLastLoadModuleSuccess() const = 0;
