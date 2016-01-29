@@ -5,7 +5,8 @@ struct IObjectInfo
     enum ObjectInfoType
     {
         base = 0,
-        node = 1
+        node = 1,
+        frame_grabber
     };
     virtual int GetObjectInfoType() = 0;
     virtual std::string GetObjectName() = 0;
