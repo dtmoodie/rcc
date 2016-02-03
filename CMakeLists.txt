@@ -120,6 +120,18 @@ add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
 add_library(RuntimeObjectSystem ${BUILD_TYPE} ${RuntimeObjectSystem_SRCS})
 target_link_libraries(RuntimeObjectSystem RuntimeCompiler)
 
+install(TARGETS RuntimeObjectSystem RuntimeCompiler
+		RUNTIME DESTINATION bin
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib)
+
+install(DIRECTORY Aurora/include
+		DESTINATION include
+        FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY Aurora/include
+		DESTINATION include
+		FILES_MATCHING PATTERN "*.hpp")
+
 if(UNIX)
         target_link_libraries(RuntimeObjectSystem dl)
 endif()
