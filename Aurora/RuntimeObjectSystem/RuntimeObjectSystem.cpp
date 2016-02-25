@@ -185,7 +185,7 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
 			ss << line;
 			while (std::getline(ss, token, ';'))
 			{
-				SetAdditionalCompileOptions(token.c_str(), projectId);
+				AppendAdditionalCompileOptions(token.c_str(), projectId);
 			}
 		}
 	}
@@ -702,7 +702,14 @@ void RuntimeObjectSystem::SetAdditionalCompileOptions( const char *options, unsi
 {
     GetProject( projectId_ ).m_CompilerOptions.compileOptions = options;
 }
-
+void RuntimeObjectSystem::AppendAdditionalCompileOptions( const char *options, unsigned short projectId_ )
+{
+    GetProject( projectId_ ).m_CompilerOptions.compileOptions += options;
+}
+const char* RuntimeObjectSystem::GetAdditionalCompileOptions(unsigned short projectId_)
+{
+    return GetProject( projectId_ ).m_CompilerOptions.compileOptions.c_str();
+}
 void RuntimeObjectSystem::SetCompilerLocation( const char *path, unsigned short projectId_ )
 {
     GetProject( projectId_ ).m_CompilerOptions.compilerLocation = path;

@@ -81,6 +81,8 @@ public:
     virtual void AddIncludeDir(                 const char* path_,      unsigned short projectId_ = 0 );
     virtual void AddLibraryDir(                 const char* path_,      unsigned short projectId_ = 0 );
     virtual void SetAdditionalCompileOptions(   const char* options,    unsigned short projectId_ = 0 );
+    virtual void AppendAdditionalCompileOptions(   const char* options,    unsigned short projectId_ = 0 );
+    virtual const char* GetAdditionalCompileOptions(unsigned short projectId_ = 0);
     virtual void SetAdditionalLinkOptions(      const char* options,    unsigned short projectId_ = 0 );
     virtual void SetCompilerLocation        (   const char* path,       unsigned short projectId_ = 0 );
     virtual void SetOptimizationLevel( RCppOptimizationLevel optimizationLevel_,	unsigned short projectId_ = 0 );
