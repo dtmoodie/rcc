@@ -53,6 +53,10 @@ struct ObjectId
 	{
 		return (m_ConstructorId == rhs.m_ConstructorId && m_PerTypeId == rhs.m_PerTypeId);
 	}
+    bool operator!=(const ObjectId& rhs) const
+    {
+        return !(m_ConstructorId == rhs.m_ConstructorId && m_PerTypeId == rhs.m_PerTypeId);
+    }
 	bool IsValid() const
 	{
 		return (m_ConstructorId != InvalidId && m_PerTypeId != InvalidId);

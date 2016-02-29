@@ -217,10 +217,6 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
 			assert( 0 == pOldConstructor->GetNumberConstructedObjects() );
 		}
 	}
-    for(size_t i =0; i < constructedObjects.size(); ++i)
-    {
-        constructedObjects[i]->updateNotifiers();
-    }
 }
 
 bool ObjectFactorySystem::HandleRedoUndo( const TConstructors& constructors )
