@@ -22,6 +22,8 @@
 
 
 #ifndef RCCPPOFF
+
+#include <cstdlib>
 //NOTE: the file macro will only emit the full path if /FC option is used in visual studio or /ZI (Which forces /FC)
 //Following creates a list of files which are runtime modifiable, to be used in headers
 //requires use of __COUNTER__ predefined macro, which is in gcc 4.3+, clang/llvm and MSVC

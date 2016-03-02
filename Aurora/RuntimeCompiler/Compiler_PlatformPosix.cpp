@@ -307,3 +307,8 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
 
     execl("/bin/sh", "sh", "-c", compileString.c_str(), (const char*)NULL);
 }
+bool Compiler::AbortCompile()
+{
+    kill(m_pImplData->m_ChildForCompilationPID, SIGTERM);
+    return true;
+}
