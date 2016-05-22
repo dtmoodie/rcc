@@ -450,11 +450,33 @@ char* pCharTypeFlags = "";
 	if (useNVCC)
 	{
 #ifdef NVCC_PATH
-	cmdToSend = "\"" NVCC_PATH "\"" " -ccbin cl -Xcompiler \"/MP /EHs " + flags + pCharTypeFlags + "\""
-		+ strIncludeFiles + " " + strFilesToCompile + strLinkLibraries + linkOptions 
-		+ " -DWIN32 -D_WIN32 " + 
-		+ "-o " + moduleName_.m_string
-		+ "\n echo ";
+		std::stringstream ss;
+		ss << "\"" NVCC_PATH "\"";
+		ss << " -ccbin cl";
+		ss << " -Xcompiler ";
+		ss << ",\\\"/MP\\\"";
+		ss << ",\\\"/EHsc\\\"";
+		std::stringstream flag_stream;
+		flag_stream << flags;
+		std::string flag;
+		while(std::getline(flag_stream, flag, ' '))
+		{
+			ss << ",\\\"" << flag << "\\\"";
+		}
+		ss << " -std=c++11";
+#ifdef _DEBUG
+		ss << " -g -G -lineinfo";
+#endif
+		ss << " -DNVCC ";
+		ss << strIncludeFiles;
+		ss << " ";
+		ss << strFilesToCompile;
+		ss << strLinkLibraries;
+		ss << linkOptions;
+		ss << " -o ";
+		ss << moduleName_.m_string;
+		ss << "\n echo ";
+		cmdToSend = ss.str();
 #endif
 	}
 	else
