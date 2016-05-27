@@ -19,7 +19,6 @@
 
 #ifndef RUNTIMEOBJECTSYSTEM_INCLUDED
 #define RUNTIMEOBJECTSYSTEM_INCLUDED
-#include "../RCC_defs.h"
 #include "../RuntimeCompiler/IFileChangeNotifier.h"
 #include "../RuntimeCompiler/BuildTool.h"
 #include "../RuntimeCompiler/AUArray.h"
@@ -45,7 +44,7 @@
 struct ICompilerLogger;
 struct IObjectFactorySystem;
 
-class RCC_EXPORTS RuntimeObjectSystem : public IRuntimeObjectSystem, IFileChangeListener
+class RuntimeObjectSystem : public IRuntimeObjectSystem, IFileChangeListener
 {
 public:
 	RuntimeObjectSystem();
