@@ -6,7 +6,8 @@ struct IObjectInfo
     {
         base = 0,
         node = 1,
-        frame_grabber
+        frame_grabber,
+		plotter
     };
     virtual int GetObjectInfoType() = 0;
     virtual std::string GetObjectName() = 0;
