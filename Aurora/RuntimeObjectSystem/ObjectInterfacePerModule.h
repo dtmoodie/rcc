@@ -41,22 +41,22 @@
 class PerModuleInterface : public IPerModuleInterface
 {
 public:
-	static PerModuleInterface*  GetInstance();
-	static SystemTable*			g_pSystemTable;
+    static PerModuleInterface*  GetInstance();
+    static SystemTable*            g_pSystemTable;
 
-	void AddConstructor( IObjectConstructor* pConstructor );
+    void AddConstructor( IObjectConstructor* pConstructor );
 
-	virtual std::vector<IObjectConstructor*>& GetConstructors();
+    virtual std::vector<IObjectConstructor*>& GetConstructors();
     virtual void SetProjectIdForAllConstructors( unsigned short projectId_ );
-	virtual void SetSystemTable( SystemTable* pSystemTable );
+    virtual void SetSystemTable( SystemTable* pSystemTable );
 
-	SystemTable* GetSystemTable()
-	{
-		return g_pSystemTable;
-	}
+    SystemTable* GetSystemTable()
+    {
+        return g_pSystemTable;
+    }
 
-	virtual const std::vector<const char*>& GetRequiredSourceFiles() const;
-	virtual void AddRequiredSourceFiles( const char* file_ );
+    virtual const std::vector<const char*>& GetRequiredSourceFiles() const;
+    virtual void AddRequiredSourceFiles( const char* file_ );
     virtual void SetModuleFileName( const char* name )
     {
         m_ModuleFilename = name;
@@ -64,23 +64,23 @@ public:
     const char* GetCompiledPath() const
     {
 #ifdef COMPILE_PATH
-    	return COMPILE_PATH;
+        return COMPILE_PATH;
 #else
-    	return "";
+        return "";
 #endif
     }
 
 private:
-	PerModuleInterface();
+    PerModuleInterface();
 
-	~PerModuleInterface()
-	{
-	}
+    ~PerModuleInterface()
+    {
+    }
 
 
-	static PerModuleInterface*			ms_pObjectManager;
-	std::vector<IObjectConstructor*>	m_ObjectConstructors;
-	std::vector<const char*>			m_RequiredSourceFiles;
+    static PerModuleInterface*            ms_pObjectManager;
+    std::vector<IObjectConstructor*>    m_ObjectConstructors;
+    std::vector<const char*>            m_RequiredSourceFiles;
     std::string                         m_ModuleFilename;
 };
 
@@ -93,10 +93,10 @@ private:
 template<typename T> class TObjectConstructorConcrete: public IObjectConstructor
 {
 public:
-	TObjectConstructorConcrete(
+    TObjectConstructorConcrete(
 #ifndef RCCPPOFF
-		const char* Filename,
-		IRuntimeIncludeFileList*        pIncludeFileList_,
+        const char* Filename,
+        IRuntimeIncludeFileList*        pIncludeFileList_,
         IRuntimeSourceDependencyList*   pSourceDependencyList_,
         IRuntimeLinkLibraryList*        pLinkLibraryList,
 #endif
@@ -105,66 +105,66 @@ public:
         IObjectInfo*                    pObjectInfo = NULL)
         : m_bIsSingleton(               bIsSingleton )
         , m_bIsAutoConstructSingleton(  bIsAutoConstructSingleton )
-		, m_pModuleInterface(0)
+        , m_pModuleInterface(0)
         , m_Project(0)
 #ifndef RCCPPOFF
-		, m_FileName(                   Filename )
-		, m_pIncludeFileList(pIncludeFileList_)
-		, m_pSourceDependencyList(pSourceDependencyList_)
-		, m_pLinkLibraryList(pLinkLibraryList)
+        , m_FileName(                   Filename )
+        , m_pIncludeFileList(pIncludeFileList_)
+        , m_pSourceDependencyList(pSourceDependencyList_)
+        , m_pLinkLibraryList(pLinkLibraryList)
         , m_pObjectInfo(pObjectInfo)
 #endif
-	{
+    {
 #ifndef RCCPPOFF
-		// add path to filename
-		#ifdef COMPILE_PATH
-			m_FileName = COMPILE_PATH + m_FileName;
-		#endif
+        // add path to filename
+        #ifdef COMPILE_PATH
+            m_FileName = COMPILE_PATH + m_FileName;
+        #endif
 #endif
-	    PerModuleInterface::GetInstance()->AddConstructor( this );
+        PerModuleInterface::GetInstance()->AddConstructor( this );
         m_pModuleInterface = PerModuleInterface::GetInstance();
-		m_Id = InvalidId;
-	}
+        m_Id = InvalidId;
+    }
 
-	virtual IObject* Construct()
-	{
-		T* pT = 0;
+    virtual IObject* Construct()
+    {
+        T* pT = 0;
         if( m_bIsSingleton && m_ConstructedObjects.size() && m_ConstructedObjects[0] )
         {
             return m_ConstructedObjects[0];
         }
 
-		if( m_FreeIds.empty() )
-		{
-			PerTypeObjectId id = m_ConstructedObjects.size();
+        if( m_FreeIds.empty() )
+        {
+            PerTypeObjectId id = m_ConstructedObjects.size();
 
-			pT = new T();
-			pT->SetPerTypeId( id );
-			m_ConstructedObjects.push_back( pT );
-		}
-		else
-		{
-			PerTypeObjectId id = m_FreeIds.back();
-			m_FreeIds.pop_back();
-			pT = new T();
-			pT->SetPerTypeId( id );
-			AU_ASSERT( 0 == m_ConstructedObjects[ id ] );
-			m_ConstructedObjects[ id ] = pT;
+            pT = new T();
+            pT->SetPerTypeId( id );
+            m_ConstructedObjects.push_back( pT );
+        }
+        else
+        {
+            PerTypeObjectId id = m_FreeIds.back();
+            m_FreeIds.pop_back();
+            pT = new T();
+            pT->SetPerTypeId( id );
+            AU_ASSERT( 0 == m_ConstructedObjects[ id ] );
+            m_ConstructedObjects[ id ] = pT;
 
-		}
-		return pT;
-	}
+        }
+        return pT;
+    }
 
-	virtual void ConstructNull()
-	{
+    virtual void ConstructNull()
+    {
         // should not occur for singletons
         AU_ASSERT( !m_bIsSingleton );
-		m_ConstructedObjects.push_back( NULL );
-	}
+        m_ConstructedObjects.push_back( NULL );
+    }
 
-	virtual const char* GetName()
-	{
-		return T::GetTypeNameStatic();
+    virtual const char* GetName()
+    {
+        return T::GetTypeNameStatic();
     }
 
     virtual void SetProjectId( unsigned short projectId_ )
@@ -181,93 +181,93 @@ public:
         return m_pObjectInfo;
     }
 
-	virtual const char* GetFileName()
-	{
+    virtual const char* GetFileName()
+    {
 #ifndef RCCPPOFF
-		return m_FileName.c_str();
+        return m_FileName.c_str();
 #else
-		return 0;
+        return 0;
 #endif
-	}
+    }
 
     virtual const char* GetCompiledPath()
     {
 #ifndef RCCPPOFF
- 		#ifdef COMPILE_PATH
-			return COMPILE_PATH;
+         #ifdef COMPILE_PATH
+            return COMPILE_PATH;
         #else
             return "";
-		#endif
+        #endif
 #else
-		return 0;
+        return 0;
 #endif
    }
 
-	virtual const char* GetIncludeFile( size_t Num_ ) const
-	{
+    virtual const char* GetIncludeFile( size_t Num_ ) const
+    {
 #ifndef RCCPPOFF
-		if( m_pIncludeFileList )
-		{
-			return m_pIncludeFileList->GetIncludeFile( Num_ );
-		}
+        if( m_pIncludeFileList )
+        {
+            return m_pIncludeFileList->GetIncludeFile( Num_ );
+        }
 #endif
-		return 0;
-	}
+        return 0;
+    }
 
-	virtual size_t GetMaxNumIncludeFiles() const
-	{
+    virtual size_t GetMaxNumIncludeFiles() const
+    {
 #ifndef RCCPPOFF
-		if( m_pIncludeFileList )
-		{
-			return m_pIncludeFileList->MaxNum;
-		}
+        if( m_pIncludeFileList )
+        {
+            return m_pIncludeFileList->MaxNum;
+        }
 #endif
-		return 0;
-	}
+        return 0;
+    }
 
-	virtual const char* GetLinkLibrary( size_t Num_ ) const
-	{
+    virtual const char* GetLinkLibrary( size_t Num_ ) const
+    {
 #ifndef RCCPPOFF
-		if( m_pLinkLibraryList )
-		{
-			return m_pLinkLibraryList->GetLinkLibrary( Num_ );
-		}
+        if( m_pLinkLibraryList )
+        {
+            return m_pLinkLibraryList->GetLinkLibrary( Num_ );
+        }
 #endif
-		return 0;
-	}
+        return 0;
+    }
 
-	virtual size_t GetMaxNumLinkLibraries() const
-	{
+    virtual size_t GetMaxNumLinkLibraries() const
+    {
 #ifndef RCCPPOFF
-		if( m_pLinkLibraryList )
-		{
-			return m_pLinkLibraryList->MaxNum;
-		}
+        if( m_pLinkLibraryList )
+        {
+            return m_pLinkLibraryList->MaxNum;
+        }
 #endif
-		return 0;
-	}
+        return 0;
+    }
 
-	virtual SourceDependencyInfo GetSourceDependency( size_t Num_ ) const
-	{
+    virtual SourceDependencyInfo GetSourceDependency( size_t Num_ ) const
+    {
 #ifndef RCCPPOFF
-		if( m_pSourceDependencyList )
-		{
-			return m_pSourceDependencyList->GetSourceDependency( Num_ );
-		}
+        if( m_pSourceDependencyList )
+        {
+            return m_pSourceDependencyList->GetSourceDependency( Num_ );
+        }
 #endif
-		return SourceDependencyInfo::GetNULL();
-	}
+        return SourceDependencyInfo::GetNULL();
+    }
 
-	virtual size_t GetMaxNumSourceDependencies() const
-	{
+    virtual size_t GetMaxNumSourceDependencies() const
+    {
 #ifndef RCCPPOFF
-		if( m_pSourceDependencyList )
-		{
-			return m_pSourceDependencyList->MaxNum;
-		}
+        if( m_pSourceDependencyList )
+        {
+            return m_pSourceDependencyList->MaxNum;
+        }
 #endif
-		return 0;
-	}
+        return 0;
+    }
 
     virtual bool GetIsSingleton() const
     {
@@ -279,69 +279,69 @@ public:
     }
 
 
-	virtual IObject* GetConstructedObject( PerTypeObjectId id ) const
-	{
-		if( m_ConstructedObjects.size() > id )
-		{
-			return m_ConstructedObjects[id];
-		}
-		return 0;
-	}
-	virtual size_t	 GetNumberConstructedObjects() const
-	{
-		return m_ConstructedObjects.size();
-	}
-	virtual ConstructorId GetConstructorId() const
-	{
-		return m_Id;
-	}
-	virtual void SetConstructorId( ConstructorId id )
-	{
-		if( InvalidId == m_Id )
-		{
-			m_Id = id;
-		}
-	}
+    virtual IObject* GetConstructedObject( PerTypeObjectId id ) const
+    {
+        if( m_ConstructedObjects.size() > id )
+        {
+            return m_ConstructedObjects[id];
+        }
+        return 0;
+    }
+    virtual size_t     GetNumberConstructedObjects() const
+    {
+        return m_ConstructedObjects.size();
+    }
+    virtual ConstructorId GetConstructorId() const
+    {
+        return m_Id;
+    }
+    virtual void SetConstructorId( ConstructorId id )
+    {
+        if( InvalidId == m_Id )
+        {
+            m_Id = id;
+        }
+    }
 
-	void DeRegister( PerTypeObjectId id )
-	{
-		//remove from constructed objects.
-		//use swap with last one
-		if( m_ConstructedObjects.size() - 1 == id )
-		{
-			//it's the last one, just remove it.
-			m_ConstructedObjects.pop_back();
-		}
-		else
-		{
-			m_FreeIds.push_back( id );
-			m_ConstructedObjects[ id ] = 0;
-		}
-	}
-	virtual void ClearIfAllDeleted()
-	{
-		m_FreeIds.clear();
-		m_ConstructedObjects.clear();
-	}
+    void DeRegister( PerTypeObjectId id )
+    {
+        //remove from constructed objects.
+        //use swap with last one
+        if( m_ConstructedObjects.size() - 1 == id )
+        {
+            //it's the last one, just remove it.
+            m_ConstructedObjects.pop_back();
+        }
+        else
+        {
+            m_FreeIds.push_back( id );
+            m_ConstructedObjects[ id ] = 0;
+        }
+    }
+    virtual void ClearIfAllDeleted()
+    {
+        m_FreeIds.clear();
+        m_ConstructedObjects.clear();
+    }
         virtual int GetInterfaceId() const
         {
             return T::s_interfaceID;
         }
 
 private:
-	bool                            m_bIsSingleton;
-	bool                            m_bIsAutoConstructSingleton;
-	std::vector<T*>                 m_ConstructedObjects;
-	std::vector<PerTypeObjectId>	m_FreeIds;
-	ConstructorId                   m_Id;
-	PerModuleInterface*             m_pModuleInterface;
+    bool                            m_bIsSingleton;
+    bool                            m_bIsAutoConstructSingleton;
+    std::vector<T*>                 m_ConstructedObjects;
+    std::vector<PerTypeObjectId>    m_FreeIds;
+    ConstructorId                   m_Id;
+    PerModuleInterface*             m_pModuleInterface;
     unsigned short                  m_Project;
     IObjectInfo*                    m_pObjectInfo;
 #ifndef RCCPPOFF
-	std::string                     m_FileName;
-	IRuntimeIncludeFileList*        m_pIncludeFileList;
-	IRuntimeSourceDependencyList*   m_pSourceDependencyList;
-	IRuntimeLinkLibraryList*        m_pLinkLibraryList;
+    std::string                     m_FileName;
+    IRuntimeIncludeFileList*        m_pIncludeFileList;
+    IRuntimeSourceDependencyList*   m_pSourceDependencyList;
+    IRuntimeLinkLibraryList*        m_pLinkLibraryList;
 #endif
 };
 
@@ -351,70 +351,70 @@ private:
 template<typename T> class TActual: public T
 {
 public:
-	// overload new/delete to get alignment correct
+    // overload new/delete to get alignment correct
 #ifdef _WIN32
-	void* operator new(size_t size)
-	{
-		size_t align = __alignof( TActual<T> );
-		return _aligned_malloc( size, align );
-	}
-	void operator delete(void* p)
-	{
-		_aligned_free( p );
-	}
+    void* operator new(size_t size)
+    {
+        size_t align = __alignof( TActual<T> );
+        return _aligned_malloc( size, align );
+    }
+    void operator delete(void* p)
+    {
+        _aligned_free( p );
+    }
 #else
-	void* operator new(size_t size)
-	{
-		size_t align = __alignof__( TActual<T> );
-		void* pRet;
-		int retval = posix_memalign( &pRet, align, size );
-		(void)retval;	//unused
-		return pRet;
-	}
-	void operator delete(void* p)
-	{
-		free( p );
-	}
+    void* operator new(size_t size)
+    {
+        size_t align = __alignof__( TActual<T> );
+        void* pRet;
+        int retval = posix_memalign( &pRet, align, size );
+        (void)retval;    //unused
+        return pRet;
+    }
+    void operator delete(void* p)
+    {
+        free( p );
+    }
 #endif //_WIN32
-	friend class TObjectConstructorConcrete<TActual>;
-	virtual ~TActual() { m_Constructor.DeRegister( m_Id ); }
-	virtual PerTypeObjectId GetPerTypeId() const { return m_Id; }
-	virtual IObjectConstructor* GetConstructor() const { return &m_Constructor; }
-	static const char* GetTypeNameStatic();
-	virtual const char* GetTypeName() const
-	{
+    friend class TObjectConstructorConcrete<TActual>;
+    virtual ~TActual() { m_Constructor.DeRegister( m_Id ); }
+    virtual PerTypeObjectId GetPerTypeId() const { return m_Id; }
+    virtual IObjectConstructor* GetConstructor() const { return &m_Constructor; }
+    static const char* GetTypeNameStatic();
+    virtual const char* GetTypeName() const
+    {
             return GetTypeNameStatic();
-	}
+    }
 private:
-	void SetPerTypeId( PerTypeObjectId id ) { m_Id = id; }
-	PerTypeObjectId m_Id;
-	static TObjectConstructorConcrete<TActual> m_Constructor;
+    void SetPerTypeId( PerTypeObjectId id ) { m_Id = id; }
+    PerTypeObjectId m_Id;
+    static TObjectConstructorConcrete<TActual> m_Constructor;
 };
 // ****************************************************************************************
 //                                 Registration Macros
 // ****************************************************************************************
 
 #ifndef RCCPPOFF
-	#define REGISTERBASE( T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo )	\
-		static RuntimeIncludeFiles< __COUNTER__ >       g_includeFileList_##T; \
-		static RuntimeSourceDependency< __COUNTER__ >   g_sourceDependencyList_##T; \
-		static RuntimeLinkLibrary< __COUNTER__ >        g_linkLibraryList_##T; \
-	template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( __FILE__, &g_includeFileList_##T, &g_sourceDependencyList_##T, &g_linkLibraryList_##T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo);\
-	template<> const char* TActual< T >::GetTypeNameStatic() { return #T; } \
-	template class TActual< T >;
+    #define REGISTERBASE( T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo )    \
+        static RuntimeIncludeFiles< __COUNTER__ >       g_includeFileList_##T; \
+        static RuntimeSourceDependency< __COUNTER__ >   g_sourceDependencyList_##T; \
+        static RuntimeLinkLibrary< __COUNTER__ >        g_linkLibraryList_##T; \
+    template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( __FILE__, &g_includeFileList_##T, &g_sourceDependencyList_##T, &g_linkLibraryList_##T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo);\
+    template<> const char* TActual< T >::GetTypeNameStatic() { return #T; } \
+    template class TActual< T >;
 #else
-	#define REGISTERBASE( T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo )	\
-	template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( bIsSingleton, bIsAutoConstructSingleton, pObjectInfo); \
-	template<> const char* TActual< T >::GetTypeNameStatic() { return #T; } \
-	template class TActual< T >;
+    #define REGISTERBASE( T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo )    \
+    template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( bIsSingleton, bIsAutoConstructSingleton, pObjectInfo); \
+    template<> const char* TActual< T >::GetTypeNameStatic() { return #T; } \
+    template class TActual< T >;
 #endif
 
 //NOTE: the file macro will only emit the full path if /FC option is used in visual studio or /ZI (Which forces /FC)
-#define REGISTERCLASS_1( T )	            REGISTERBASE( T, false, false, NULL )
-#define REGISTERCLASS_2( T, pObjectInfo)	REGISTERBASE( T, false, false, pObjectInfo )
+#define REGISTERCLASS_1( T )                REGISTERBASE( T, false, false, NULL )
+#define REGISTERCLASS_2( T, pObjectInfo)    REGISTERBASE( T, false, false, pObjectInfo )
 
-#define REGISTERSINGLETON_2( T, bIsAutoConstructSingleton )	                REGISTERBASE( T, true, bIsAutoConstructSingleton, NULL )
-#define REGISTERSINGLETON_3( T, bIsAutoConstructSingleton, pObjectInfo )	REGISTERBASE( T, true, bIsAutoConstructSingleton, pObjectInfo )
+#define REGISTERSINGLETON_2( T, bIsAutoConstructSingleton )                    REGISTERBASE( T, true, bIsAutoConstructSingleton, NULL )
+#define REGISTERSINGLETON_3( T, bIsAutoConstructSingleton, pObjectInfo )    REGISTERBASE( T, true, bIsAutoConstructSingleton, pObjectInfo )
 
 #ifdef _MSC_VER
 #define REGISTERCLASS(...) BOOST_PP_CAT(BOOST_PP_OVERLOAD( REGISTERCLASS_, __VA_ARGS__ )(__VA_ARGS__), BOOST_PP_EMPTY())
