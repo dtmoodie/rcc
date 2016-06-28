@@ -30,16 +30,16 @@
 
 struct IRuntimeIncludeFileList
 {
-	IRuntimeIncludeFileList( size_t max ) : MaxNum( max )
-	{
-	}
+    IRuntimeIncludeFileList( size_t max ) : MaxNum( max )
+    {
+    }
 
-	// GetIncludeFile may return 0, so you should iterate through to GetMaxNum() ignoring 0 returns
-	virtual const char* GetIncludeFile( size_t Num_ ) const
-	{
-		return 0;
-	}
-	size_t MaxNum; // initialized in constructor below
+    // GetIncludeFile may return 0, so you should iterate through to GetMaxNum() ignoring 0 returns
+    virtual const char* GetIncludeFile( size_t Num_ ) const
+    {
+        return 0;
+    }
+    size_t MaxNum; // initialized in constructor below
 };
 
 
@@ -48,58 +48,58 @@ namespace
 
 template< size_t COUNT > struct RuntimeIncludeFiles : public RuntimeIncludeFiles<COUNT-1>
 {
-	RuntimeIncludeFiles( size_t max ) : RuntimeIncludeFiles<COUNT-1>( max )
-	{
-	}
-	RuntimeIncludeFiles() : RuntimeIncludeFiles<COUNT-1>( COUNT )
-	{
-	}
+    RuntimeIncludeFiles( size_t max ) : RuntimeIncludeFiles<COUNT-1>( max )
+    {
+    }
+    RuntimeIncludeFiles() : RuntimeIncludeFiles<COUNT-1>( COUNT )
+    {
+    }
 
-	virtual const char* GetIncludeDir( size_t Num_ ) const
-	{
-		if( Num_ < COUNT )
-		{
-			return this->RuntimeIncludeFiles< COUNT-1 >::GetIncludeDir( Num_ );
-		}
-		else return 0;
-	}
+    virtual const char* GetIncludeDir( size_t Num_ ) const
+    {
+        if( Num_ < COUNT )
+        {
+            return this->RuntimeIncludeFiles< COUNT-1 >::GetIncludeDir( Num_ );
+        }
+        else return 0;
+    }
 };
 
 template<> struct RuntimeIncludeFiles<0> : public IRuntimeIncludeFileList
 {
-	RuntimeIncludeFiles( size_t max ) : IRuntimeIncludeFileList( max )
-	{
-	}
-	RuntimeIncludeFiles() : IRuntimeIncludeFileList( 0 )
-	{
-	}
+    RuntimeIncludeFiles( size_t max ) : IRuntimeIncludeFileList( max )
+    {
+    }
+    RuntimeIncludeFiles() : IRuntimeIncludeFileList( 0 )
+    {
+    }
 
-	virtual const char* GetIncludeDir( size_t Num_ ) const
-	{
-		return 0;
-	} 
+    virtual const char* GetIncludeDir( size_t Num_ ) const
+    {
+        return 0;
+    } 
 };
 
 
 
 #define RUNTIME_MODIFIABLE_INCLUDE_BASE( N ) \
-	template<> struct RuntimeIncludeFiles< N + 1 >  : public RuntimeIncludeFiles< N >\
-	{ \
-		RuntimeIncludeFiles( size_t max ) : RuntimeIncludeFiles<N>( max ) {} \
-		RuntimeIncludeFiles< N + 1 >() : RuntimeIncludeFiles<N>( N + 1 ) {} \
-		virtual const char* GetIncludeFile( size_t Num_ ) const \
-		{ \
-			if( Num_ <= N ) \
-			{ \
-				if( Num_ == N ) \
-				{ \
-					return __FILE__; \
-				} \
-				else return this->RuntimeIncludeFiles< N >::GetIncludeFile( Num_ ); \
-			} \
-			else return 0; \
-		} \
-	}; \
+    template<> struct RuntimeIncludeFiles< N + 1 >  : public RuntimeIncludeFiles< N >\
+    { \
+        RuntimeIncludeFiles( size_t max ) : RuntimeIncludeFiles<N>( max ) {} \
+        RuntimeIncludeFiles< N + 1 >() : RuntimeIncludeFiles<N>( N + 1 ) {} \
+        virtual const char* GetIncludeFile( size_t Num_ ) const \
+        { \
+            if( Num_ <= N ) \
+            { \
+                if( Num_ == N ) \
+                { \
+                    return __FILE__; \
+                } \
+                else return this->RuntimeIncludeFiles< N >::GetIncludeFile( Num_ ); \
+            } \
+            else return 0; \
+        } \
+    }; \
 
 
 #define RUNTIME_MODIFIABLE_INCLUDE namespace { RUNTIME_MODIFIABLE_INCLUDE_BASE( __COUNTER__ ) }

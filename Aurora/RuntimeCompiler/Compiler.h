@@ -28,22 +28,22 @@ struct ICompilerLogger;
 
 struct CompilerOptions
 {
-	std::vector<FileSystemUtils::Path>	includeDirList;
-	std::vector<FileSystemUtils::Path>	libraryDirList;
-	std::string							compileOptions;
-	std::string							linkOptions;
-  	RCppOptimizationLevel				optimizationLevel;
-	FileSystemUtils::Path				baseIntermediatePath;
-	FileSystemUtils::Path				intermediatePath;
-	FileSystemUtils::Path				compilerLocation;
+    std::vector<FileSystemUtils::Path>    includeDirList;
+    std::vector<FileSystemUtils::Path>    libraryDirList;
+    std::string                            compileOptions;
+    std::string                            linkOptions;
+      RCppOptimizationLevel                optimizationLevel;
+    FileSystemUtils::Path                baseIntermediatePath;
+    FileSystemUtils::Path                intermediatePath;
+    FileSystemUtils::Path                compilerLocation;
 };
 
 class Compiler
 {
 public:
-	Compiler();
-	~Compiler();
-	void Initialise( ICompilerLogger * pLogger );
+    Compiler();
+    ~Compiler();
+    void Initialise( ICompilerLogger * pLogger );
 
     // On Win32 the compile command line process can be preserved in between compiles for improved performance,
     // however this can result in Zombie processes and also prevent handles such as sockets from being closed.
@@ -60,14 +60,14 @@ public:
     }
 
     std::string GetObjectFileExtension() const;
-	void RunCompile( const std::vector<FileSystemUtils::Path>&	filesToCompile_,
-                     const CompilerOptions&						compilerOptions_,
-					 std::vector<FileSystemUtils::Path>			linkLibraryList_,
-					 const FileSystemUtils::Path&				moduleName_  );
+    void RunCompile( const std::vector<FileSystemUtils::Path>&    filesToCompile_,
+                     const CompilerOptions&                        compilerOptions_,
+                     std::vector<FileSystemUtils::Path>            linkLibraryList_,
+                     const FileSystemUtils::Path&                moduleName_  );
     bool AbortCompile();
 
-	bool GetIsComplete() const;
+    bool GetIsComplete() const;
 private:
-	PlatformCompilerImplData* m_pImplData;
+    PlatformCompilerImplData* m_pImplData;
     bool                      m_bFastCompileMode;
 };

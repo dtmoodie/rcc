@@ -32,62 +32,62 @@
 template <class T> class IAUDynArray
 {
 protected:
-	IAUDynArray<T>() {}
-	~IAUDynArray<T>() {}
+    IAUDynArray<T>() {}
+    ~IAUDynArray<T>() {}
 
 public:
-	virtual void Resize(size_t size) = 0;
+    virtual void Resize(size_t size) = 0;
 
-	virtual void Add(const T& item) = 0;
+    virtual void Add(const T& item) = 0;
 
-	size_t Size() const
-	{
-		return m_vec.size();
-	}
+    size_t Size() const
+    {
+        return m_vec.size();
+    }
 
-	void Clear()
-	{
-		Resize(0);
-	}
+    void Clear()
+    {
+        Resize(0);
+    }
 
-	T& operator[] (size_t i)
-	{
-		return m_vec[i];
-	}
+    T& operator[] (size_t i)
+    {
+        return m_vec[i];
+    }
 
-	const T& operator[] (size_t i) const
-	{
-		return m_vec[i];
-	}
+    const T& operator[] (size_t i) const
+    {
+        return m_vec[i];
+    }
 
 protected:
-	std::vector<T> m_vec;
+    std::vector<T> m_vec;
 };
 
 
 template <class T> class AUDynArray : public IAUDynArray<T>
 {
 public:
-	AUDynArray<T>(size_t size = 0)
-	{
-		this->m_vec.resize(size);
-	}
+    AUDynArray<T>(size_t size = 0)
+    {
+        this->m_vec.resize(size);
+    }
 
-	~AUDynArray<T>()
-	{
-		// Ensure this code is created, despite the templates
-		Resize(0);
-	}
+    ~AUDynArray<T>()
+    {
+        // Ensure this code is created, despite the templates
+        Resize(0);
+    }
 
-	void Resize(size_t size) 
-	{
-		this->m_vec.resize(size);
-	}
+    void Resize(size_t size) 
+    {
+        this->m_vec.resize(size);
+    }
 
-	void Add(const T& item)
-	{
-		this->m_vec.push_back(item);
-	}
+    void Add(const T& item)
+    {
+        this->m_vec.push_back(item);
+    }
 };
 
 #endif //AUARRAY_DEFINED

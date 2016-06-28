@@ -34,8 +34,8 @@
 #   }
 #
 #   boost::posix_time::ptime prevTime = boost::posix_time::microsec_clock::universal_time();
-#	boost::posix_time::ptime currentTime = boost::posix_time::microsec_clock::universal_time();
-#	boost::posix_time::time_duration delta = currentTime - prevTime;
+#    boost::posix_time::ptime currentTime = boost::posix_time::microsec_clock::universal_time();
+#    boost::posix_time::time_duration delta = currentTime - prevTime;
 #   while(true)
 #   {
 #      myObject->RunVirtualFunction();
@@ -65,12 +65,12 @@ cmake_minimum_required(VERSION 2.8)
 project(RCC)
 
 if(UNIX AND NOT APPLE)
-	set(BUILD_TYPE SHARED)
+    set(BUILD_TYPE SHARED)
 else()
-	set(BUILD_TYPE STATIC)
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+    set(BUILD_TYPE STATIC)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
 include(Aurora/cmake/ProjectFilesExternal.cmake)
@@ -108,9 +108,9 @@ LIST(REMOVE_DUPLICATES RCC_LIBRARY_DIRS_RELEASE)
 LIST(REMOVE_DUPLICATES RCC_LIBRARY_DIRS_DEBUG)
 
 IF(WIN32)
-	FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/RCC_Config.txt" "0\n${RCC_INCLUDE_DEPENDENCIES}\n${RCC_LIBRARY_DIRS_DEBUG};")
-	FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/RCC_Config.txt" "0\n${RCC_INCLUDE_DEPENDENCIES}\n${RCC_LIBRARY_DIRS_RELEASE};")
-	FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/RCC_Config.txt" "0\n${RCC_INCLUDE_DEPENDENCIES}\n${RCC_LIBRARY_DIRS_RELWITHDEBINFO};")
+    FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/RCC_Config.txt" "0\n${RCC_INCLUDE_DEPENDENCIES}\n${RCC_LIBRARY_DIRS_DEBUG};")
+    FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/RCC_Config.txt" "0\n${RCC_INCLUDE_DEPENDENCIES}\n${RCC_LIBRARY_DIRS_RELEASE};")
+    FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/RCC_Config.txt" "0\n${RCC_INCLUDE_DEPENDENCIES}\n${RCC_LIBRARY_DIRS_RELWITHDEBINFO};")
 ELSE()
         FILE(WRITE "${EXECUTABLE_OUTPUT_PATH}/RCC_Config.txt" "${RCC_INCLUDE_DEPENDENCIES}\n${RCC_LIBRARY_DIRS_DEBUG}\n${RCC_LIBRARY_DIRS_RELEASE}")
 ENDIF()
@@ -121,16 +121,16 @@ add_library(RuntimeObjectSystem ${BUILD_TYPE} ${RuntimeObjectSystem_SRCS})
 target_link_libraries(RuntimeObjectSystem RuntimeCompiler)
 
 install(TARGETS RuntimeObjectSystem RuntimeCompiler
-		RUNTIME DESTINATION bin
-		LIBRARY DESTINATION lib
-		ARCHIVE DESTINATION lib)
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
 
 install(DIRECTORY Aurora/include
-		DESTINATION include
+        DESTINATION include
         FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY Aurora/include
-		DESTINATION include
-		FILES_MATCHING PATTERN "*.hpp")
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.hpp")
 
 if(UNIX)
         target_link_libraries(RuntimeObjectSystem dl)

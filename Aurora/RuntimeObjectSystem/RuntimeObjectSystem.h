@@ -29,7 +29,7 @@
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
     #include <Windows.h>
-	#undef GetObject
+    #undef GetObject
 #else
     typedef void* HMODULE;
 #endif
@@ -47,32 +47,32 @@ struct IObjectFactorySystem;
 class RuntimeObjectSystem : public IRuntimeObjectSystem, IFileChangeListener
 {
 public:
-	RuntimeObjectSystem();
-	virtual ~RuntimeObjectSystem();
+    RuntimeObjectSystem();
+    virtual ~RuntimeObjectSystem();
 
-	// Initialise RuntimeObjectSystem. pLogger should be deleted by creator
-	virtual bool Initialise( ICompilerLogger * pLogger, SystemTable* pSystemTable );
+    // Initialise RuntimeObjectSystem. pLogger should be deleted by creator
+    virtual bool Initialise( ICompilerLogger * pLogger, SystemTable* pSystemTable );
 
-	virtual bool GetIsCompiling()
-	{
-		return m_bCompiling;
-	}
+    virtual bool GetIsCompiling()
+    {
+        return m_bCompiling;
+    }
     virtual bool AbortCompilation();
 
-	virtual bool GetIsCompiledComplete();
+    virtual bool GetIsCompiledComplete();
 
-	virtual bool LoadCompiledModule();
+    virtual bool LoadCompiledModule();
 
-	virtual IObjectFactorySystem* GetObjectFactorySystem() const
-	{
-		return m_pObjectFactorySystem;
-	}
-	virtual IFileChangeNotifier* GetFileChangeNotifier() const
-	{
-		return m_pFileChangeNotifier;
-	}
+    virtual IObjectFactorySystem* GetObjectFactorySystem() const
+    {
+        return m_pObjectFactorySystem;
+    }
+    virtual IFileChangeNotifier* GetFileChangeNotifier() const
+    {
+        return m_pFileChangeNotifier;
+    }
 
-	virtual void CompileAll( bool bForceRecompile );
+    virtual void CompileAll( bool bForceRecompile );
 
     virtual void CompileAllInProject(           bool bForcerecompile_,  unsigned short projectId_ = 0 );
     virtual void AddToRuntimeFileList(          const char* filename,   unsigned short projectId_ = 0 );
@@ -84,14 +84,14 @@ public:
     virtual const char* GetAdditionalCompileOptions(unsigned short projectId_ = 0);
     virtual void SetAdditionalLinkOptions(      const char* options,    unsigned short projectId_ = 0 );
     virtual void SetCompilerLocation        (   const char* path,       unsigned short projectId_ = 0 );
-    virtual void SetOptimizationLevel( RCppOptimizationLevel optimizationLevel_,	unsigned short projectId_ = 0 );
-    virtual RCppOptimizationLevel GetOptimizationLevel(					unsigned short projectId_ = 0 );
+    virtual void SetOptimizationLevel( RCppOptimizationLevel optimizationLevel_,    unsigned short projectId_ = 0 );
+    virtual RCppOptimizationLevel GetOptimizationLevel(                    unsigned short projectId_ = 0 );
     virtual void SetIntermediateDir(            const char* path_,      unsigned short projectId_ = 0 );
     virtual std::vector<FileSystemUtils::Path>& GetIncludeDirList(unsigned short projectId_ = 0)
     {
         return GetProject(projectId_).m_CompilerOptions.includeDirList;
     }
-	virtual int ParseConfigFile(const char* file, bool first = false);
+    virtual int ParseConfigFile(const char* file, bool first = false);
     virtual std::vector<FileSystemUtils::Path>& GetLinkDirList(unsigned short projectId_ = 0)
     {
         return GetProject(projectId_).m_CompilerOptions.libraryDirList;
@@ -101,11 +101,11 @@ public:
         return m_Projects.size();
     }
 
-	virtual void SetAutoCompile( bool autoCompile );
-	virtual bool GetAutoCompile() const
-	{
-		return m_bAutoCompile;
-	}
+    virtual void SetAutoCompile( bool autoCompile );
+    virtual bool GetAutoCompile() const
+    {
+        return m_bAutoCompile;
+    }
 
     virtual void SetFastCompileMode( bool bFast )
     {
@@ -117,20 +117,20 @@ public:
 
     virtual void CleanObjectFiles() const;
 
-	virtual bool GetLastLoadModuleSuccess() const
-	{
-		return m_bLastLoadModuleSuccess;
-	}
+    virtual bool GetLastLoadModuleSuccess() const
+    {
+        return m_bLastLoadModuleSuccess;
+    }
      virtual unsigned int GetNumberLoadedModules() const
      {
          return m_TotalLoadedModulesEver;
      }
  
-	virtual void SetupObjectConstructors(IPerModuleInterface* pPerModuleInterface);
+    virtual void SetupObjectConstructors(IPerModuleInterface* pPerModuleInterface);
 
      // exception handling to catch and protect main app from crashing when using runtime compiling
     virtual void SetProtectionEnabled( bool bProtectionEnabled_ );
-	
+    
     virtual bool IsProtectionEnabled() const
     {
         return m_bProtectionEnabled;
@@ -156,63 +156,63 @@ public:
     // AddPathToSourceSearch - adds a path to help source search. Can be called multiple times to add paths.
     virtual void AddPathToSourceSearch( const char* path );
 
-	// IFileChangeListener
+    // IFileChangeListener
 
-	virtual void OnFileChange(const IAUDynArray<const char*>& filelist);
+    virtual void OnFileChange(const IAUDynArray<const char*>& filelist);
 
-	// ~IFileChangeListener
+    // ~IFileChangeListener
 
     std::vector<FileSystemUtils::Path> linkLibraryList;
 
 private:
     typedef std::vector<FileSystemUtils::Path>                              TFileList;
-	typedef std::map<FileSystemUtils::Path,FileSystemUtils::Path>           TFileMap;
-	typedef TFileMap::iterator                                              TFileMapIterator;
-	typedef std::multimap<FileSystemUtils::Path,FileSystemUtils::Path>      TFileToFilesMap;
-	typedef TFileToFilesMap::iterator                                       TFileToFilesIterator;
-	typedef std::pair<FileSystemUtils::Path,FileSystemUtils::Path>          TFileToFilePair;
-	typedef std::pair<TFileToFilesMap::iterator,TFileToFilesMap::iterator>  TFileToFilesEqualRange;
+    typedef std::map<FileSystemUtils::Path,FileSystemUtils::Path>           TFileMap;
+    typedef TFileMap::iterator                                              TFileMapIterator;
+    typedef std::multimap<FileSystemUtils::Path,FileSystemUtils::Path>      TFileToFilesMap;
+    typedef TFileToFilesMap::iterator                                       TFileToFilesIterator;
+    typedef std::pair<FileSystemUtils::Path,FileSystemUtils::Path>          TFileToFilePair;
+    typedef std::pair<TFileToFilesMap::iterator,TFileToFilesMap::iterator>  TFileToFilesEqualRange;
 
-	void StartRecompile();
-	bool ParseConfigFile(char* file, unsigned short projId);
-	void SetupRuntimeFileTracking( const IAUDynArray<IObjectConstructor*>& constructors_ );
+    void StartRecompile();
+    bool ParseConfigFile(char* file, unsigned short projId);
+    void SetupRuntimeFileTracking( const IAUDynArray<IObjectConstructor*>& constructors_ );
 
-	// Members set in initialise
-	ICompilerLogger*		m_pCompilerLogger;
-	SystemTable*			m_pSystemTable;
+    // Members set in initialise
+    ICompilerLogger*        m_pCompilerLogger;
+    SystemTable*            m_pSystemTable;
 
-	// Members created by this system
-	IObjectFactorySystem*	m_pObjectFactorySystem;
-	IFileChangeNotifier*	m_pFileChangeNotifier;
-	BuildTool*				m_pBuildTool;
+    // Members created by this system
+    IObjectFactorySystem*    m_pObjectFactorySystem;
+    IFileChangeNotifier*    m_pFileChangeNotifier;
+    BuildTool*                m_pBuildTool;
 
-	bool					m_bCompiling;
-	bool					m_bLastLoadModuleSuccess;
-	std::vector<HMODULE>	m_Modules;	// Stores runtime created modules, but not the exe module.
+    bool                    m_bCompiling;
+    bool                    m_bLastLoadModuleSuccess;
+    std::vector<HMODULE>    m_Modules;    // Stores runtime created modules, but not the exe module.
 
-	bool					m_bAutoCompile;
-	FileSystemUtils::Path   m_CurrentlyCompilingModuleName;
+    bool                    m_bAutoCompile;
+    FileSystemUtils::Path   m_CurrentlyCompilingModuleName;
 
     // per project information
     struct ProjectSettings
     {
-		ProjectSettings()
-		{
-			m_CompilerOptions.optimizationLevel = RCCPPOPTIMIZATIONLEVEL_DEFAULT;
-			m_CompilerOptions.baseIntermediatePath = ms_DefaultIntermediatePath;
-		}
+        ProjectSettings()
+        {
+            m_CompilerOptions.optimizationLevel = RCCPPOPTIMIZATIONLEVEL_DEFAULT;
+            m_CompilerOptions.baseIntermediatePath = ms_DefaultIntermediatePath;
+        }
 
-		CompilerOptions						m_CompilerOptions;
+        CompilerOptions                        m_CompilerOptions;
 
-		TFileList                           m_RuntimeFileList;
+        TFileList                           m_RuntimeFileList;
         TFileToFilesMap                     m_RuntimeIncludeMap;
-        TFileToFilesMap			            m_RuntimeLinkLibraryMap;
+        TFileToFilesMap                        m_RuntimeLinkLibraryMap;
         TFileToFilesMap                     m_RuntimeSourceDependencyMap;
 
         std::vector<BuildTool::FileToBuild> m_BuildFileList;
         std::vector<BuildTool::FileToBuild> m_PendingBuildFileList; // if a compile is already underway, store files here.
 
-		static FileSystemUtils::Path		ms_DefaultIntermediatePath;
+        static FileSystemUtils::Path        ms_DefaultIntermediatePath;
     };
     std::vector<ProjectSettings>            m_Projects;
     ProjectSettings&                        GetProject( unsigned short projectId_ );

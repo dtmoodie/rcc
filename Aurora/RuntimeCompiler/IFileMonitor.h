@@ -24,16 +24,16 @@
 
 struct IFileMonitorListener
 {
-	virtual void OnFileChange( const FileSystemUtils::Path& filename ) = 0;
+    virtual void OnFileChange( const FileSystemUtils::Path& filename ) = 0;
     virtual ~IFileMonitorListener() {}
 };
 
 
 struct IFileMonitor
 {
-	virtual void Update( float fTimeDelta ) = 0;
-	virtual void Watch( const FileSystemUtils::Path& filename, IFileMonitorListener *pListener=0 ) = 0; // can be file or directory
-	virtual void Watch( const char *filename, IFileMonitorListener *pListener=0 ) = 0; // can be file or directory
+    virtual void Update( float fTimeDelta ) = 0;
+    virtual void Watch( const FileSystemUtils::Path& filename, IFileMonitorListener *pListener=0 ) = 0; // can be file or directory
+    virtual void Watch( const char *filename, IFileMonitorListener *pListener=0 ) = 0; // can be file or directory
     virtual ~IFileMonitor() {}
 };
 

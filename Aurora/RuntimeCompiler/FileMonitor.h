@@ -15,7 +15,7 @@
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
-//	New code based on using the cross platform file watcher "SimpleFileWatcher" by James Wynn
+//    New code based on using the cross platform file watcher "SimpleFileWatcher" by James Wynn
 // https://code.google.com/p/simplefilewatcher/
 
 #pragma once
@@ -36,98 +36,98 @@
 class FileMonitor : public IFileMonitor, public FW::FileWatchListener
 {
 public:
-	//typedef ThreadSafeQueue<FileSystemUtils::Path> TNotifications;
-	typedef std::vector<FileSystemUtils::Path> TNotifications;
+    //typedef ThreadSafeQueue<FileSystemUtils::Path> TNotifications;
+    typedef std::vector<FileSystemUtils::Path> TNotifications;
 
-	FileMonitor();
-	virtual ~FileMonitor();
+    FileMonitor();
+    virtual ~FileMonitor();
 
-	// FW::FileWatchListener
+    // FW::FileWatchListener
 
-	void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename,
+    void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename,
                    FW::Action action);
 
-	// ~FW::FileWatchListener
+    // ~FW::FileWatchListener
 
-	// IFileMonitor
+    // IFileMonitor
 
-	virtual void Update( float fDeltaTime );
+    virtual void Update( float fDeltaTime );
 
-	// Watch file or directory for changes
-	// Optional callbackFunc will be notified on change occurring
-	// If callback is specified, file will not be added to change list when it changes
-	virtual void Watch( const FileSystemUtils::Path& filename, IFileMonitorListener *pListener /*=0*/ );
-	virtual void Watch( const char* filename, IFileMonitorListener *pListener /*=0*/ );
+    // Watch file or directory for changes
+    // Optional callbackFunc will be notified on change occurring
+    // If callback is specified, file will not be added to change list when it changes
+    virtual void Watch( const FileSystemUtils::Path& filename, IFileMonitorListener *pListener /*=0*/ );
+    virtual void Watch( const char* filename, IFileMonitorListener *pListener /*=0*/ );
 
-	// ~IFileMonitor
+    // ~IFileMonitor
 
 
-	// Returns if there are any changes detected - does not poll files
-	// but simply returns change flag status which is updated asynchronously
-	bool GetHasChanges() const
-	{
-		return m_bChangeFlag;
-	}
+    // Returns if there are any changes detected - does not poll files
+    // but simply returns change flag status which is updated asynchronously
+    bool GetHasChanges() const
+    {
+        return m_bChangeFlag;
+    }
 
-	// Clears the list of changes, resets changed flag
-	void ClearChanges();
+    // Clears the list of changes, resets changed flag
+    void ClearChanges();
 
-	const std::vector<FileSystemUtils::Path>& GetChanges() const
-	{
-		return m_FileChangedList;
-	}
+    const std::vector<FileSystemUtils::Path>& GetChanges() const
+    {
+        return m_FileChangedList;
+    }
 
 
 private:
-	
-	struct WatchedFile
-	{
-		FileSystemUtils::Path file;
-		IFileMonitorListener *pListener;
+    
+    struct WatchedFile
+    {
+        FileSystemUtils::Path file;
+        IFileMonitorListener *pListener;
 
-		WatchedFile( const FileSystemUtils::Path& file_, IFileMonitorListener *pListener_ )
-			: file(file_), pListener(pListener_)
-		{}
-	};
-	typedef std::vector<WatchedFile> TFileList;
+        WatchedFile( const FileSystemUtils::Path& file_, IFileMonitorListener *pListener_ )
+            : file(file_), pListener(pListener_)
+        {}
+    };
+    typedef std::vector<WatchedFile> TFileList;
 
-	struct WatchedDir
-	{
-		FileSystemUtils::Path dir;
-		IFileMonitorListener *pListener; // used when the directory itself is explicitly being watched
-		TFileList fileWatchList;
-		bool bWatchDirItself;
+    struct WatchedDir
+    {
+        FileSystemUtils::Path dir;
+        IFileMonitorListener *pListener; // used when the directory itself is explicitly being watched
+        TFileList fileWatchList;
+        bool bWatchDirItself;
 
-		WatchedDir( const FileSystemUtils::Path& dir_ )
-			: dir(dir_)
-			, pListener(0)
-			, bWatchDirItself(false)
-		{}
-	};
-	typedef std::vector<WatchedDir> TDirList;
-	
+        WatchedDir( const FileSystemUtils::Path& dir_ )
+            : dir(dir_)
+            , pListener(0)
+            , bWatchDirItself(false)
+        {}
+    };
+    typedef std::vector<WatchedDir> TDirList;
+    
 
-	void StartWatchingDir( WatchedDir& dir );
-	TDirList::iterator GetWatchedDirEntry( const FileSystemUtils::Path& dir );
-	TFileList::iterator GetWatchedFileEntry( const FileSystemUtils::Path& file, TFileList& fileList );
-	void ProcessChangeNotification( FileSystemUtils::Path& file );
-	bool ArePathsEqual( const FileSystemUtils::Path& file1, const FileSystemUtils::Path& file2 ) const;
+    void StartWatchingDir( WatchedDir& dir );
+    TDirList::iterator GetWatchedDirEntry( const FileSystemUtils::Path& dir );
+    TFileList::iterator GetWatchedFileEntry( const FileSystemUtils::Path& file, TFileList& fileList );
+    void ProcessChangeNotification( FileSystemUtils::Path& file );
+    bool ArePathsEqual( const FileSystemUtils::Path& file1, const FileSystemUtils::Path& file2 ) const;
 
-	TDirList 							m_DirWatchList;
-	std::vector<FileSystemUtils::Path>	m_FileChangedList;
-	TNotifications						m_changeNotifications;
-	FW::FileWatcher* 					m_pFileWatcher;
-	bool 								m_bChangeFlag;
+    TDirList                             m_DirWatchList;
+    std::vector<FileSystemUtils::Path>    m_FileChangedList;
+    TNotifications                        m_changeNotifications;
+    FW::FileWatcher*                     m_pFileWatcher;
+    bool                                 m_bChangeFlag;
 };
 
 
 inline bool FileMonitor::ArePathsEqual( const FileSystemUtils::Path& file1, const FileSystemUtils::Path& file2 ) const
 {
 #ifdef _WIN32
-	// Do case insensitive comparison on Windows
-	return _stricmp(file1.c_str(), file2.c_str()) == 0;
+    // Do case insensitive comparison on Windows
+    return _stricmp(file1.c_str(), file2.c_str()) == 0;
 #else
-	return file1 == file2;
+    return file1 == file2;
 #endif
 }
 

@@ -34,77 +34,77 @@
 class FileChangeNotifier : public IFileChangeNotifier, public IFileMonitorListener
 {
 public:
-	FileChangeNotifier();
-	virtual ~FileChangeNotifier();
+    FileChangeNotifier();
+    virtual ~FileChangeNotifier();
 
-	// IFileChangeNotifier
-		
-	virtual bool IsMonitoringActive() const
-	{
-		return m_bActive;
-	}
+    // IFileChangeNotifier
+        
+    virtual bool IsMonitoringActive() const
+    {
+        return m_bActive;
+    }
 
-	virtual void SetMonitoringActive( bool bActive )
-	{
-		m_bActive = bActive;
-	}
+    virtual void SetMonitoringActive( bool bActive )
+    {
+        m_bActive = bActive;
+    }
 
-	virtual float GetMinTimeBetweenNotifications() const
-	{
-		return m_fMinTimeBetweenNotifications;
-	}
+    virtual float GetMinTimeBetweenNotifications() const
+    {
+        return m_fMinTimeBetweenNotifications;
+    }
 
-	virtual void SetMinTimeBetweenNotifications( float fMinTime );
+    virtual void SetMinTimeBetweenNotifications( float fMinTime );
 
-	virtual float GetChangeNotifyDelay() const
-	{
-		return m_fChangeNotifyDelay;
-	}
+    virtual float GetChangeNotifyDelay() const
+    {
+        return m_fChangeNotifyDelay;
+    }
 
-	virtual void SetChangeNotifyDelay( float fDelay );
+    virtual void SetChangeNotifyDelay( float fDelay );
 
-	virtual void Update( float fDeltaTime );
+    virtual void Update( float fDeltaTime );
 
-	// Add file to trigger compilation when it changes
-	virtual void Watch( const FileSystemUtils::Path& filename, IFileChangeListener *pListener );
-	virtual void Watch( const char *filename, IFileChangeListener *pListener );
+    // Add file to trigger compilation when it changes
+    virtual void Watch( const FileSystemUtils::Path& filename, IFileChangeListener *pListener );
+    virtual void Watch( const char *filename, IFileChangeListener *pListener );
 
-	virtual void RemoveListener( IFileChangeListener *pListener );
+    virtual void RemoveListener( IFileChangeListener *pListener );
 
-	// ~IFileChangeNotifier
+    // ~IFileChangeNotifier
 
 
-	// IFileMonitorListener
+    // IFileMonitorListener
 
-	void OnFileChange( const FileSystemUtils::Path& filename );
+    void OnFileChange( const FileSystemUtils::Path& filename );
 
-	// ~IFileMonitorListener
-	
+    // ~IFileMonitorListener
+    
 
 private:
-	
-	void TriggerNotificationIfPossible();
-	void NotifyListeners();
+    
+    void TriggerNotificationIfPossible();
+    void NotifyListeners();
 
-	typedef std::set<IFileChangeListener*> TFileChangeListeners;
-	typedef std::map<FileSystemUtils::Path, TFileChangeListeners> TFileListenerMap;
-	typedef std::vector<std::string> TPathNameList;
+    typedef std::set<IFileChangeListener*> TFileChangeListeners;
+    typedef std::map<FileSystemUtils::Path, TFileChangeListeners> TFileListenerMap;
+    typedef std::vector<std::string> TPathNameList;
 
-	// Private members
+    // Private members
 
-	TFileListenerMap m_fileListenerMap;
-	TPathNameList m_changedFileList;
+    TFileListenerMap m_fileListenerMap;
+    TPathNameList m_changedFileList;
 
-	IFileMonitor *m_pFileMonitor;
-	
-	bool m_bActive;
-	bool m_bRecompilePending;
+    IFileMonitor *m_pFileMonitor;
+    
+    bool m_bActive;
+    bool m_bRecompilePending;
 
-	float m_fMinTimeBetweenNotifications;
-	float m_fChangeNotifyDelay;
-	float m_fTimeUntilNextAllowedRecompile;
-	float m_fFileChangeSpamTimeRemaining;
-	FileSystemUtils::Path m_LastFileChanged;	
+    float m_fMinTimeBetweenNotifications;
+    float m_fChangeNotifyDelay;
+    float m_fTimeUntilNextAllowedRecompile;
+    float m_fFileChangeSpamTimeRemaining;
+    FileSystemUtils::Path m_LastFileChanged;    
 };
 
 #endif //FILECHANGENOTIFIER_INCLUDED

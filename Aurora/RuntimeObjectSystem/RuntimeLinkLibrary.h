@@ -30,16 +30,16 @@
 
 struct IRuntimeLinkLibraryList
 {
-	IRuntimeLinkLibraryList( size_t max ) : MaxNum( max )
-	{
-	}
+    IRuntimeLinkLibraryList( size_t max ) : MaxNum( max )
+    {
+    }
 
-	// GetIncludeFile may return 0, so you should iterate through to GetMaxNum() ignoring 0 returns
-	virtual const char* GetLinkLibrary( size_t Num_ ) const
-	{
-		return 0;
-	}
-	size_t MaxNum; // initialized in constructor below
+    // GetIncludeFile may return 0, so you should iterate through to GetMaxNum() ignoring 0 returns
+    virtual const char* GetLinkLibrary( size_t Num_ ) const
+    {
+        return 0;
+    }
+    size_t MaxNum; // initialized in constructor below
 };
 
 
@@ -48,58 +48,58 @@ namespace
 
 template< size_t COUNT > struct RuntimeLinkLibrary : public RuntimeLinkLibrary<COUNT-1>
 {
-	RuntimeLinkLibrary( size_t max ) : RuntimeLinkLibrary<COUNT-1>( max )
-	{
-	}
-	RuntimeLinkLibrary() : RuntimeLinkLibrary<COUNT-1>( COUNT )
-	{
-	}
+    RuntimeLinkLibrary( size_t max ) : RuntimeLinkLibrary<COUNT-1>( max )
+    {
+    }
+    RuntimeLinkLibrary() : RuntimeLinkLibrary<COUNT-1>( COUNT )
+    {
+    }
 
-	virtual const char* GetLinkLibrary( size_t Num_ ) const
-	{
-		if( Num_ < COUNT )
-		{
-			return this->RuntimeLinkLibrary< COUNT-1 >::GetLinkLibrary( Num_ );
-		}
-		else return 0;
-	}
+    virtual const char* GetLinkLibrary( size_t Num_ ) const
+    {
+        if( Num_ < COUNT )
+        {
+            return this->RuntimeLinkLibrary< COUNT-1 >::GetLinkLibrary( Num_ );
+        }
+        else return 0;
+    }
 };
 
 template<> struct RuntimeLinkLibrary<0> : public IRuntimeLinkLibraryList
 {
-	RuntimeLinkLibrary( size_t max ) : IRuntimeLinkLibraryList( max )
-	{
-	}
-	RuntimeLinkLibrary() : IRuntimeLinkLibraryList( 0 )
-	{
-	}
+    RuntimeLinkLibrary( size_t max ) : IRuntimeLinkLibraryList( max )
+    {
+    }
+    RuntimeLinkLibrary() : IRuntimeLinkLibraryList( 0 )
+    {
+    }
 
-	virtual const char* GetLinkLibrary( size_t Num_ ) const
-	{
-		return 0;
-	} 
+    virtual const char* GetLinkLibrary( size_t Num_ ) const
+    {
+        return 0;
+    } 
 };
 
 
 
 #define RUNTIME_COMPILER_LINKLIBRARY_BASE( LIBRARY, N ) \
-	template<> struct RuntimeLinkLibrary< N + 1 >  : public RuntimeLinkLibrary< N >\
-	{ \
-		RuntimeLinkLibrary( size_t max ) : RuntimeLinkLibrary<N>( max ) {} \
-		RuntimeLinkLibrary< N + 1 >() : RuntimeLinkLibrary<N>( N + 1 ) {} \
-		virtual const char* GetLinkLibrary( size_t Num_ ) const \
-		{ \
-			if( Num_ <= N ) \
-			{ \
-				if( Num_ == N ) \
-				{ \
-					return LIBRARY; \
-				} \
-				else return this->RuntimeLinkLibrary< N >::GetLinkLibrary( Num_ ); \
-			} \
-			else return 0; \
-		} \
-	}; \
+    template<> struct RuntimeLinkLibrary< N + 1 >  : public RuntimeLinkLibrary< N >\
+    { \
+        RuntimeLinkLibrary( size_t max ) : RuntimeLinkLibrary<N>( max ) {} \
+        RuntimeLinkLibrary< N + 1 >() : RuntimeLinkLibrary<N>( N + 1 ) {} \
+        virtual const char* GetLinkLibrary( size_t Num_ ) const \
+        { \
+            if( Num_ <= N ) \
+            { \
+                if( Num_ == N ) \
+                { \
+                    return LIBRARY; \
+                } \
+                else return this->RuntimeLinkLibrary< N >::GetLinkLibrary( Num_ ); \
+            } \
+            else return 0; \
+        } \
+    }; \
 
 
 #define RUNTIME_COMPILER_LINKLIBRARY( LIBRARY ) namespace { RUNTIME_COMPILER_LINKLIBRARY_BASE( LIBRARY, __COUNTER__ ) }

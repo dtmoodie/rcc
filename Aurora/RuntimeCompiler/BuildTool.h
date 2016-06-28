@@ -26,39 +26,39 @@
 class BuildTool
 {
 public:
-	BuildTool();
-	~BuildTool();
-	void Initialise( ICompilerLogger * pLogger );
+    BuildTool();
+    ~BuildTool();
+    void Initialise( ICompilerLogger * pLogger );
 
     // Clean - cleans up the intermediate files
     void Clean( const FileSystemUtils::Path& temporaryPath_ ) const;
 
-	struct FileToBuild
-	{
-		FileToBuild( const FileSystemUtils::Path& filePath_ )
-			: filePath( filePath_ )
-			, forceCompile( false )
-		{
-		}
-		FileToBuild( const FileSystemUtils::Path& filePath_, bool forceCompile_ )
-			: filePath( filePath_ )
-			, forceCompile( forceCompile_ )
-		{
-		}
-		FileSystemUtils::Path	filePath;
-		bool					forceCompile; //if true the file is compiled even if object file is present
-	};
+    struct FileToBuild
+    {
+        FileToBuild( const FileSystemUtils::Path& filePath_ )
+            : filePath( filePath_ )
+            , forceCompile( false )
+        {
+        }
+        FileToBuild( const FileSystemUtils::Path& filePath_, bool forceCompile_ )
+            : filePath( filePath_ )
+            , forceCompile( forceCompile_ )
+        {
+        }
+        FileSystemUtils::Path    filePath;
+        bool                    forceCompile; //if true the file is compiled even if object file is present
+    };
 
-	void BuildModule( const std::vector<FileToBuild>&		buildFileList_, 
-					  const CompilerOptions&				compilerOptions_,
-					  std::vector<FileSystemUtils::Path>	linkLibraryList_,
-                      const FileSystemUtils::Path&			moduleName_ );
+    void BuildModule( const std::vector<FileToBuild>&        buildFileList_, 
+                      const CompilerOptions&                compilerOptions_,
+                      std::vector<FileSystemUtils::Path>    linkLibraryList_,
+                      const FileSystemUtils::Path&            moduleName_ );
     bool AbortCompile();
 
-	bool GetIsComplete()
-	{
-		return m_Compiler.GetIsComplete();
-	}
+    bool GetIsComplete()
+    {
+        return m_Compiler.GetIsComplete();
+    }
 
     void SetFastCompileMode( bool bFast )
     {
@@ -67,7 +67,7 @@ public:
     
 
 private:
-	Compiler                    m_Compiler;
-	ICompilerLogger*            m_pLogger;
+    Compiler                    m_Compiler;
+    ICompilerLogger*            m_pLogger;
 };
 

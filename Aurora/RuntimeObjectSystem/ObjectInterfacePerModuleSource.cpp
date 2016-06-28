@@ -24,32 +24,32 @@ SystemTable* PerModuleInterface::g_pSystemTable = 0;
 
 extern "C" 
 #ifdef _WIN32
-	__declspec(dllexport)	//should create file with export import macros etc.
+    __declspec(dllexport)    //should create file with export import macros etc.
 #else
 __attribute__((visibility("default")))
 #endif
 IPerModuleInterface* GetPerModuleInterface()
 {
-	return PerModuleInterface::GetInstance();
+    return PerModuleInterface::GetInstance();
 }
 
 PerModuleInterface* PerModuleInterface::GetInstance()
 {
-	if( !ms_pObjectManager )
-	{
-		ms_pObjectManager = new PerModuleInterface;
-	}
-	return ms_pObjectManager;
+    if( !ms_pObjectManager )
+    {
+        ms_pObjectManager = new PerModuleInterface;
+    }
+    return ms_pObjectManager;
 }
 
 void PerModuleInterface::AddConstructor( IObjectConstructor* pConstructor )
 {
-	m_ObjectConstructors.push_back( pConstructor );
+    m_ObjectConstructors.push_back( pConstructor );
 }
 
 std::vector<IObjectConstructor*>& PerModuleInterface::GetConstructors()
 {
-	return m_ObjectConstructors;
+    return m_ObjectConstructors;
 }
 
 void PerModuleInterface::SetProjectIdForAllConstructors( unsigned short projectId_ )
@@ -63,21 +63,21 @@ void PerModuleInterface::SetProjectIdForAllConstructors( unsigned short projectI
 
 void PerModuleInterface::SetSystemTable( SystemTable* pSystemTable )
 {
-	g_pSystemTable = pSystemTable;
+    g_pSystemTable = pSystemTable;
 }
 
 PerModuleInterface::PerModuleInterface()
 {
-	//ensure this file gets compiled
-	AddRequiredSourceFiles( __FILE__ );
+    //ensure this file gets compiled
+    AddRequiredSourceFiles( __FILE__ );
 }
 
 const std::vector<const char*>& PerModuleInterface::GetRequiredSourceFiles() const
 {
-	return m_RequiredSourceFiles;
+    return m_RequiredSourceFiles;
 }
 
 void PerModuleInterface::AddRequiredSourceFiles( const char* file_ )
 {
-	m_RequiredSourceFiles.push_back( file_ );
+    m_RequiredSourceFiles.push_back( file_ );
 }

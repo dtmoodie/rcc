@@ -31,13 +31,13 @@
 // not being supported sufficiently as yet
 struct RuntimeProtector
 {
-	// consctructor, hint allow debug may be ignored when true if on an OS which has not had this implemented
+    // consctructor, hint allow debug may be ignored when true if on an OS which has not had this implemented
     RuntimeProtector()
-	    : m_bHashadException( false )
-	    , m_bHintAllowDebug( true )
+        : m_bHashadException( false )
+        , m_bHintAllowDebug( true )
         , m_ModulesLoadedCount( 0 )
 #ifndef _WIN32
-    	, m_pPrevious( 0 )
+        , m_pPrevious( 0 )
 #endif
     {
     }

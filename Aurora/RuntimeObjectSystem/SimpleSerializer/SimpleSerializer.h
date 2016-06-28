@@ -31,42 +31,42 @@ class SimpleSerializer : public ISimpleSerializer
 {
 public:
 
-	SimpleSerializer();
-	virtual ~SimpleSerializer();
+    SimpleSerializer();
+    virtual ~SimpleSerializer();
 
-	// ISimpleSerializer
+    // ISimpleSerializer
 
-	void Clear();
-	void Clear(ObjectId ownerId);
-	void Clear(ObjectId ownerId, const char* propertyName);
+    void Clear();
+    void Clear(ObjectId ownerId);
+    void Clear(ObjectId ownerId, const char* propertyName);
 
-	void Serialize( IObject* Object );
+    void Serialize( IObject* Object );
 
-	void SetISerializedValue(const char* propertyName, const ISerializedValue* pValue);
-	const ISerializedValue *GetISerializedValue(const char* propertyName) const;
-	virtual bool IsLoading() const
-	{
-		return m_bLoading;
-	}
-	void SetIsLoading( bool loading )
-	{
-		m_bLoading = loading;
-		m_pCurrentObject = 0;
-	}
+    void SetISerializedValue(const char* propertyName, const ISerializedValue* pValue);
+    const ISerializedValue *GetISerializedValue(const char* propertyName) const;
+    virtual bool IsLoading() const
+    {
+        return m_bLoading;
+    }
+    void SetIsLoading( bool loading )
+    {
+        m_bLoading = loading;
+        m_pCurrentObject = 0;
+    }
 
 
-	// ~ISimpleSerializer
+    // ~ISimpleSerializer
 
 private:
 
-	typedef std::map<std::string, const ISerializedValue*> TValueGroup;
-	typedef std::map<ObjectId, TValueGroup> TSerializationMap;
+    typedef std::map<std::string, const ISerializedValue*> TValueGroup;
+    typedef std::map<ObjectId, TValueGroup> TSerializationMap;
 
-	TSerializationMap			m_map;
-	int							m_numProperties;
-	bool						m_bLoading;
-	IObject*					m_pCurrentObject;
-	TSerializationMap::iterator m_CurrentSerialization;
+    TSerializationMap            m_map;
+    int                            m_numProperties;
+    bool                        m_bLoading;
+    IObject*                    m_pCurrentObject;
+    TSerializationMap::iterator m_CurrentSerialization;
 };
 
 

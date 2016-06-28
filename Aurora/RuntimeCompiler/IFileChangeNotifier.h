@@ -27,20 +27,20 @@ struct IFileChangeListener;
 
 struct IFileChangeNotifier
 {
-	virtual bool IsMonitoringActive() const = 0;
-	virtual void SetMonitoringActive( bool bActive ) = 0;
-	
-	virtual float GetMinTimeBetweenNotifications() const = 0;
-	virtual void SetMinTimeBetweenNotifications( float fMinTime ) = 0;
-	
-	// Delay to allow multiple file changes to accumulate before notifying listeners
-	virtual float GetChangeNotifyDelay() const = 0;
-	virtual void SetChangeNotifyDelay( float fDelay ) = 0;
+    virtual bool IsMonitoringActive() const = 0;
+    virtual void SetMonitoringActive( bool bActive ) = 0;
+    
+    virtual float GetMinTimeBetweenNotifications() const = 0;
+    virtual void SetMinTimeBetweenNotifications( float fMinTime ) = 0;
+    
+    // Delay to allow multiple file changes to accumulate before notifying listeners
+    virtual float GetChangeNotifyDelay() const = 0;
+    virtual void SetChangeNotifyDelay( float fDelay ) = 0;
 
-	virtual void Update( float fTimeDelta ) = 0;
-	virtual void Watch( const char *filename, IFileChangeListener *pListener ) = 0; // can be file or directory
+    virtual void Update( float fTimeDelta ) = 0;
+    virtual void Watch( const char *filename, IFileChangeListener *pListener ) = 0; // can be file or directory
 
-	virtual void RemoveListener( IFileChangeListener *pListener ) = 0;
+    virtual void RemoveListener( IFileChangeListener *pListener ) = 0;
     virtual ~IFileChangeNotifier() {}
 };
 
@@ -50,28 +50,28 @@ struct IFileChangeNotifier
 // Will not give expected results if the listener registers with multiple notifiers
 struct IFileChangeListener
 {
-	IFileChangeListener() : _registeredNotifier(0) {}
-	virtual ~IFileChangeListener()
-	{
-		if (_registeredNotifier)
-		{
-			_registeredNotifier->RemoveListener(this);
-		}
-	}
+    IFileChangeListener() : _registeredNotifier(0) {}
+    virtual ~IFileChangeListener()
+    {
+        if (_registeredNotifier)
+        {
+            _registeredNotifier->RemoveListener(this);
+        }
+    }
 
 
-	// Listener must make copies of strings if it wants to store them
-	virtual void OnFileChange( const IAUDynArray<const char*>& filelist ) = 0;
+    // Listener must make copies of strings if it wants to store them
+    virtual void OnFileChange( const IAUDynArray<const char*>& filelist ) = 0;
 
 
-	// Should be called by IFileChangeNotifier implementation only
-	void OnRegisteredWithNotifier( IFileChangeNotifier* pNotifier )
-	{
-		_registeredNotifier = pNotifier;
-	}
+    // Should be called by IFileChangeNotifier implementation only
+    void OnRegisteredWithNotifier( IFileChangeNotifier* pNotifier )
+    {
+        _registeredNotifier = pNotifier;
+    }
 
 private:
-	IFileChangeNotifier* _registeredNotifier;
+    IFileChangeNotifier* _registeredNotifier;
 };
 
 
