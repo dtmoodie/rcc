@@ -2,14 +2,8 @@
 #include <string>
 struct IObjectInfo
 {
-    enum ObjectInfoType
-    {
-        base = 0,
-        node = 1,
-        frame_grabber,
-        plotter
-    };
-    virtual int GetObjectInfoType() = 0;
+    virtual int GetInterfaceId() = 0;
+    // This is what actually gets displayed
     virtual std::string GetObjectName() = 0;
     virtual std::string GetObjectTooltip() = 0;
     virtual std::string GetObjectHelp() = 0;

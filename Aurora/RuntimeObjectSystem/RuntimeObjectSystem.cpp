@@ -144,7 +144,7 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             {
                 if (projectId < m_Projects.size())
                 {
-                    projectId = m_Projects.size();
+                    projectId = static_cast<unsigned short>(m_Projects.size());
                 }
             }
         }

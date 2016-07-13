@@ -98,7 +98,7 @@ public:
     }
     virtual int GetProjectCount()
     {
-        return m_Projects.size();
+        return static_cast<int>(m_Projects.size());
     }
 
     virtual void SetAutoCompile( bool autoCompile );

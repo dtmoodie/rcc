@@ -101,7 +101,7 @@ inline bool ISimpleSerializer::SerializeProperty(const char* propertyName, T& va
     {
         const SerializedValue<T>* pSv = new SerializedValue<T>(value);
         SetISerializedValue(propertyName, pSv);
-    }    
+    }
 
     return true;
 }

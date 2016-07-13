@@ -72,36 +72,37 @@ struct SourceDependencyInfo;
 
 struct IObjectConstructor
 {
-    virtual IObject* Construct() = 0;
-    virtual void ConstructNull() = 0;    //for use in object replacement, ensures a deleted object can be replaced
-    virtual const char* GetName() = 0;
-    virtual const char* GetFileName() = 0;
-    virtual const char* GetCompiledPath() = 0;
-    virtual size_t GetMaxNumIncludeFiles() const = 0;
-    virtual const char* GetIncludeFile( size_t Num_ ) const = 0;
-    virtual size_t GetMaxNumLinkLibraries() const = 0;
-    virtual const char* GetLinkLibrary( size_t Num_ ) const = 0;
-    virtual size_t GetMaxNumSourceDependencies() const = 0;
+    virtual                      ~IObjectConstructor() {}
+    virtual IObject*             Construct() = 0;
+    virtual void                 ConstructNull() = 0;    //for use in object replacement, ensures a deleted object can be replaced
+    virtual const char*          GetName() = 0;
+    virtual const char*          GetFileName() = 0;
+    virtual const char*          GetCompiledPath() = 0;
+    virtual size_t               GetMaxNumIncludeFiles() const = 0;
+    virtual const char*          GetIncludeFile( size_t Num_ ) const = 0;
+    virtual size_t               GetMaxNumLinkLibraries() const = 0;
+    virtual const char*          GetLinkLibrary( size_t Num_ ) const = 0;
+    virtual size_t               GetMaxNumSourceDependencies() const = 0;
     virtual SourceDependencyInfo GetSourceDependency( size_t Num_ ) const = 0;
-    virtual void SetProjectId( unsigned short projectId_ ) = 0;
-    virtual unsigned short GetProjectId() const = 0;
-    virtual IObjectInfo* GetObjectInfo() const = 0;
+    virtual void                 SetProjectId( unsigned short projectId_ ) = 0;
+    virtual unsigned short       GetProjectId() const = 0;
+    virtual IObjectInfo*         GetObjectInfo() const = 0;
 
     // Singleton functions
-    virtual bool        GetIsSingleton() const = 0;
-    virtual bool        GetIsAutoConstructSingleton() const = 0;
-    IObject*            GetSingleton()
+    virtual bool                 GetIsSingleton() const = 0;
+    virtual bool                 GetIsAutoConstructSingleton() const = 0;
+    IObject*                     GetSingleton()
     {
         return Construct();
     }
 
-    virtual IObject* GetConstructedObject( PerTypeObjectId num ) const = 0;    //should return 0 for last or deleted object
-    virtual size_t     GetNumberConstructedObjects() const = 0;
-    virtual ConstructorId GetConstructorId() const = 0;
-    virtual void SetConstructorId( ConstructorId id ) = 0;                    //take care how you use this - should only be used by id service
-    virtual void ClearIfAllDeleted() = 0;                                    //if there are no objects left then clear internal memory (does not reduce memory consumption)
-    virtual ~IObjectConstructor() {}
-    virtual int GetInterfaceId() const = 0;
+    virtual IObject*             GetConstructedObject( PerTypeObjectId num ) const = 0;    //should return 0 for last or deleted object
+    virtual size_t               GetNumberConstructedObjects() const = 0;
+    virtual ConstructorId        GetConstructorId() const = 0;
+    virtual void                 SetConstructorId( ConstructorId id ) = 0;                    //take care how you use this - should only be used by id service
+    virtual void                 ClearIfAllDeleted() = 0;                                    //if there are no objects left then clear internal memory (does not reduce memory consumption)
+    
+    virtual int                  GetInterfaceId() const = 0;
 };
 
 struct IPerModuleInterface
