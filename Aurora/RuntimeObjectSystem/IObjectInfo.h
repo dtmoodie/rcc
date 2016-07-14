@@ -7,4 +7,5 @@ struct IObjectInfo
     virtual std::string GetObjectName() = 0;
     virtual std::string GetObjectTooltip() = 0;
     virtual std::string GetObjectHelp() = 0;
+    virtual std::string Print() = 0;
 };

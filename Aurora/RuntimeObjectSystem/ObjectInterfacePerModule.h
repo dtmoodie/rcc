@@ -351,6 +351,7 @@ private:
 template<typename T> class TActual: public T
 {
 public:
+    typedef T BASE_CLASS;
     // overload new/delete to get alignment correct
 #ifdef _WIN32
     void* operator new(size_t size)
