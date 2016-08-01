@@ -23,9 +23,12 @@
 #include <vector>
 #include <stdlib.h>
 
+
 struct SystemTable; //This is the interface to your own engine code, which you need to define yourself if required.
 struct IObject;
 struct IObjectInfo;
+struct SourceDependencyInfo;
+struct IObjectSharedState;
 
 const size_t InvalidId = (size_t)-1;
 typedef size_t PerTypeObjectId;
@@ -68,12 +71,11 @@ struct ObjectId
     }
 };
 
-struct SourceDependencyInfo;
-
 struct IObjectConstructor
 {
     virtual                      ~IObjectConstructor() {}
     virtual IObject*             Construct() = 0;
+    virtual IObject*             Construct(IObjectSharedState* state) = 0;
     virtual void                 ConstructNull() = 0;    //for use in object replacement, ensures a deleted object can be replaced
     virtual const char*          GetName() = 0;
     virtual const char*          GetFileName() = 0;
@@ -97,12 +99,16 @@ struct IObjectConstructor
     }
 
     virtual IObject*             GetConstructedObject( PerTypeObjectId num ) const = 0;    //should return 0 for last or deleted object
+    virtual IObjectSharedState*  GetState( PerTypeObjectId num ) const = 0;
     virtual size_t               GetNumberConstructedObjects() const = 0;
     virtual ConstructorId        GetConstructorId() const = 0;
     virtual void                 SetConstructorId( ConstructorId id ) = 0;                    //take care how you use this - should only be used by id service
     virtual void                 ClearIfAllDeleted() = 0;                                    //if there are no objects left then clear internal memory (does not reduce memory consumption)
     
     virtual int                  GetInterfaceId() const = 0;
+protected:
+    friend struct IObjectSharedState;
+    virtual void                 DeRegister(PerTypeObjectId id) = 0;
 };
 
 struct IPerModuleInterface

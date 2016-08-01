@@ -102,9 +102,11 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
             for( PerTypeObjectId objId = 0; objId < pOldConstructor->GetNumberConstructedObjects(); ++ objId )
             {
                 // create new object
-                if( pOldConstructor->GetConstructedObject( objId ) )
+                
+                if(pOldConstructor->GetConstructedObject( objId ) )
                 {
-                    pConstructor->Construct();
+                    auto state = pOldConstructor->GetState(objId);
+                    pConstructor->Construct(state);
                 }
                 else
                 {

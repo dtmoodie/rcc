@@ -28,6 +28,8 @@
 #include <assert.h>
 #include <IObjectInfo.h>
 #include <boost/preprocessor.hpp>
+#include "IObjectState.hpp"
+#include "shared_ptr.hpp"
 
 #ifndef RCCPPOFF
     #define AU_ASSERT( statement )  do { if (!(statement)) { volatile int* p = 0; int a = *p; if(a) {} } } while(0)
@@ -78,12 +80,11 @@ private:
     }
 
 
-    static PerModuleInterface*            ms_pObjectManager;
+    static PerModuleInterface*          ms_pObjectManager;
     std::vector<IObjectConstructor*>    m_ObjectConstructors;
     std::vector<const char*>            m_RequiredSourceFiles;
     std::string                         m_ModuleFilename;
 };
-
 
 
 // ****************************************************************************************
@@ -131,7 +132,10 @@ public:
         T* pT = 0;
         if( m_bIsSingleton && m_ConstructedObjects.size() && m_ConstructedObjects[0] )
         {
-            return m_ConstructedObjects[0];
+            if(m_ConstructedObjects[0])
+            {
+                return m_ConstructedObjects[0]->GetObject();
+            }
         }
 
         if( m_FreeIds.empty() )
@@ -140,7 +144,7 @@ public:
 
             pT = new T();
             pT->SetPerTypeId( id );
-            m_ConstructedObjects.push_back( pT );
+            m_ConstructedObjects.push_back( new IObjectSharedState(pT, this) );
         }
         else
         {
@@ -148,11 +152,57 @@ public:
             m_FreeIds.pop_back();
             pT = new T();
             pT->SetPerTypeId( id );
-            AU_ASSERT( 0 == m_ConstructedObjects[ id ] );
-            m_ConstructedObjects[ id ] = pT;
-
+            if(m_ConstructedObjects[id])
+            {
+                AU_ASSERT(0 == m_ConstructedObjects[id]->GetObject());
+                m_ConstructedObjects[ id ]->object = pT;
+            }else
+            {
+                m_ConstructedObjects[ id ] = new IObjectSharedState(pT, this);
+            }
         }
         return pT;
+    }
+
+    virtual IObject* Construct(IObjectSharedState* state)
+    {
+        T* pT = 0;
+        if( m_bIsSingleton && m_ConstructedObjects.size() && m_ConstructedObjects[0] )
+        {
+            if(m_ConstructedObjects[0])
+            {
+                return m_ConstructedObjects[0]->GetObject();
+            }
+        }
+
+        if( m_FreeIds.empty() )
+        {
+            PerTypeObjectId id = m_ConstructedObjects.size();
+
+            pT = new T();
+            pT->SetPerTypeId( id );
+            state->SetObject(pT);
+            state->SetConstructor(this);
+            m_ConstructedObjects.push_back( state );
+        }
+        else
+        {
+            PerTypeObjectId id = m_FreeIds.back();
+            m_FreeIds.pop_back();
+            pT = new T();
+            pT->SetPerTypeId( id );
+            if(m_ConstructedObjects[id])
+            {
+                AU_ASSERT(0 == m_ConstructedObjects[id]->GetObject());
+                m_ConstructedObjects[ id ]->object = pT;
+            }else
+            {
+                state->SetObject(pT);
+                state->SetConstructor(this);
+                m_ConstructedObjects[ id ] = state;
+            }
+        }
+        return pT;    
     }
 
     virtual void ConstructNull()
@@ -283,13 +333,30 @@ public:
     {
         if( m_ConstructedObjects.size() > id )
         {
-            return m_ConstructedObjects[id];
+            if(m_ConstructedObjects[id])
+                return m_ConstructedObjects[id]->GetObject();
+        }
+        return 0;
+    }
+    virtual IObjectSharedState*  GetState( PerTypeObjectId num ) const
+    {
+        if( m_ConstructedObjects.size() > num )
+        {
+            return m_ConstructedObjects[num];
         }
         return 0;
     }
     virtual size_t     GetNumberConstructedObjects() const
     {
-        return m_ConstructedObjects.size();
+        size_t count = 0;
+        for(auto& obj : m_ConstructedObjects)
+        {
+            if(obj->GetObject())
+            {
+                ++count;
+            }
+        }
+        return count;
     }
     virtual ConstructorId GetConstructorId() const
     {
@@ -331,7 +398,7 @@ public:
 private:
     bool                            m_bIsSingleton;
     bool                            m_bIsAutoConstructSingleton;
-    std::vector<T*>                 m_ConstructedObjects;
+    std::vector<IObjectSharedState*>                 m_ConstructedObjects;
     std::vector<PerTypeObjectId>    m_FreeIds;
     ConstructorId                   m_Id;
     PerModuleInterface*             m_pModuleInterface;
@@ -378,7 +445,10 @@ public:
     }
 #endif //_WIN32
     friend class TObjectConstructorConcrete<TActual>;
-    virtual ~TActual() { m_Constructor.DeRegister( m_Id ); }
+    virtual ~TActual() 
+    {  
+        m_Constructor.GetState(m_Id)->SetObject(nullptr);
+    }
     virtual PerTypeObjectId GetPerTypeId() const { return m_Id; }
     virtual IObjectConstructor* GetConstructor() const { return &m_Constructor; }
     static const char* GetTypeNameStatic();
