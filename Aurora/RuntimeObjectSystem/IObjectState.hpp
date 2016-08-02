@@ -26,6 +26,8 @@ struct IObjectSharedState
     {
         return rcc::weak_ptr<T>(GetSharedPtr());
     }
+    int ObjectCount() const;
+    int StateCount() const;
 protected:
     friend struct IObject;
     friend struct IObjectConstructor;

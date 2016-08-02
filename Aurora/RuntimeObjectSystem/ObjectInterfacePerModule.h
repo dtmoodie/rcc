@@ -448,7 +448,10 @@ public:
     virtual ~TActual() 
     {  
         if(!IsRuntimeDelete())
-            m_Constructor.GetState(m_Id)->SetObject(nullptr);
+        {
+            if(auto state = m_Constructor.GetState(m_Id))
+                state->SetObject(nullptr);
+        }
     }
     virtual PerTypeObjectId GetPerTypeId() const { return m_Id; }
     virtual IObjectConstructor* GetConstructor() const { return &m_Constructor; }

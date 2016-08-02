@@ -198,13 +198,18 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
 
     m_ProtectedPhase = PHASE_DELETEOLD;
     //delete old objects which have been replaced
-    for( size_t i = 0; i < m_ConstructorsOld.size(); ++i )
+    for(auto pOldObject: old_objects)
+    {
+        pOldObject->_isRuntimeDelete = true;
+        delete pOldObject;
+    }
+    /*for( size_t i = 0; i < m_ConstructorsOld.size(); ++i )
     {
         if( m_ConstructorsOld[i] != constructorsNew[i] )
         {
             //TODO: could put a constructor around this.
             //constructor has been replaced
-            /*IObjectConstructor* pOldConstructor = m_ConstructorsOld[i];
+            IObjectConstructor* pOldConstructor = m_ConstructorsOld[i];
             size_t numObjects = pOldConstructor->GetNumberConstructedObjects();
             for( size_t j = 0; j < numObjects; ++j )
             {
@@ -216,14 +221,10 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
                 }
             }
             pOldConstructor->ClearIfAllDeleted();
-            assert( 0 == pOldConstructor->GetNumberConstructedObjects() );*/
-            for(auto pOldObject: old_objects)
-            {
-                pOldObject->_isRuntimeDelete = true;
-                delete pOldObject;
-            }
+            assert( 0 == pOldConstructor->GetNumberConstructedObjects() );
+            
         }
-    }
+    }*/
 }
 
 bool ObjectFactorySystem::HandleRedoUndo( const TConstructors& constructors )

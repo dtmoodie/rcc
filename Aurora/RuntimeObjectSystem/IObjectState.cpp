@@ -12,12 +12,12 @@ IObjectSharedState::IObjectSharedState(IObject* obj, IObjectConstructor* constru
 
 IObjectSharedState::~IObjectSharedState()
 {
-    constructor->DeRegister(id);
     if(object)
     {
         delete object;
         object = 0;
     }
+    constructor->DeRegister(id);
 }
 
 IObject* IObjectSharedState::GetObject()
@@ -70,4 +70,12 @@ void IObjectSharedState::SetObject(IObject* obj)
 void IObjectSharedState::SetConstructor(IObjectConstructor* constructor)
 {
     this->constructor = constructor;
+}
+int IObjectSharedState::ObjectCount() const
+{
+    return object_ref_count;
+}
+int IObjectSharedState::StateCount() const
+{
+    return state_ref_count;
 }

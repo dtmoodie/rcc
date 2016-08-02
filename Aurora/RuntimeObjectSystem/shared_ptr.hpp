@@ -11,6 +11,7 @@ namespace rcc
         {
         
         }
+
         shared_ptr(IObject* obj):
             obj_state(nullptr)
         {
@@ -21,6 +22,7 @@ namespace rcc
                 obj_state->IncrementState();
             }
         }
+
         shared_ptr(IObjectSharedState* state)
         {
             T* obj = dynamic_cast<T*>(state->GetObject());
@@ -31,16 +33,72 @@ namespace rcc
                 obj_state->IncrementState();
             }
         }
-        template<class U> shared_ptr(const shared_ptr<U>& other)
+
+        shared_ptr ( shared_ptr && other)
         {
-            if(dynamic_cast<T*>(other.obj_state->GetObject()))
+            this->obj_state = other.obj_state;
+            if(obj_state)
             {
-                obj_state = other.obj_state;
-                obj_state->IncrementObject();
                 obj_state->IncrementState();
+                obj_state->IncrementObject();
+            }
+        }
+
+        shared_ptr(const shared_ptr& other)
+        {
+            this->obj_state = other.obj_state;
+            if(obj_state)
+            {
+                obj_state->IncrementState();
+                obj_state->IncrementObject();
+            }
+        }
+
+        template<class U> shared_ptr(const shared_ptr<U>& other):
+            obj_state(nullptr)
+        {
+            if(other.obj_state)
+            {
+                if(dynamic_cast<T*>(other.obj_state->GetObject()))
+                {
+                    obj_state = other.obj_state;
+                    obj_state->IncrementObject();
+                    obj_state->IncrementState();
+                }else
+                {
+                    obj_state = nullptr;
+                }
+            }else
+            {
+                obj_state = nullptr;
             }
         }
         
+        ~shared_ptr()
+        {
+            if(obj_state)
+            {
+                obj_state->DecrementObject();
+                obj_state->DecrementState();
+            }
+        }
+
+        shared_ptr& operator=(const shared_ptr& other)
+        {
+            if(obj_state)
+            {
+                obj_state->DecrementObject();
+                obj_state->DecrementState();
+            }
+            obj_state = other.obj_state;
+            if(obj_state)
+            {
+                obj_state->IncrementObject();
+                obj_state->IncrementState();
+            }
+            return *this;
+        }
+
         template<class U> shared_ptr& operator=(const shared_ptr<U>& other)
         {
             if(obj_state)
@@ -55,23 +113,17 @@ namespace rcc
                 obj_state->IncrementState();
             }
         }
-
-        ~shared_ptr()
-        {
-            if(obj_state)
-            {
-                obj_state->DecrementObject();
-                obj_state->DecrementState();
-            }
-        }
+        
         T* Get()
         {
             return static_cast<T*>(obj_state->GetObject());
         }
+        
         T* operator->()
         {
             return Get();
         }
+        
         bool empty() const
         {
             if(obj_state)
@@ -80,6 +132,7 @@ namespace rcc
             }
             return false;
         }
+        
         template<class U> U* DynamicCast()
         {
             if(obj_state)
@@ -88,6 +141,7 @@ namespace rcc
             }
             return nullptr;
         }
+
         template<class U> U* StaticCast()
         {
             if(obj_state)
@@ -95,6 +149,16 @@ namespace rcc
                 return static_cast<T*>(obj_state->GetObject());
             }
             return nullptr;
+        }
+        
+        explicit operator T*()
+        {
+            return Get();
+        }
+
+        IObjectSharedState* GetState() const
+        {
+            return obj_state;
         }
     private:
         template<class T> friend class shared_ptr;
@@ -108,21 +172,51 @@ namespace rcc
         weak_ptr():
             obj_state(nullptr)
         {
-
         }
+        
+        weak_ptr ( weak_ptr && other)
+        {
+            this->obj_state = other.obj_state;
+            if(obj_state)
+                obj_state->IncrementState();
+        }
+        
         weak_ptr(T* obj)
         {
             obj_state = obj->GetConstructor()->GetState(obj->GetPerTypeId());
             obj_state->IncrementState();
         }
+        
         weak_ptr(IObjectSharedState* state)
         {
             if(dynamic_cast<T*>(state->GetObject()))
             {
                 obj_state = state;
                 obj_state->IncrementState();
+            }else
+            {
+                obj_state = nullptr;
             }
         }
+
+        template<class U> weak_ptr(const shared_ptr<U>& other)
+        {
+            if(other.obj_state)
+            {
+                if(dynamic_cast<T*>(other.obj_state->GetObject()))
+                {
+                    obj_state = other.obj_state;
+                    obj_state->IncrementState();
+                }else
+                {
+                    obj_state = nullptr;
+                }
+            }else
+            {
+                obj_state = nullptr;
+            }
+        }
+
         template<class U> weak_ptr(const weak_ptr<U>& other)
         {
             if(other.obj_state)
@@ -139,6 +233,34 @@ namespace rcc
             {
                 obj_state = nullptr;
             }
+        }
+
+        weak_ptr & operator= ( weak_ptr && other)
+        {
+            if(obj_state)
+            {
+                obj_state->DecrementState();
+            }
+            obj_state = other.obj_state;
+            if(obj_state)
+            {
+                obj_state->IncrementState();
+            }
+            return *this;
+        }
+
+        weak_ptr& operator=(const weak_ptr& other)
+        {
+            if(obj_state)
+            {
+                obj_state->DecrementState();
+            }
+            obj_state = other.obj_state;
+            if(obj_state)
+            {
+                obj_state->IncrementState();
+            }
+            return *this;
         }
 
         template<class U> weak_ptr& operator=(const weak_ptr<U>& other)
@@ -172,14 +294,17 @@ namespace rcc
                 obj_state->DecrementState();
             }
         }
+
         T* Get()
         {
             return static_cast<T*>(obj_state->GetObject());
         }
+
         T* operator->()
         {
             return Get();
         }
+
         bool empty() const
         {
             if(obj_state)
@@ -188,6 +313,7 @@ namespace rcc
             }
             return false;
         }
+
         template<class U> U* DynamicCast()
         {
             if(obj_state)
@@ -196,6 +322,7 @@ namespace rcc
             }
             return nullptr;
         }
+
         template<class U> U* StaticCast()
         {
             if(obj_state)
@@ -204,10 +331,22 @@ namespace rcc
             }
             return nullptr;
         }
+
         shared_ptr<T> lock()
         {
             return shared_ptr<T>(obj_state);
         }
+
+        explicit operator T*()
+        {
+            return Get();
+        }
+
+        IObjectSharedState* GetState() const
+        {
+            return obj_state;
+        }
+
     private:
         IObjectSharedState* obj_state;
     };
