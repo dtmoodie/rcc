@@ -79,7 +79,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
 
     m_ProtectedPhase = PHASE_CONSTRUCTNEW;
     TConstructors& constructorsNew = m_pObjectFactorySystem->m_Constructors;
-    std::vector<IObject*> constructedObjects;
+    std::vector<IObject*> old_objects;
     //swap old constructors with new ones and create new objects
     for( size_t i = 0; i < m_ConstructorsToAdd.size(); ++i )
     {
@@ -103,8 +103,9 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
             {
                 // create new object
                 
-                if(pOldConstructor->GetConstructedObject( objId ) )
+                if(IObject* old_object = pOldConstructor->GetConstructedObject( objId ) )
                 {
+                    old_objects.push_back(old_object);
                     auto state = pOldConstructor->GetState(objId);
                     pConstructor->Construct(state);
                 }
@@ -184,7 +185,6 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
             {
                 // if a singleton was newly constructed in earlier phase, pass true to init.
                 pObject->Init( bSingletonConstructed[i] );
-                constructedObjects.push_back(pObject);
                 if( m_bTestSerialization && ( m_ConstructorsOld.size() <= i || m_ConstructorsOld[ i ] != constructorsNew[ i ] ) )
                 {
                     //test serialize out for all new objects, we assume old objects are OK.
@@ -204,7 +204,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
         {
             //TODO: could put a constructor around this.
             //constructor has been replaced
-            IObjectConstructor* pOldConstructor = m_ConstructorsOld[i];
+            /*IObjectConstructor* pOldConstructor = m_ConstructorsOld[i];
             size_t numObjects = pOldConstructor->GetNumberConstructedObjects();
             for( size_t j = 0; j < numObjects; ++j )
             {
@@ -216,7 +216,12 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
                 }
             }
             pOldConstructor->ClearIfAllDeleted();
-            assert( 0 == pOldConstructor->GetNumberConstructedObjects() );
+            assert( 0 == pOldConstructor->GetNumberConstructedObjects() );*/
+            for(auto pOldObject: old_objects)
+            {
+                pOldObject->_isRuntimeDelete = true;
+                delete pOldObject;
+            }
         }
     }
 }

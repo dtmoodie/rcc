@@ -11,6 +11,16 @@ namespace rcc
         {
         
         }
+        shared_ptr(IObject* obj):
+            obj_state(nullptr)
+        {
+            if(dynamic_cast<T*>(obj))
+            {
+                obj_state = obj->GetConstructor()->GetState(obj->GetPerTypeId());
+                obj_state->IncrementObject();
+                obj_state->IncrementState();
+            }
+        }
         shared_ptr(IObjectSharedState* state)
         {
             T* obj = dynamic_cast<T*>(state->GetObject());
@@ -30,7 +40,7 @@ namespace rcc
                 obj_state->IncrementState();
             }
         }
-
+        
         template<class U> shared_ptr& operator=(const shared_ptr<U>& other)
         {
             if(obj_state)
@@ -99,6 +109,11 @@ namespace rcc
             obj_state(nullptr)
         {
 
+        }
+        weak_ptr(T* obj)
+        {
+            obj_state = obj->GetConstructor()->GetState(obj->GetPerTypeId());
+            obj_state->IncrementState();
         }
         weak_ptr(IObjectSharedState* state)
         {
@@ -188,6 +203,10 @@ namespace rcc
                 return static_cast<T*>(obj_state->GetObject());
             }
             return nullptr;
+        }
+        shared_ptr<T> lock()
+        {
+            return shared_ptr<T>(obj_state);
         }
     private:
         IObjectSharedState* obj_state;

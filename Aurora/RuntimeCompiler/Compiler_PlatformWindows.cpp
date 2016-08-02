@@ -378,7 +378,7 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&    filesToCo
         {
             linkOptions = " /link ";
         }
-        linkOptions += "/DEBUG:FASTLINK ";
+        linkOptions += " /DEBUG:FASTLINK ";
     }
 
     // Check for intermediate directory, create it if required

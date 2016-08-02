@@ -447,7 +447,8 @@ public:
     friend class TObjectConstructorConcrete<TActual>;
     virtual ~TActual() 
     {  
-        m_Constructor.GetState(m_Id)->SetObject(nullptr);
+        if(!IsRuntimeDelete())
+            m_Constructor.GetState(m_Id)->SetObject(nullptr);
     }
     virtual PerTypeObjectId GetPerTypeId() const { return m_Id; }
     virtual IObjectConstructor* GetConstructor() const { return &m_Constructor; }

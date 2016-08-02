@@ -43,6 +43,21 @@ using FileSystemUtils::Path;
 
 FileSystemUtils::Path RuntimeObjectSystem::ProjectSettings::ms_DefaultIntermediatePath;
 
+static IRuntimeObjectSystem* g_instance = nullptr;
+
+void IRuntimeObjectSystem::SetInstance(IRuntimeObjectSystem* system)
+{
+    g_instance = system;
+}
+IRuntimeObjectSystem* IRuntimeObjectSystem::Instance()
+{
+    if(g_instance == nullptr)
+    {
+        g_instance = new RuntimeObjectSystem();
+    }
+    return g_instance;
+}
+
 static Path GetIntermediateFolder( Path basePath_, RCppOptimizationLevel optimizationLevel_ )
 {
     std::string folder;
@@ -156,7 +171,8 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             ss << line;
             while (std::getline(ss, token, ';'))
             {
-                AddIncludeDir(token.c_str(), projectId);
+                if(token.size())
+                    AddIncludeDir(token.c_str(), projectId);
             }
         }
         {
@@ -171,7 +187,8 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             ss << line;
             while (std::getline(ss, token, ';'))
             {
-                AddLibraryDir(token.c_str(), projectId);
+                if(token.size())
+                    AddLibraryDir(token.c_str(), projectId);
             }
 #ifdef _DEBUG
             std::getline(config_file, line); // Read the release line and discard
@@ -185,7 +202,8 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             ss << line;
             while (std::getline(ss, token, ';'))
             {
-                AppendAdditionalCompileOptions(token.c_str(), projectId);
+                if(token.size())
+                    AppendAdditionalCompileOptions(token.c_str(), projectId);
             }
         }
     }
