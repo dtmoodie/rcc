@@ -183,8 +183,14 @@ namespace rcc
         
         weak_ptr(T* obj)
         {
-            obj_state = obj->GetConstructor()->GetState(obj->GetPerTypeId());
-            obj_state->IncrementState();
+            if(obj)
+            {
+                obj_state = obj->GetConstructor()->GetState(obj->GetPerTypeId());
+                obj_state->IncrementState();
+            }else
+            {
+                obj_state = nullptr;
+            }
         }
         
         weak_ptr(IObjectSharedState* state)
