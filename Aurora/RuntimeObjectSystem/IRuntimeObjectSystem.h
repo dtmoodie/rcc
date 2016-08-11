@@ -68,8 +68,8 @@ namespace FileSystemUtils
 
 struct IRuntimeObjectSystem : public ITestBuildNotifier
 {
-    static void SetInstance(IRuntimeObjectSystem* system);
-    static IRuntimeObjectSystem* Instance();
+    //static void SetInstance(IRuntimeObjectSystem* system);
+    //static IRuntimeObjectSystem* Instance();
 
     // Initialise RuntimeObjectSystem. pLogger and pSystemTable should be deleted by creator. 
     // Both pLogger and pSystemTable can be 0

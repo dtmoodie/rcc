@@ -43,20 +43,6 @@ using FileSystemUtils::Path;
 
 FileSystemUtils::Path RuntimeObjectSystem::ProjectSettings::ms_DefaultIntermediatePath;
 
-static IRuntimeObjectSystem* g_instance = nullptr;
-
-void IRuntimeObjectSystem::SetInstance(IRuntimeObjectSystem* system)
-{
-    g_instance = system;
-}
-IRuntimeObjectSystem* IRuntimeObjectSystem::Instance()
-{
-    if(g_instance == nullptr)
-    {
-        g_instance = new RuntimeObjectSystem();
-    }
-    return g_instance;
-}
 
 static Path GetIntermediateFolder( Path basePath_, RCppOptimizationLevel optimizationLevel_ )
 {
