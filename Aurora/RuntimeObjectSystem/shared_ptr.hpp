@@ -1,5 +1,6 @@
 #pragma once
 struct IObjectSharedState;
+struct IObject;
 namespace rcc
 {
     template<class T> class weak_ptr;
@@ -118,11 +119,20 @@ namespace rcc
         {
             return static_cast<T*>(obj_state->GetObject());
         }
+		const T* Get() const
+		{
+			return static_cast<T*>(obj_state->GetObject());
+		}
         
         T* operator->()
         {
             return Get();
         }
+
+		const T* operator->() const
+		{
+			return Get();
+		}
         
         bool empty() const
         {
@@ -137,10 +147,15 @@ namespace rcc
         {
             if(obj_state)
             {
-                return dynamic_cast<T*>(obj_state->GetObject());
+                return dynamic_cast<U*>(obj_state->GetObject());
             }
             return nullptr;
         }
+
+		operator bool() const
+		{
+			return !empty();
+		}
 
         template<class U> U* StaticCast()
         {
