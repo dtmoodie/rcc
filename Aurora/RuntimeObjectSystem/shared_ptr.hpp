@@ -83,6 +83,23 @@ namespace rcc
                 obj_state->DecrementState();
             }
         }
+        void reset(IObject* obj = nullptr)
+        {
+            if(obj_state)
+            {
+                obj_state->DecrementObject();
+                obj_state->DecrementState();
+            }
+            if(obj)
+            {
+                obj_state = obj->GetConstructor()->GetState(obj->GetPerTypeId());
+                obj_state->IncrementObject();
+                obj_state->IncrementState();
+            }else
+            {
+                obj_state = nullptr;
+            }
+        }
 
         shared_ptr& operator=(const shared_ptr& other)
         {
@@ -157,6 +174,31 @@ namespace rcc
 			return !empty();
 		}
 
+        bool operator==(T* p)
+        {
+            if(obj_state)
+            {
+                return obj_state->GetObject() == p;
+            }
+            return false;
+        }
+        bool operator != (T* p)
+        {
+            if(obj_state)
+            {
+                return obj_state->GetObject() != p;
+            }
+            return true;
+        }
+        bool operator == (shared_ptr const & r)
+        {
+            return r.obj_state == obj_state;
+        }
+        bool operator != (shared_ptr const& r)
+        {
+            return r.obj_state != obj_state;
+        }
+        
         template<class U> U* StaticCast()
         {
             if(obj_state)
@@ -193,6 +235,13 @@ namespace rcc
         {
             this->obj_state = other.obj_state;
             if(obj_state)
+                obj_state->IncrementState();
+        }
+
+        weak_ptr(const weak_ptr & other)
+        {
+            this->obj_state = other.obj_state;
+            if (obj_state)
                 obj_state->IncrementState();
         }
         
