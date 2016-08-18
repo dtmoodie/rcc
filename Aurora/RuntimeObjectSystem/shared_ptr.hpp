@@ -1,4 +1,5 @@
 #pragma once
+
 struct IObjectSharedState;
 struct IObject;
 namespace rcc
@@ -415,6 +416,34 @@ namespace rcc
         IObjectSharedState* GetState() const
         {
             return obj_state;
+        }
+        bool operator==(T* p)
+        {
+            if(obj_state)
+            {
+                return obj_state->GetObject() == p;
+            }
+            return false;
+        }
+        bool operator != (T* p)
+        {
+            if(obj_state)
+            {
+                return obj_state->GetObject() != p;
+            }
+            return true;
+        }
+        bool operator == (weak_ptr const & r)
+        {
+            return r.obj_state == obj_state;
+        }
+        bool operator != (weak_ptr const& r)
+        {
+            return r.obj_state != obj_state;
+        }
+        operator bool() const
+        {
+            return !empty();
         }
 
     private:
