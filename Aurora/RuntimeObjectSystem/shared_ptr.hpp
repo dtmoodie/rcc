@@ -8,6 +8,10 @@ namespace rcc
     template<class T> class shared_ptr
     {
     public:
+        static shared_ptr Create()
+        {
+            return T::Create();
+        }
         shared_ptr():
             obj_state(nullptr)
         {
