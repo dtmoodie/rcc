@@ -8,6 +8,7 @@ namespace rcc
     template<class T> class shared_ptr
     {
     public:
+        typedef T element_type;
         static shared_ptr Create()
         {
             return T::Create();
