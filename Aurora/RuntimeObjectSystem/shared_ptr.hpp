@@ -49,7 +49,16 @@ namespace rcc
                 obj_state->IncrementObject();
             }
         }
-
+        
+        shared_ptr(const weak_ptr<T>& other)
+        {
+            this->obj_state = other.obj_state;
+            if(obj_state)
+            {
+                obj_state->IncrementObject();
+                obj_state->IncrementState();
+            }
+        }
         shared_ptr(const shared_ptr& other)
         {
             this->obj_state = other.obj_state;
@@ -451,6 +460,7 @@ namespace rcc
         }
 
     private:
+        template<class T> friend class shared_ptr;
         IObjectSharedState* obj_state;
     };
 }
