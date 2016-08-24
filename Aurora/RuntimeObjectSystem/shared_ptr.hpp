@@ -149,11 +149,15 @@ namespace rcc
         
         T* Get()
         {
-            return static_cast<T*>(obj_state->GetObject());
+            if(obj_state)
+                return static_cast<T*>(obj_state->GetObject());
+            return nullptr;
         }
 		const T* Get() const
 		{
-			return static_cast<T*>(obj_state->GetObject());
+            if(obj_state)
+			    return static_cast<T*>(obj_state->GetObject());
+            return nullptr;
 		}
         
         T* operator->()
@@ -195,6 +199,8 @@ namespace rcc
             {
                 return obj_state->GetObject() == p;
             }
+            if(p == nullptr && obj_state == nullptr)
+                return true;
             return false;
         }
         bool operator != (T* p)
@@ -382,7 +388,15 @@ namespace rcc
 
         T* Get()
         {
-            return static_cast<T*>(obj_state->GetObject());
+            if(obj_state)
+                return static_cast<T*>(obj_state->GetObject());
+            return nullptr;
+        }
+        const T* Get() const
+        {
+            if(obj_state)
+                return static_cast<T*>(obj_state->GetObject());
+            return nullptr;
         }
 
         T* operator->()
@@ -445,6 +459,8 @@ namespace rcc
             {
                 return obj_state->GetObject() != p;
             }
+            if(p == nullptr && obj_state == nullptr)
+                return true;
             return true;
         }
         bool operator == (weak_ptr const & r)
