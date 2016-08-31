@@ -1,5 +1,6 @@
 #include "IObjectState.hpp"
 #include "IObject.h"
+#include "shared_ptr.hpp"
 
 IObjectSharedState::IObjectSharedState(IObject* obj, IObjectConstructor* constructor)
 {

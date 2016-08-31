@@ -437,6 +437,7 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&    filesToCo
         strLinkLibraries += " \"" + linkLibraryList_[i].m_string + "\" ";
     }
     
+    
 
 
 
@@ -463,7 +464,7 @@ char* pCharTypeFlags = "";
         {
             ss << ",\\\"" << flag << "\\\"";
         }
-        ss << " -std=c++11";
+        //ss << " -std=c++11";
 #ifdef _DEBUG
         ss << " -g -G -lineinfo";
 #endif

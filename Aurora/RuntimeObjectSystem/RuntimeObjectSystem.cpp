@@ -132,6 +132,10 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
     config_file.open(file);
     if (!config_file.is_open())
     {
+        if(m_pCompilerLogger)
+        {
+            m_pCompilerLogger->LogDebug("Unable to load file %s", file);
+        }
         return -1;
     }
     unsigned short projectId = 0;
@@ -159,6 +163,10 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             {
                 if(token.size())
                     AddIncludeDir(token.c_str(), projectId);
+                if(m_pCompilerLogger)
+                {
+                    m_pCompilerLogger->LogDebug("Adding include dir: %s", token.c_str());
+                }
             }
         }
         {
@@ -174,7 +182,13 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             while (std::getline(ss, token, ';'))
             {
                 if(token.size())
+                {
                     AddLibraryDir(token.c_str(), projectId);
+                    if(m_pCompilerLogger)
+                    {
+                        m_pCompilerLogger->LogDebug("Adding link dir: %s", token.c_str());
+                    }
+                }
             }
 #ifdef _DEBUG
             std::getline(config_file, line); // Read the release line and discard
@@ -189,7 +203,14 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             while (std::getline(ss, token, ';'))
             {
                 if(token.size())
+                {
                     AppendAdditionalCompileOptions(token.c_str(), projectId);
+                    if(m_pCompilerLogger)
+                    {
+                        m_pCompilerLogger->LogDebug("Adding compile option: %s", token.c_str());
+                    }
+                }
+                    
             }
         }
     }

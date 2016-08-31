@@ -1,12 +1,15 @@
 #pragma once
 #include "ObjectInterface.h"
-#include "shared_ptr.hpp"
-
-
 struct IObject;
 struct IObjectConstructor;
 template<class T> class TObjectConstructorConcrete;
 template<class T> class TActual;
+namespace rcc
+{
+    template<class T> class shared_ptr;
+    template<class T> class weak_ptr;
+}
+
 struct IObjectSharedState
 {
     IObjectSharedState(IObject* obj, IObjectConstructor* constructor);
@@ -18,14 +21,6 @@ struct IObjectSharedState
     void IncrementState();
     void DecrementObject();
     void DecrementState();
-    template<class T> rcc::shared_ptr<T> GetSharedPtr()
-    {
-        return rcc::shared_ptr<T>(GetSharedPtr());
-    }
-    template<class T> rcc::weak_ptr<T> GetWeakPtr()
-    {
-        return rcc::weak_ptr<T>(GetSharedPtr());
-    }
     int ObjectCount() const;
     int StateCount() const;
 protected:

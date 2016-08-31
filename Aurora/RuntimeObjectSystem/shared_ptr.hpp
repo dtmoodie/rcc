@@ -1,5 +1,5 @@
 #pragma once
-
+#include "IObjectState.hpp"
 struct IObjectSharedState;
 struct IObject;
 namespace rcc
@@ -145,6 +145,7 @@ namespace rcc
                 obj_state->IncrementObject();
                 obj_state->IncrementState();
             }
+            return *this;
         }
         
         T* Get()
