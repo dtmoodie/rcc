@@ -2,6 +2,11 @@
 #include "IObject.h"
 #include "shared_ptr.hpp"
 
+IObjectSharedState* IObjectSharedState::Get(IObject* obj)
+{
+    return obj->GetConstructor()->GetState(obj->GetPerTypeId());
+}
+
 IObjectSharedState::IObjectSharedState(IObject* obj, IObjectConstructor* constructor)
 {
     object_ref_count = 0;

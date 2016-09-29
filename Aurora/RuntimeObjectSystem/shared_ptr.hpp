@@ -1,7 +1,6 @@
 #pragma once
 #include "IObjectState.hpp"
-struct IObjectSharedState;
-struct IObject;
+
 namespace rcc
 {
     template<class T> class weak_ptr;
@@ -24,7 +23,7 @@ namespace rcc
         {
             if(dynamic_cast<T*>(obj))
             {
-                obj_state = obj->GetConstructor()->GetState(obj->GetPerTypeId());
+                obj_state = IObjectSharedState::Get(obj);
                 obj_state->IncrementObject();
                 obj_state->IncrementState();
             }
@@ -98,7 +97,7 @@ namespace rcc
                 obj_state->DecrementState();
             }
         }
-        void reset(IObject* obj = nullptr)
+        void reset(IObject* obj = NULL)
         {
             if(obj_state)
             {
@@ -107,7 +106,7 @@ namespace rcc
             }
             if(obj)
             {
-                obj_state = obj->GetConstructor()->GetState(obj->GetPerTypeId());
+                obj_state = IObjectSharedState::Get(obj);
                 obj_state->IncrementObject();
                 obj_state->IncrementState();
             }else
@@ -240,8 +239,8 @@ namespace rcc
             return obj_state;
         }
     private:
-        template<class T> friend class shared_ptr;
-        template<class T> friend class weak_ptr;
+        template<class U> friend class shared_ptr;
+        template<class U> friend class weak_ptr;
         IObjectSharedState* obj_state;
     };
 
@@ -478,7 +477,7 @@ namespace rcc
         }
 
     private:
-        template<class T> friend class shared_ptr;
+        template<class U> friend class shared_ptr;
         IObjectSharedState* obj_state;
     };
 }

@@ -447,7 +447,7 @@ public:
     friend class TObjectConstructorConcrete<TActual>;
     virtual ~TActual() 
     {  
-        if(!IsRuntimeDelete())
+        if(!T::IsRuntimeDelete())
         {
             if(auto state = m_Constructor.GetState(m_Id))
                 state->SetObject(nullptr);
@@ -458,7 +458,7 @@ public:
     static const char* GetTypeNameStatic();
     virtual const char* GetTypeName() const
     {
-            return GetTypeNameStatic();
+        return GetTypeNameStatic();
     }
 private:
     void SetPerTypeId( PerTypeObjectId id ) { m_Id = id; }

@@ -12,6 +12,7 @@ namespace rcc
 
 struct IObjectSharedState
 {
+    static IObjectSharedState* Get(IObject* obj);
     IObjectSharedState(IObject* obj, IObjectConstructor* constructor);
     ~IObjectSharedState();
     IObject* GetObject();
