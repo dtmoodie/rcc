@@ -82,7 +82,7 @@ include_directories(${IObject_INCLUDE})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem)
 
-FIND_PACKAGE(CUDA)
+FIND_PACKAGE(CUDA QUIET)
 message(STATUS 
 "RCC config:
   IObject include dir: ${IObject_INCLUDE}
