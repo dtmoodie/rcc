@@ -210,9 +210,17 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
                         m_pCompilerLogger->LogDebug("Adding compile option: %s", token.c_str());
                     }
                 }
-                    
             }
         }
+        {
+            std::stringstream ss;
+            std::string line;
+            if(std::getline(config_file, line))
+            {
+                SetCompilerLocation(line.c_str(), projectId);
+            }
+        }
+
     }
     return projectId;
 }
@@ -490,7 +498,14 @@ bool RuntimeObjectSystem::LoadCompiledModule()
 
     if (!module)
     {
-        if (m_pCompilerLogger) { m_pCompilerLogger->LogError( "Failed to load module %s\n",m_CurrentlyCompilingModuleName.c_str()); }
+        if (m_pCompilerLogger)
+        {
+            m_pCompilerLogger->LogError( "Failed to load module %s\n",m_CurrentlyCompilingModuleName.c_str());
+#ifndef _WIN32
+            m_pCompilerLogger->LogError( "Message %s", dlerror());
+#endif
+        }
+
         return false;
     }
 

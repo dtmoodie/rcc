@@ -200,7 +200,11 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
 #ifdef NVCC_PATH
     std::string compileString = compilerLocation + " " + "-g --compiler-options '-fPIC -fvisibility=hidden -shared' ";
 #else
+#if __cplusplus > 201100L
+    std::string compileString = compilerLocation + " " + "-g --std=c++11 -fPIC -fvisibility=hidden -shared ";
+#else
 	std::string compileString = compilerLocation + " " + "-g -fPIC -fvisibility=hidden -shared ";
+#endif
 #endif
 
 #ifndef __LP64__
