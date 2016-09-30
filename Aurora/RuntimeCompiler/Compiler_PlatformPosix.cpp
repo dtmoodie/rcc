@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <set>
 
 #include <fstream>
 #include <sstream>
@@ -136,16 +137,21 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     const char* pLinkOptions = compilerOptions_.linkOptions.c_str();
 
     std::string compilerLocation = compilerOptions_.compilerLocation.m_string;
+    std::string nvccCompiler;
     if (compilerLocation.size()==0){
-#ifndef NVCC_PATH
 #ifdef __clang__
         compilerLocation = "clang++ ";
 #else // default to g++
         compilerLocation = "g++ ";
 #endif //__clang__
-#else
-      compilerLocation = NVCC_PATH;
-#endif
+    }else
+    {
+        std::string::size_type pos = compilerLocation.find(';');
+        if(pos != std::string::npos) // found the delimiter
+        {
+            nvccCompiler = compilerLocation.substr(pos + 1);
+            compilerLocation = compilerLocation.substr(0, pos);
+        }
     }
 
     //NOTE: Currently doesn't check if a prior compile is ongoing or not, which could lead to memory leaks
@@ -197,15 +203,22 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     m_pImplData->m_PipeStdOut[0] = 0;
     close( m_pImplData->m_PipeStdErr[0] );
     m_pImplData->m_PipeStdErr[0] = 0;
-#ifdef NVCC_PATH
-    std::string compileString = compilerLocation + " " + "-g --compiler-options '-fPIC -fvisibility=hidden -shared' ";
-#else
+    std::string compileString;
+    if(nvccCompiler.size())
+    {
 #if __cplusplus > 201100L
-    std::string compileString = compilerLocation + " " + "-g --std=c++11 -fPIC -fvisibility=hidden -shared ";
+        compileString = nvccCompiler + " -ccbin " + compilerLocation + " --std=c++11 -g --compiler-options '-fPIC -fvisibility=hidden -shared' ";
 #else
-	std::string compileString = compilerLocation + " " + "-g -fPIC -fvisibility=hidden -shared ";
+        compileString = nvccCompiler + " -ccbin " + compilerLocation + " -g --compiler-options '-fPIC -fvisibility=hidden -shared' ";
 #endif
+    }else
+    {
+#if __cplusplus > 201100L
+    compileString = compilerLocation + " -g --std=c++11 -fPIC -fvisibility=hidden -shared ";
+#else
+    compileString = compilerLocation + " " + "-g -fPIC -fvisibility=hidden -shared ";
 #endif
+    }
 
 #ifndef __LP64__
 	compileString += "-m32 ";
@@ -220,11 +233,10 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
 		compileString += "-O0 ";
 		break;
 	case RCCPPOPTIMIZATIONLEVEL_PERF:
-#ifdef NVCC_PATH
-        compileString += "-O2 ";
-#else
-		compileString += "-Os ";
-#endif
+        if(nvccCompiler.size())
+            compileString += "-O2 ";
+        else
+            compileString += "-Os ";
 		break;
 	case RCCPPOPTIMIZATIONLEVEL_NOT_SET:;
 
@@ -247,25 +259,31 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
 	if( compilerOptions_.intermediatePath.Exists() )
 	{
 		// add save object files
-        compileString = "cd \"" + compilerOptions_.intermediatePath.m_string + "\"\n" + compileString + " --save-temps ";
+        compileString = "cd \"" + compilerOptions_.intermediatePath.m_string + "\"\n" + compileString + " ";
 		output = compilerOptions_.intermediatePath / "a.out";
 		bCopyOutput = true;
 	}
 	
 	
     // include directories
+    std::set<std::string> uniqueIncludes;
+
     for( size_t i = 0; i < includeDirList.size(); ++i )
 	{
-        compileString += "-I\"" + includeDirList[i].m_string + "\" ";
+        uniqueIncludes.insert(includeDirList[i].m_string);
+        //compileString += "-I\"" + includeDirList[i].m_string + "\" ";
+    }
+    for(std::set<std::string>::const_iterator it = uniqueIncludes.cbegin(); it != uniqueIncludes.cend(); ++it)
+    {
+        compileString += "-I\"" + *it + "\" ";
     }
     
     // library and framework directories
     for( size_t i = 0; i < libraryDirList.size(); ++i )
-	{
+    {
         compileString += "-L\"" + libraryDirList[i].m_string + "\" ";
-#ifndef NVCC_PATH
-        compileString += "-F\"" + libraryDirList[i].m_string + "\" ";
-#endif
+        if(nvccCompiler.empty())
+            compileString += "-F\"" + libraryDirList[i].m_string + "\" ";
     }
     
 	if( !bCopyOutput )
@@ -282,9 +300,8 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
 	}
 	if( pLinkOptions && strlen(pLinkOptions) )
 	{
-#ifndef NVCC_PATH
-		compileString += "-Wl,";
-#endif
+        if(nvccCompiler.empty())
+            compileString += "-Wl,";
 		compileString += pLinkOptions;
 		compileString += " ";
 	}
@@ -294,11 +311,15 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     {
         compileString += "\"" + filesToCompile_[i].m_string + "\" ";
     }
-    
-    // libraries to link
+    std::set<std::string> uniqueLibraries;
     for( size_t i = 0; i < linkLibraryList_.size(); ++i )
     {
-        compileString += " " + linkLibraryList_[i].m_string + " ";
+        uniqueLibraries.insert(linkLibraryList_[i].m_string);
+    }
+    // libraries to link
+    for( std::set<std::string>::const_iterator it = uniqueLibraries.begin(); it != uniqueLibraries.end(); ++it)
+    {
+        compileString += " " + *it + " ";
     }
 
 	if( bCopyOutput )
@@ -311,6 +332,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
 
     execl("/bin/sh", "sh", "-c", compileString.c_str(), (const char*)NULL);
 }
+
 bool Compiler::AbortCompile()
 {
     kill(m_pImplData->m_ChildForCompilationPID, SIGTERM);
