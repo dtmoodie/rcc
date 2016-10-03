@@ -293,14 +293,33 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&    filesToCo
     std::vector<FileSystemUtils::Path>            linkLibraryList_,
     const FileSystemUtils::Path&                moduleName_)
 {
+    std::string compilerPath;
+    std::string nvccPath;
     bool useNVCC = false;
-#ifdef NVCC_PATH
+    std::string::size_type pos = compilerOptions_.compilerLocation.m_string.find(';');
+    if(pos != std::string::npos)
+    {
+        compilerPath = compilerOptions_.compilerLocation.m_string.substr(0, pos);
+        nvccPath = compilerOptions_.compilerLocation.m_string.substr(pos+1);
+    }
+
+    
     for (int i = 0; i < filesToCompile_.size(); ++i)
     {
         if (filesToCompile_[i].Extension() == ".cu")
-            useNVCC = true;
+        {
+            if(nvccPath.empty())
+            {
+                if (m_pImplData->m_pLogger) m_pImplData->m_pLogger->LogError(".cu file found but no NVCC compiler location defined");
+                m_pImplData->m_bCompileIsComplete = false;
+                return;
+            }else
+            {
+                useNVCC = true;
+            }
+        }
     }
-#endif
+    
     if (m_pImplData->m_VSPath.empty())
     {
         if (m_pImplData->m_pLogger) { m_pImplData->m_pLogger->LogError("No Supported Compiler for RCC++ found, cannot compile changes.\n"); }
@@ -450,9 +469,8 @@ char* pCharTypeFlags = "";
     std::string cmdToSend;
     if (useNVCC)
     {
-#ifdef NVCC_PATH
         std::stringstream ss;
-        ss << "\"" NVCC_PATH "\"";
+        ss << "\"" << nvccPath << "\"";
         ss << " -ccbin cl";
         ss << " -Xcompiler ";
         ss << ",\\\"/MP\\\"";
@@ -469,6 +487,7 @@ char* pCharTypeFlags = "";
         ss << " -g -G -lineinfo";
 #endif
         ss << " -DNVCC ";
+        ss << " -DWIN32 ";
         ss << strIncludeFiles;
         ss << " ";
         ss << strFilesToCompile;
@@ -478,7 +497,6 @@ char* pCharTypeFlags = "";
         ss << moduleName_.m_string;
         ss << "\n echo ";
         cmdToSend = ss.str();
-#endif
     }
     else
     {

@@ -386,6 +386,23 @@ namespace rcc
             }
         }
 
+        void reset(IObject* obj = NULL)
+        {
+            if (obj_state)
+            {
+                obj_state->DecrementState();
+            }
+            if (obj)
+            {
+                obj_state = IObjectSharedState::Get(obj);
+                obj_state->IncrementState();
+            }
+            else
+            {
+                obj_state = nullptr;
+            }
+        }
+
         T* Get()
         {
             if(obj_state)
@@ -417,7 +434,7 @@ namespace rcc
         {
             if(obj_state)
             {
-                return dynamic_cast<T*>(obj_state->GetObject());
+                return dynamic_cast<U*>(obj_state->GetObject());
             }
             return nullptr;
         }
