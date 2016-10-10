@@ -8,10 +8,12 @@ namespace rcc
     {
     public:
         typedef T element_type;
+        
         static shared_ptr Create()
         {
             return T::Create();
         }
+        
         shared_ptr():
             obj_state(nullptr)
         {
@@ -21,7 +23,7 @@ namespace rcc
         shared_ptr(IObject* obj):
             obj_state(nullptr)
         {
-            if(dynamic_cast<T*>(obj))
+            if(obj_pointer = dynamic_cast<T*>(obj))
             {
                 obj_state = IObjectSharedState::Get(obj);
                 obj_state->IncrementObject();
@@ -31,8 +33,8 @@ namespace rcc
 
         shared_ptr(IObjectSharedState* state)
         {
-            T* obj = dynamic_cast<T*>(state->GetObject());
-            if(obj)
+            obj_pointer = dynamic_cast<T*>(state->GetObject());
+            if(obj_pointer)
             {
                 obj_state = state;
                 obj_state->IncrementObject();
@@ -43,26 +45,31 @@ namespace rcc
         shared_ptr ( shared_ptr && other)
         {
             this->obj_state = other.obj_state;
-            if(obj_state)
+            obj_pointer = dynamic_cast<T*>(this->obj_state->GetObject());
+            if(obj_state && obj_pointer)
             {
                 obj_state->IncrementState();
                 obj_state->IncrementObject();
+                
             }
         }
         
         shared_ptr(const weak_ptr<T>& other)
         {
             this->obj_state = other.obj_state;
-            if(obj_state)
+            obj_pointer = dynamic_cast<T*>(this->obj_state->GetObject());
+            if(obj_state && obj_pointer)
             {
                 obj_state->IncrementObject();
                 obj_state->IncrementState();
             }
         }
+        
         shared_ptr(const shared_ptr& other)
         {
             this->obj_state = other.obj_state;
-            if(obj_state)
+            obj_pointer = dynamic_cast<T*>(this->obj_state->GetObject());
+            if(obj_state && obj_pointer)
             {
                 obj_state->IncrementState();
                 obj_state->IncrementObject();
@@ -74,7 +81,7 @@ namespace rcc
         {
             if(other.obj_state)
             {
-                if(dynamic_cast<T*>(other.obj_state->GetObject()))
+                if(obj_pointer = dynamic_cast<T*>(other.obj_state->GetObject()))
                 {
                     obj_state = other.obj_state;
                     obj_state->IncrementObject();
@@ -97,6 +104,7 @@ namespace rcc
                 obj_state->DecrementState();
             }
         }
+        
         void reset(IObject* obj = NULL)
         {
             if(obj_state)
@@ -125,8 +133,14 @@ namespace rcc
             obj_state = other.obj_state;
             if(obj_state)
             {
-                obj_state->IncrementObject();
-                obj_state->IncrementState();
+                if(obj_pointer = dynamic_cast<T*>(this->obj_state->GetObject()))
+                {
+                    obj_state->IncrementObject();
+                    obj_state->IncrementState();
+                }else
+                {
+                    obj_state = nullptr;
+                }
             }
             return *this;
         }
@@ -138,25 +152,47 @@ namespace rcc
                 obj_state->DecrementObject();
                 obj_state->DecrementState();
             }
-            if(dynamic_cast<T*>(other.obj_state->GetObject()))
+            obj_state = other.obj_state;
+            obj_pointer = dynamic_cast<T*>(other.obj_pointer);
+            if(obj_state)
             {
                 obj_state = other->obj_state;
                 obj_state->IncrementObject();
-                obj_state->IncrementState();
+                obj_state->IncrementState();   
             }
+            
             return *this;
         }
         
         T* Get()
         {
             if(obj_state)
-                return static_cast<T*>(obj_state->GetObject());
+            {
+                if(obj_pointer == obj_state->GetObject())
+                {
+                    return obj_pointer;
+                }else
+                {
+                    obj_pointer = dynamic_cast<T*>(obj_state->GetObject());
+                    return obj_pointer;
+                }
+            }
             return nullptr;
         }
-		const T* Get() const
+		
+        const T* Get() const
 		{
-            if(obj_state)
-			    return static_cast<T*>(obj_state->GetObject());
+            if (obj_state)
+            {
+                if (obj_pointer == obj_state->GetObject())
+                {
+                    return obj_pointer;
+                }
+                else
+                {
+                    return dynamic_cast<T*>(obj_state->GetObject());;
+                }
+            }
             return nullptr;
 		}
         
@@ -176,7 +212,7 @@ namespace rcc
             {
                 return obj_state->GetObject() == nullptr;
             }
-            return false;
+            return true;
         }
         
         template<class U> U* DynamicCast()
@@ -203,6 +239,7 @@ namespace rcc
                 return true;
             return false;
         }
+        
         bool operator != (T* p)
         {
             if(obj_state)
@@ -211,10 +248,12 @@ namespace rcc
             }
             return true;
         }
+       
         bool operator == (shared_ptr const & r)
         {
             return r.obj_state == obj_state;
         }
+        
         bool operator != (shared_ptr const& r)
         {
             return r.obj_state != obj_state;
@@ -238,10 +277,12 @@ namespace rcc
         {
             return obj_state;
         }
-    private:
+    
+private:
         template<class U> friend class shared_ptr;
         template<class U> friend class weak_ptr;
         IObjectSharedState* obj_state;
+        T* obj_pointer;
     };
 
     template< class T> class weak_ptr
@@ -406,13 +447,13 @@ namespace rcc
         T* Get()
         {
             if(obj_state)
-                return static_cast<T*>(obj_state->GetObject());
+                return dynamic_cast<T*>(obj_state->GetObject());
             return nullptr;
         }
         const T* Get() const
         {
             if(obj_state)
-                return static_cast<T*>(obj_state->GetObject());
+                return dynamic_cast<T*>(obj_state->GetObject());
             return nullptr;
         }
 
@@ -427,7 +468,7 @@ namespace rcc
             {
                 return obj_state->GetObject() == nullptr;
             }
-            return false;
+            return true;
         }
 
         template<class U> U* DynamicCast()
