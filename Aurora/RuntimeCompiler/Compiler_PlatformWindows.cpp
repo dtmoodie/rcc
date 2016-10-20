@@ -68,6 +68,13 @@ public:
 
     void InitialiseProcess()
     {
+        if(m_CmdProcessInfo.hProcess != NULL)
+        {
+            if (m_pLogger)
+                m_pLogger->LogDebug("[RuntimeCompiler] Prior process already exists, attempting to cleanup");
+            CleanupProcessAndPipes();
+        }
+
         //init compile process
         STARTUPINFOW                si;
         ZeroMemory( &si, sizeof(si) );
@@ -167,6 +174,7 @@ public:
         wchar_t* pCommandLine = L"cmd /q";
         //CreateProcessW won't accept a const pointer, so copy to an array 
         wchar_t pCmdLineNonConst[1024];
+
         wcscpy_s( pCmdLineNonConst, pCommandLine );
         CreateProcessW(
               NULL,                //__in_opt     LPCTSTR lpApplicationName,
@@ -208,13 +216,29 @@ public:
         // do not reset m_bCompileIsComplete and other members here, just process and pipes
         if(  m_CmdProcessInfo.hProcess )
         {
-            TerminateProcess( m_CmdProcessInfo.hProcess, 0 );
-            TerminateThread( m_CmdProcessInfo.hThread, 0 );
-            CloseHandle( m_CmdProcessInfo.hThread );
+            if(!TerminateProcess( m_CmdProcessInfo.hProcess, 0 ))
+            {
+                if(m_pLogger) m_pLogger->LogDebug("[RuntimeCompiler] Failed to terminate child process");
+            }
+            if(!TerminateThread( m_CmdProcessInfo.hThread, 0 ))
+            {
+                if (m_pLogger) m_pLogger->LogDebug("[RuntimeCompiler] Failed to terminate child thread");
+            }
+            if(!CloseHandle( m_CmdProcessInfo.hThread ))
+            {
+                if (m_pLogger) m_pLogger->LogDebug("[RuntimeCompiler] Failed to close thread handle");
+            }
             ZeroMemory( &m_CmdProcessInfo, sizeof(m_CmdProcessInfo) );
-            CloseHandle( m_CmdProcessInputWrite );
+            if(!CloseHandle( m_CmdProcessInputWrite ))
+            {
+                if (m_pLogger) m_pLogger->LogDebug("[RuntimeCompiler] Failed to close InputWrite handle");
+            }
             m_CmdProcessInputWrite = 0;
-            CloseHandle( m_CmdProcessOutputRead );
+            
+            if(!CloseHandle( m_CmdProcessOutputRead ))
+            {
+                if (m_pLogger) m_pLogger->LogDebug("[RuntimeCompiler] Failed to close OutputRead handle");
+            }
             m_CmdProcessOutputRead = 0;
         }
 
@@ -329,10 +353,10 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&    filesToCo
     m_pImplData->m_bCompileIsComplete = false;
     //optimization and c runtime
 #ifdef _DEBUG
-    std::string flags = "/nologo /Zi /FC /MDd /LDd ";
+    std::string flags = "/Zi /FC /MDd /LDd ";
 
 #else
-    std::string flags = "/nologo /Zi /FC /MD /LD ";
+    std::string flags = "/Zi /FC /MD /LD ";
 #endif
 
     RCppOptimizationLevel optimizationLevel = GetActualOptimizationLevel(compilerOptions_.optimizationLevel);
@@ -502,7 +526,7 @@ char* pCharTypeFlags = "";
     {
         cmdToSend = "cl " + flags + pCharTypeFlags
             + " /MP /Fo\"" + compilerOptions_.intermediatePath.m_string + "\\\\\" "
-            + "/D WIN32 /EHa /Fe" + moduleName_.m_string;
+            + "/D WIN32 /FS /EHa /Fe" + moduleName_.m_string;
         cmdToSend += " " + strIncludeFiles + " " + strFilesToCompile + strLinkLibraries + linkOptions
             + "\necho ";
     }
