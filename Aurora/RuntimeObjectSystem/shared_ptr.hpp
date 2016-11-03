@@ -23,7 +23,7 @@ namespace rcc
         shared_ptr(IObject* obj):
             obj_state(nullptr)
         {
-            if(obj_pointer = dynamic_cast<T*>(obj))
+            if((obj_pointer = dynamic_cast<T*>(obj)))
             {
                 obj_state = IObjectSharedState::Get(obj);
                 obj_state->IncrementObject();
@@ -81,7 +81,7 @@ namespace rcc
         {
             if(other.obj_state)
             {
-                if(obj_pointer = dynamic_cast<T*>(other.obj_state->GetObject()))
+                if((obj_pointer = dynamic_cast<T*>(other.obj_state->GetObject())))
                 {
                     obj_state = other.obj_state;
                     obj_state->IncrementObject();
@@ -133,7 +133,7 @@ namespace rcc
             obj_state = other.obj_state;
             if(obj_state)
             {
-                if(obj_pointer = dynamic_cast<T*>(this->obj_state->GetObject()))
+                if((obj_pointer = dynamic_cast<T*>(this->obj_state->GetObject())))
                 {
                     obj_state->IncrementObject();
                     obj_state->IncrementState();
