@@ -26,7 +26,7 @@ IObjectSharedState::~IObjectSharedState()
     constructor->DeRegister(id);
 }
 
-IObject* IObjectSharedState::GetObject()
+IObject* IObjectSharedState::GetIObject()
 {
     return object;
 }

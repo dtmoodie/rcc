@@ -134,7 +134,7 @@ public:
         {
             if(m_ConstructedObjects[0])
             {
-                return m_ConstructedObjects[0]->GetObject();
+                return m_ConstructedObjects[0]->GetIObject();
             }
         }
 
@@ -154,7 +154,7 @@ public:
             pT->SetPerTypeId( id );
             if(m_ConstructedObjects[id])
             {
-                AU_ASSERT(0 == m_ConstructedObjects[id]->GetObject());
+                AU_ASSERT(0 == m_ConstructedObjects[id]->GetIObject());
                 m_ConstructedObjects[ id ]->object = pT;
             }else
             {
@@ -171,7 +171,7 @@ public:
         {
             if(m_ConstructedObjects[0])
             {
-                return m_ConstructedObjects[0]->GetObject();
+                return m_ConstructedObjects[0]->GetIObject();
             }
         }
 
@@ -193,7 +193,7 @@ public:
             pT->SetPerTypeId( id );
             if(m_ConstructedObjects[id])
             {
-                AU_ASSERT(0 == m_ConstructedObjects[id]->GetObject());
+                AU_ASSERT(0 == m_ConstructedObjects[id]->GetIObject());
                 m_ConstructedObjects[ id ]->object = pT;
             }else
             {
@@ -334,7 +334,7 @@ public:
         if( m_ConstructedObjects.size() > id )
         {
             if(m_ConstructedObjects[id])
-                return m_ConstructedObjects[id]->GetObject();
+                return m_ConstructedObjects[id]->GetIObject();
         }
         return 0;
     }
@@ -351,7 +351,7 @@ public:
         size_t count = 0;
         for(auto& obj : m_ConstructedObjects)
         {
-            if(obj->GetObject())
+            if(obj->GetIObject())
             {
                 ++count;
             }
