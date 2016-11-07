@@ -15,13 +15,15 @@ namespace rcc
         }
         
         shared_ptr():
-            obj_state(nullptr)
+            obj_state(nullptr),
+            obj_pointer(nullptr)
         {
         
         }
 
         shared_ptr(IObject* obj):
-            obj_state(nullptr)
+            obj_state(nullptr),
+            obj_pointer(nullptr)
         {
             if((obj_pointer = dynamic_cast<T*>(obj)))
             {
@@ -77,7 +79,8 @@ namespace rcc
         }
 
         template<class U> shared_ptr(const shared_ptr<U>& other):
-            obj_state(nullptr)
+            obj_state(nullptr),
+            obj_pointer(nullptr)
         {
             if(other.obj_state)
             {
