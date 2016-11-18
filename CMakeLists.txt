@@ -92,7 +92,8 @@ MACRO(RCC_LINK_LIB TARGET)
         LIST(APPEND LINK_DIRS_DEBUG "${DIR}")
         LIST(APPEND LINK_DIRS_RELEASE "${DIR}")
         if(RCC_VERBOSE_CONFIG AND DIR)
-          message(STATUS "  Link dir: ${DIR}")
+          get_filename_component(name ${lib} NAME_WE)
+          message(STATUS "  Link dir: [${name}] ${dir}")
         endif(RCC_VERBOSE_CONFIG AND DIR)
       ELSE(EXISTS ${lib})
         IF(TARGET ${lib})
@@ -125,10 +126,10 @@ MACRO(RCC_LINK_LIB TARGET)
           LIST(APPEND LINK_DIRS_DEBUG "${deb_}")
           LIST(APPEND LINK_DIRS_RELEASE "${rel_}")
           if(RCC_VERBOSE_CONFIG AND deb_)
-            message(STATUS "  Link dir [${lib}] (debug): ${deb_}")
+            message(STATUS "  Link dir: [${lib}] (debug): ${deb_}")
           endif(RCC_VERBOSE_CONFIG AND deb_)
           if(RCC_VERBOSE_CONFIG AND rel_)
-            message(STATUS "  Link dir [${lib}] (release): ${rel_}")
+            message(STATUS "  Link dir: [${lib}] (release): ${rel_}")
           endif(RCC_VERBOSE_CONFIG AND rel_)
 
           GET_TARGET_PROPERTY(imp_libs_rel_ ${lib} IMPORTED_LINK_INTERFACE_LIBRARIES_RELWITHDEBINFO)
@@ -140,7 +141,8 @@ MACRO(RCC_LINK_LIB TARGET)
               GET_FILENAME_COMPONENT(dir ${imp_lib} DIRECTORY)
               LIST(APPEND LINK_DIRS_RELEASE "${dir}")
               if(RCC_VERBOSE_CONFIG)
-                message(STATUS "  Link dir: ${dir}")
+                  get_filename_component(name ${imp_lib} NAME_WE)
+                  message(STATUS "  Link dir: [${name}] ${dir}")
               endif(RCC_VERBOSE_CONFIG)
             endif()
           endforeach()
@@ -150,7 +152,8 @@ MACRO(RCC_LINK_LIB TARGET)
               GET_FILENAME_COMPONENT(dir ${imp_lib} DIRECTORY)
               LIST(APPEND LINK_DIRS_RELEASE "${dir}")
               if(RCC_VERBOSE_CONFIG)
-                message(STATUS "  Link dir: ${dir}")
+                get_filename_component(name ${imp_lib} NAME_WE)
+                message(STATUS "  Link dir: [${name}] ${dir}")
               endif(RCC_VERBOSE_CONFIG)
             endif()
           endforeach()
@@ -160,14 +163,15 @@ MACRO(RCC_LINK_LIB TARGET)
               GET_FILENAME_COMPONENT(dir ${imp_lib} DIRECTORY)
               LIST(APPEND LINK_DIRS_DEBUG "${dir}")
               if(RCC_VERBOSE_CONFIG)
-                message(STATUS "  Link dir: ${dir}")
+                  get_filename_component(name ${imp_lib} NAME_WE)
+                  message(STATUS "  Link dir: [${name}] ${dir}")
               endif(RCC_VERBOSE_CONFIG)
             endif()
           endforeach()
           
         ENDIF(TARGET ${lib})
       ENDIF(EXISTS ${lib})
-      TARGET_LINK_LIBRARIES(${TARGET} ${PREFIX}${lib})          
+      TARGET_LINK_LIBRARIES(${TARGET} ${PREFIX}${lib})
     ENDIF(${SKIP} STREQUAL "0")
   ENDFOREACH(lib)
   LIST(REMOVE_DUPLICATES LINK_DIRS_DEBUG)
@@ -228,18 +232,49 @@ IF(WIN32)
 	string(REGEX REPLACE ";" "\n" RCC_LIBRARY_DIRS_RELWITHDEBINFO "${RCC_LIBRARY_DIRS_RELWITHDEBINFO}")
 	
     FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/RCC_config.txt" 
-	"project_id:\n0\ninclude_dirs:\n${RCC_INCLUDE_DEPENDENCIES}\nlib_dirs_debug:\n${RCC_LIBRARY_DIRS_DEBUG};\ncompile_options:\n/FS ${RCC_COMPILE_FLAGS}\ncompiler_loations:\n${COMPILER_PATH}")
+        "project_id:\n0\n"
+        "include_dirs:\n${RCC_INCLUDE_DEPENDENCIES}\n"
+        "lib_dirs_debug:\n${RCC_LIBRARY_DIRS_DEBUG};\n"
+        "compile_options:\n/FS ${RCC_COMPILE_FLAGS}\n"
+        "compiler_locations:\n${COMPILER_PATH}")
+
     FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/RCC_config.txt" 
-	"project_id:\n0\ninclude_dirs:\n${RCC_INCLUDE_DEPENDENCIES}\nlib_dirs_release:\n${RCC_LIBRARY_DIRS_RELEASE};\ncompile_options:\n/FS ${RCC_COMPILE_FLAGS}\ncompiler_location:\n${COMPILER_PATH}")
+        "project_id:\n0\n"
+        "\ninclude_dirs:\n${RCC_INCLUDE_DEPENDENCIES}\n"
+        "\nlib_dirs_release:\n${RCC_LIBRARY_DIRS_RELEASE};\n"
+        "\ncompile_options:\n/FS ${RCC_COMPILE_FLAGS}\n"
+        "\ncompiler_location:\n${COMPILER_PATH}")
 	
     FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/RCC_config.txt" 
-	"project_id:\n0\ninclude_dirs:\n${RCC_INCLUDE_DEPENDENCIES}\nlib_dirs_release:\n${RCC_LIBRARY_DIRS_RELWITHDEBINFO};\ncompile_options:\n/FS ${RCC_COMPILE_FLAGS}\ncompiler_location:\n${COMPILER_PATH}")
+        "project_id:\n0\n"
+        "\ninclude_dirs:\n${RCC_INCLUDE_DEPENDENCIES}\n"
+        "lib_dirs_release:\n${RCC_LIBRARY_DIRS_RELWITHDEBINFO};\n"
+        "compile_options:\n/FS ${RCC_COMPILE_FLAGS}\n"
+        "compiler_location:\n${COMPILER_PATH}")
 	
     FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RCC_config.txt" 
-	"project_id:\n0\ninclude_dirs:\n${RCC_INCLUDE_DEPENDENCIES}\nlib_dirs_debug:\n${RCC_LIBRARY_DIRS_DEBUG}\nlib_dirs_release:\n${RCC_LIBRARY_DIRS_RELWITHDEBINFO};\ncompile_options:\n\n/FS ${RCC_COMPILE_FLAGS}\ncompiler_location:\n${COMPILER_PATH}")
+        "project_id:\n0\n"
+        "\ninclude_dirs:\n${RCC_INCLUDE_DEPENDENCIES}\n"
+        "\nlib_dirs_debug:\n${RCC_LIBRARY_DIRS_DEBUG}\n"
+        "\nlib_dirs_release:\n${RCC_LIBRARY_DIRS_RELWITHDEBINFO};\n"
+        "\ncompile_options:\n\n/FS ${RCC_COMPILE_FLAGS}\n"
+        "\ncompiler_location:\n${COMPILER_PATH}")
 ELSE()
-    FILE(WRITE "${CMAKE_BINARY_DIR}/RCC_config.txt" "0\n${RCC_INCLUDE_DEPENDENCIES}\n${RCC_LIBRARY_DIRS_DEBUG};${CMAKE_BINARY_DIR}\n${RCC_LIBRARY_DIRS_RELEASE};${CMAKE_BINARY_DIR}\n${RCC_COMPILE_FLAGS}\n${COMPILER_PATH}")
-    FILE(WRITE "${CMAKE_CURRENT_BINARY_DIR}/RCC_config.txt" "0\n${RCC_INCLUDE_DEPENDENCIES}\n${RCC_LIBRARY_DIRS_DEBUG};${CMAKE_BINARY_DIR}\n${RCC_LIBRARY_DIRS_RELEASE};${CMAKE_BINARY_DIR}\n${RCC_COMPILE_FLAGS}\n${COMPILER_PATH}")
+    FILE(WRITE "${CMAKE_BINARY_DIR}/RCC_config.txt"
+        "project_id:\n0\n"
+        "\ninclude_dirs:\n${RCC_INCLUDE_DEPENDENCIES}\n"
+        "\nlib_dirs_debug:\n${RCC_LIBRARY_DIRS_DEBUG}\n${CMAKE_BINARY_DIR}\n"
+        "\nlib_dirs_release:\n${RCC_LIBRARY_DIRS_RELEASE}\n${CMAKE_BINARY_DIR}"
+        "\ncompile_options:\n${RCC_COMPILE_FLAGS}\n"
+        "\ncompiler_location:\n${COMPILER_PATH}")
+
+    FILE(WRITE "${CMAKE_CURRENT_BINARY_DIR}/RCC_config.txt"
+        "project_id:\n0\n"
+        "\ninclude_dirs:\n${RCC_INCLUDE_DEPENDENCIES}\n"
+        "\nlib_dirs_debug:\n${RCC_LIBRARY_DIRS_DEBUG}\n${CMAKE_BINARY_DIR}\n"
+        "\nlib_dirs_release:\n${RCC_LIBRARY_DIRS_RELEASE}\n${CMAKE_BINARY_DIR}"
+        "\ncompile_options:\n${RCC_COMPILE_FLAGS}\n"
+        "\ncompiler_location:\n${COMPILER_PATH}")
 ENDIF()
 
 set(RCC_PERMODULE_INTERFACE_SOURCE "${CMAKE_CURRENT_LIST_DIR}/Aurora/RuntimeObjectSystem/ObjectInterfacePerModuleSource.cpp" PARENT_SCOPE)
