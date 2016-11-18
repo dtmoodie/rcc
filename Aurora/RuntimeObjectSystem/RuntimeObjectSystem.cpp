@@ -141,86 +141,104 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
     unsigned short projectId = 0;
     if (config_file.is_open())
     {
+        std::string line;
+        int state = -1;
+        auto check_state = [](const std::string& line, int current_state) -> int
         {
-            std::string line;
-            std::getline(config_file, line);
-            projectId = stoi(line);
-            if (!first)
+            if(line.find("project_id:") == 0)
             {
-                if (projectId < m_Projects.size())
-                {
-                    projectId = static_cast<unsigned short>(m_Projects.size());
-                }
-            }
-        }
-        
-        {
-            std::stringstream ss;
-            std::string line, token;
-            std::getline(config_file, line);
-            ss << line;
-            while (std::getline(ss, token, ';'))
+                return 0;
+            }else if(line.find("include_dirs:") == 0)
             {
-                if(token.size())
-                    AddIncludeDir(token.c_str(), projectId);
-                if(m_pCompilerLogger)
-                {
-                    m_pCompilerLogger->LogDebug("Adding include dir: %s", token.c_str());
-                }
+                return 1;
+            } else if(line.find("lib_dirs_debug:") == 0)
+            {
+                return 2;
+            } else if(line.find("lib_dirs_release:") == 0)
+            {
+                return 3;
+            } else if(line.find("compile_options:") == 0)
+            {
+                return 4;
+            }else if(line.find("compiler_location:") == 0)
+            {
+                return 5;
             }
-        }
-        {
+            return current_state;
+        };
 
-            std::stringstream ss;
-            std::string line, token;
-            std::getline(config_file, line);
-#ifndef _DEBUG
-            std::getline(config_file, line); // In release mode we read the next line
-#endif
-            ss.str();
-            ss << line;
-            while (std::getline(ss, token, ';'))
+        while(std::getline(config_file, line))
+        {
+            int new_state = check_state(line, state);
+            if(new_state != state)
             {
-                if(token.size())
+                std::getline(config_file, line);
+                state = new_state;
+            }
+            if(state == 0)
+            {
+                state = 0;
+                projectId = stoi(line);
+                if (!first)
                 {
-                    AddLibraryDir(token.c_str(), projectId);
+                    if (projectId < m_Projects.size())
+                    {
+                        projectId = static_cast<unsigned short>(m_Projects.size());
+                    }
+                }
+            }else if(state == 1)
+            {
+                if (line.size())
+                {
+                    AddIncludeDir(line.c_str(), projectId);
+                    if (m_pCompilerLogger)
+                    {
+                        m_pCompilerLogger->LogDebug("Adding include dir: %s", line.c_str());
+                    }
+                }
+            }else if(state == 2)
+            {
+#if (defined(_MSC_VER) && defined(_DEBUG)) || !defined(NDEBUG)
+                if(line.size())
+                {
+                    AddLibraryDir(line.c_str(), projectId);
+                    if (m_pCompilerLogger)
+                    {
+                        m_pCompilerLogger->LogDebug("Adding link dir: %s", line.c_str());
+                    }
+                }
+#endif
+            }else if(state == 3)
+            {
+#if (defined(_MSC_VER) && !defined(_DEBUG)) || defined(NDEBUG)
+                AddLibraryDir(line.c_str(), projectId);
+                if (m_pCompilerLogger)
+                {
+                    m_pCompilerLogger->LogDebug("Adding link dir: %s", line.c_str());
+                }
+#endif
+            } else if(state == 4)
+            {
+                if(line.size())
+                {
+                    AppendAdditionalCompileOptions(line.c_str(), projectId);
+                    if (m_pCompilerLogger)
+                    {
+                        m_pCompilerLogger->LogDebug("Adding compile option: %s", line.c_str());
+                    }
+                }
+            } else if(state == 5)
+            {
+                if(line.size())
+                {
+                    SetCompilerLocation(line.c_str(), projectId);
                     if(m_pCompilerLogger)
                     {
-                        m_pCompilerLogger->LogDebug("Adding link dir: %s", token.c_str());
+                        m_pCompilerLogger->LogDebug("Adding compiler location: %s", line.c_str());
                     }
                 }
             }
-#ifdef _DEBUG
-            std::getline(config_file, line); // Read the release line and discard
-#endif
         }
-        {
-            std::stringstream ss;
-            std::string line, token;
-            std::getline(config_file, line);
-            ss.str();
-            ss << line;
-            while (std::getline(ss, token, ';'))
-            {
-                if(token.size())
-                {
-                    AppendAdditionalCompileOptions(token.c_str(), projectId);
-                    if(m_pCompilerLogger)
-                    {
-                        m_pCompilerLogger->LogDebug("Adding compile option: %s", token.c_str());
-                    }
-                }
-            }
-        }
-        {
-            std::stringstream ss;
-            std::string line;
-            if(std::getline(config_file, line))
-            {
-                SetCompilerLocation(line.c_str(), projectId);
-            }
-        }
-
     }
     return projectId;
 }
