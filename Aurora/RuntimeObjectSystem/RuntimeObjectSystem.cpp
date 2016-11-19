@@ -178,12 +178,15 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             if(state == 0)
             {
                 state = 0;
-                projectId = stoi(line);
-                if (!first)
+                if(line.size())
                 {
-                    if (projectId < m_Projects.size())
+                    projectId = stoi(line);
+                    if (!first)
                     {
-                        projectId = static_cast<unsigned short>(m_Projects.size());
+                        if (projectId < m_Projects.size())
+                        {
+                            projectId = static_cast<unsigned short>(m_Projects.size());
+                        }
                     }
                 }
             }else if(state == 1)
@@ -381,6 +384,10 @@ void RuntimeObjectSystem::AddToRuntimeFileList( const char* filename, unsigned s
     {
         project.m_RuntimeFileList.push_back( filename );
         m_pFileChangeNotifier->Watch( filename, this );
+        if(m_pCompilerLogger)
+        {
+            m_pCompilerLogger->LogDebug("Adding file watcher for %s", filename);
+        }
     }
 }
 
@@ -391,6 +398,7 @@ void RuntimeObjectSystem::RemoveFromRuntimeFileList( const char* filename, unsig
     if( it != project.m_RuntimeFileList.end( ) )
     {
         project.m_RuntimeFileList.erase( it );
+        m_pCompilerLogger->LogDebug("Removing file watcher for %s", filename);
     }
 }
 
