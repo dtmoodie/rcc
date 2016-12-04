@@ -196,7 +196,7 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
                     AddIncludeDir(line.c_str(), projectId);
                     if (m_pCompilerLogger)
                     {
-                        m_pCompilerLogger->LogDebug("Adding include dir: %s", line.c_str());
+                        m_pCompilerLogger->LogDebug("Adding include dir (%d): %s", projectId, line.c_str());
                     }
                 }
             }else if(state == 2)
@@ -207,7 +207,7 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
                     AddLibraryDir(line.c_str(), projectId);
                     if (m_pCompilerLogger)
                     {
-                        m_pCompilerLogger->LogDebug("Adding link dir: %s", line.c_str());
+                        m_pCompilerLogger->LogDebug("Adding link dir (%d): %s", projectId, line.c_str());
                     }
                 }
 #endif
@@ -217,17 +217,18 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
                 AddLibraryDir(line.c_str(), projectId);
                 if (m_pCompilerLogger)
                 {
-                    m_pCompilerLogger->LogDebug("Adding link dir: %s", line.c_str());
+                    m_pCompilerLogger->LogDebug("Adding link dir (%d): %s", projectId, line.c_str());
                 }
 #endif
             } else if(state == 4)
             {
                 if(line.size())
                 {
+                    line += " ";
                     AppendAdditionalCompileOptions(line.c_str(), projectId);
                     if (m_pCompilerLogger)
                     {
-                        m_pCompilerLogger->LogDebug("Adding compile option: %s", line.c_str());
+                        m_pCompilerLogger->LogDebug("Adding compile option (%d): %s", projectId, line.c_str());
                     }
                 }
             } else if(state == 5)
@@ -237,7 +238,7 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
                     SetCompilerLocation(line.c_str(), projectId);
                     if(m_pCompilerLogger)
                     {
-                        m_pCompilerLogger->LogDebug("Adding compiler location: %s", line.c_str());
+                        m_pCompilerLogger->LogDebug("Adding compiler location (%d): %s", projectId, line.c_str());
                     }
                 }
             }

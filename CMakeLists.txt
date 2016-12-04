@@ -303,7 +303,11 @@ ENDIF()
 set(RCC_PERMODULE_INTERFACE_SOURCE "${CMAKE_CURRENT_LIST_DIR}/Aurora/RuntimeObjectSystem/ObjectInterfacePerModuleSource.cpp" PARENT_SCOPE)
 
 add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
-add_library(RuntimeObjectSystem ${BUILD_TYPE} ${RuntimeObjectSystem_SRCS})
+
+if(NOT WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fvisibility=hidden")
+endif(NOT WIN32)
+add_library(RuntimeObjectSystem STATIC ${RuntimeObjectSystem_SRCS})
 target_link_libraries(RuntimeObjectSystem RuntimeCompiler)
 
 install(TARGETS RuntimeObjectSystem RuntimeCompiler
