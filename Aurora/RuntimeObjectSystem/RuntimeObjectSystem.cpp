@@ -118,9 +118,15 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
     if (ParseConfigFile("RCC_config.txt", true) < 0)
     {
 #ifdef _DEBUG
-        ParseConfigFile("../Debug/RCC_config.txt", true);
+        if(ParseConfigFile("../RCC_config.txt", true) < 0)
+        {
+            ParseConfigFile("../Debug/RCC_config.txt", true);
+        }
 #else
-        ParseConfigFile("../RelWithDebInfo/RCC_config.txt", true);
+        if(ParseConfigFile("../RCC_config.txt", true) < 0)
+        {
+            ParseConfigFile("../RelWithDebInfo/RCC_config.txt", true);
+        }
 #endif
     }
     
