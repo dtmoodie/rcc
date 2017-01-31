@@ -252,6 +252,8 @@ namespace rcc
             {
                 return obj_state->GetIObject() != p;
             }
+            if(p == 0)
+                return false;
             return true;
         }
        
@@ -547,6 +549,7 @@ private:
 
     private:
         template<class U> friend class shared_ptr;
+        template<class U> friend class weak_ptr;
         IObjectSharedState* obj_state = nullptr;
     };
 }
