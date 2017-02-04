@@ -236,7 +236,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
         if(nvccCompiler.size())
             compileString += "-O2 ";
         else
-            compileString += "-Os ";
+            compileString += "-O2 -DNDEBUG ";
 		break;
 	case RCCPPOPTIMIZATIONLEVEL_NOT_SET:;
 
