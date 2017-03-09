@@ -397,10 +397,10 @@ install(TARGETS RuntimeObjectSystem RuntimeCompiler
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 
-install(DIRECTORY Aurora/include
+install(DIRECTORY Aurora/include/
         DESTINATION include
         FILES_MATCHING PATTERN "*.h")
-install(DIRECTORY Aurora/include
+install(DIRECTORY Aurora/include/
         DESTINATION include
         FILES_MATCHING PATTERN "*.hpp")
 
