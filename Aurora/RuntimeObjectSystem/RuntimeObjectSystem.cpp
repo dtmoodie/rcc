@@ -945,7 +945,7 @@ FileSystemUtils::Path RuntimeObjectSystem::FindFile( const FileSystemUtils::Path
 
     if( !foundFile.Exists() )
     {
-        if( m_pCompilerLogger ) {  m_pCompilerLogger->LogWarning( "Could not find Directory Mapping for: %s\n", input.c_str() ); }
+        if( m_pCompilerLogger ) {  m_pCompilerLogger->LogDebug( "Could not find Directory Mapping for: %s\n", input.c_str() ); }
         ++m_NumNotFoundSourceFiles;
     }
     return foundFile;
