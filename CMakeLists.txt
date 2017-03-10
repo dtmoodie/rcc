@@ -61,8 +61,8 @@
 # }
 
 cmake_minimum_required(VERSION 2.8)
-
-project(RCC)
+CMAKE_POLICY(SET CMP0048 NEW)
+project(RCC VERSION 1.0.0)
 
 SET(RCC_VERBOSE_CONFIG FALSE CACHE BOOL "Set to true to output verbose debugging information in RCC macros")
 
@@ -263,7 +263,7 @@ MACRO(RCC_LINK_LIB TARGET)
             message(STATUS "  Link dir: [${name}] ${dir}")
           endif(RCC_VERBOSE_CONFIG AND DIR)
           string(SUBSTRING "${name}" 0 3 sub)
-          if(${sub} STREQUAL lib)
+          if("${sub}" STREQUAL lib)
             string(SUBSTRING "${name}" 3 -1 name)
           endif()
         #string(REPLACE "lib" "" name "${name}")
