@@ -414,15 +414,7 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&    filesToCo
             linkOptions += compilerOptions_.linkOptions;
         }
     }
-    // faster linking if available: https://randomascii.wordpress.com/2015/07/27/programming-is-puzzles/
-    if (_MSC_VER >= 1900 && !useNVCC)
-    {
-        if (linkOptions.empty())
-        {
-            linkOptions = " /link ";
-        }
-        linkOptions += " /DEBUG:FASTLINK ";
-    }
+    
 
     // Check for intermediate directory, create it if required
     // There are a lot more checks and robustness that could be added here
@@ -480,10 +472,6 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&    filesToCo
         strLinkLibraries += " \"" + linkLibraryList_[i].m_string + "\" ";
     }
     
-    
-
-
-
 char* pCharTypeFlags = "";
 #ifdef UNICODE
     pCharTypeFlags = "/D UNICODE /D _UNICODE ";
@@ -491,18 +479,8 @@ char* pCharTypeFlags = "";
 
 	FileSystemUtils::Path pdbName = moduleName_;
 	pdbName.ReplaceExtension( ".pdb" );
-
-	// /MP - use multiple processes to compile if possible. Only speeds up compile for multiple files and not link
-	std::string cmdToSend = "cl " + flags + pCharTypeFlags
-		+ " /MP /Fo\"" + compilerOptions_.intermediatePath.m_string + "\\\\\" "
-		+ "/D WIN32 /EHa /Fe" + moduleName_.m_string + " /Fd" + pdbName.m_string;
-	cmdToSend += " " + strIncludeFiles + " " + strFilesToCompile + strLinkLibraries + linkOptions
-		+ "\necho ";
-	if( m_pImplData->m_pLogger ) m_pImplData->m_pLogger->LogInfo( "%s", cmdToSend.c_str() ); // use %s to prevent any tokens in compile string being interpreted as formating
-	cmdToSend += c_CompletionToken + "\n";
-	WriteInput( m_pImplData->m_CmdProcessInputWrite, cmdToSend );
-    // /MP - use multiple processes to compile if possible. Only speeds up compile for multiple files and not link
     std::string cmdToSend;
+	// /MP - use multiple processes to compile if possible. Only speeds up compile for multiple files and not link
     if (useNVCC)
     {
         std::stringstream ss;
@@ -530,7 +508,7 @@ char* pCharTypeFlags = "";
         ss << strLinkLibraries;
         ss << linkOptions;
         ss << " -o ";
-        ss << moduleName_.m_string;
+        ss << moduleName_.m_string << " /Fd" + pdbName.m_string;
         ss << "\n echo ";
         cmdToSend = ss.str();
     }
@@ -538,7 +516,7 @@ char* pCharTypeFlags = "";
     {
         cmdToSend = "cl " + flags + pCharTypeFlags
             + " /MP /Fo\"" + compilerOptions_.intermediatePath.m_string + "\\\\\" "
-            + "/D WIN32 /FS /EHa /Fe" + moduleName_.m_string;
+            + "/D WIN32 /FS /EHa /Fe" + moduleName_.m_string + " /Fd" + pdbName.m_string;
         cmdToSend += " " + strIncludeFiles + " " + strFilesToCompile + strLinkLibraries + linkOptions
             + "\necho ";
     }
