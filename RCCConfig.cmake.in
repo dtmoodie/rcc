@@ -11,6 +11,7 @@ include(${RCC_DIR}/cmake/rcc_link_lib.cmake)
 include(${RCC_DIR}/cmake/rcc_find_path.cmake)
 include(${RCC_DIR}/cmake/rcc_find_library.cmake)
 include(${RCC_DIR}/cmake/rcc_config.cmake)
+include(${RCC_DIR}/cmake/rcc_strip_extension.cmake)
 
 if(NOT TARGET RuntimeCompiler AND NOT TARGET RuntimeObjectSystem)
   include("${RCC_DIR}/rccTargets.cmake")
