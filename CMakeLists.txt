@@ -63,31 +63,17 @@
 cmake_minimum_required(VERSION 2.8)
 CMAKE_POLICY(SET CMP0048 NEW)
 project(RCC VERSION 1.0.0)
-
+set(CMAKE_DEBUG_POSTFIX "d")
 SET(RCC_VERBOSE_CONFIG FALSE CACHE BOOL "Set to true to output verbose debugging information in RCC macros")
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-macro(rcc_find_library var_name)
-    find_library(${var_name} ${ARGN})
-    if(RCC_VERBOSE_CONFIG)
-        if(${var_name})
-            message(STATUS "${var_name} found at ${${var_name}}")
-        else(${var_name})
-            message(STATUS "${var_name} not found")
-        endif(${var_name})
-    endif(RCC_VERBOSE_CONFIG)
-endmacro(rcc_find_library var_name)
-
-macro(rcc_find_path var_name)
-  find_path(${var_name} ${ARGN})
-  if(RCC_VERBOSE_CONFIG)
-    if(${var_name})
-      message(STATUS "${var_name} found at ${${var_name}}")
-    else(${var_name})
-      message(STATUS "${var_name} not found")
-    endif(${var_name})
-  endif(RCC_VERBOSE_CONFIG)
-endmacro(rcc_find_path var_name)
+include(cmake/rcc_find_path.cmake)
+include(cmake/rcc_find_library.cmake)
+include(cmake/rcc_link_lib.cmake)
+include(cmake/rcc_config.cmake)
 
 macro(rcc_strip_extension input output)
   get_filename_component(tmp ${${input}} NAME)
@@ -112,182 +98,6 @@ macro(rcc_strip_extension input output)
   endif()
 endmacro()
 cmake_policy(SET CMP0054 NEW)
-# This macro is used for linking libs to a target, but also adding the correct directories to the RCC config
-MACRO(RCC_LINK_LIB TARGET)
-  SET(PREFIX "")
-  set(LINK_LIBS_RELEASE "")
-  set(LINK_LIBS_DEBUG "")
-  if(RCC_VERBOSE_CONFIG)
-    message(STATUS "=================================================================== 
-             RCC config information for ${TARGET}")
-  endif(RCC_VERBOSE_CONFIG)
-  FOREACH(lib ${ARGN})
-    SET(SKIP "0")
-    SET(IS_DEBUG "2") # default to a release library
-    IF(${lib} STREQUAL "optimized")
-      SET(PREFIX "optimized;")
-      SET(SKIP "1")
-      SET(IS_DEBUG "0")
-    ENDIF(${lib} STREQUAL "optimized")
-  
-    IF(${lib} STREQUAL "debug")
-      SET(PREFIX "debug;")
-      SET(SKIP "1")
-      SET(IS_DEBUG "1")
-    ENDIF(${lib} STREQUAL "debug")
-
-    IF(${SKIP} STREQUAL "0")
-      IF(TARGET ${lib})
-        get_target_property(rel ${lib} IMPORTED_IMPLIB_RELEASE)
-        get_target_property(_rel ${lib} IMPORTED_LOCATION_RELEASE)
-        get_target_property(deb ${lib} IMPORTED_IMPLIB_DEBUG)
-        get_target_property(_deb ${lib} IMPORTED_LOCATION_DEBUG)
-
-        if(NOT rel AND _rel)
-          set(rel ${_rel})
-        endif(NOT rel AND _rel)
-        if(NOT deb AND _deb)
-          set(deb ${_deb})
-        endif(NOT deb AND _deb)
-
-        if(NOT rel AND deb)
-          set(rel ${deb})
-        endif(NOT rel AND deb)
-
-        if(NOT deb AND rel)
-          set(deb ${rel})
-        endif(NOT deb AND rel)
-
-        IF(NOT rel AND NOT deb AND RCC_VERBOSE_CONFIG)
-          message("Target ${lib} does not contain IMPORTED_IMPLIB_RELEASE or IMPORTED_IMPLIB_DEBUG")
-        endif(NOT rel AND NOT deb AND RCC_VERBOSE_CONFIG)
-
-        GET_FILENAME_COMPONENT(rel_ ${rel} DIRECTORY)
-        GET_FILENAME_COMPONENT(deb_ ${deb} DIRECTORY)
-        get_filename_component(rel__ ${rel} NAME)
-        get_filename_component(deb__ ${deb} NAME)
-
-        LIST(APPEND LINK_DIRS_DEBUG "${deb_}")
-        LIST(APPEND LINK_DIRS_RELEASE "${rel_}")
-        LIST(APPEND LINK_FILE_DEBUG "${deb__}")
-        LIST(APPEND LINK_FILE_RELEASE "${rel__}")
-
-        if(RCC_VERBOSE_CONFIG AND deb_)
-          message(STATUS "  Link dir: [${lib}] (debug): ${deb_} - ${deb__}")
-        endif(RCC_VERBOSE_CONFIG AND deb_)
-        if(RCC_VERBOSE_CONFIG AND rel_)
-          message(STATUS "  Link dir: [${lib}] (release): ${rel_} - ${rel__}")
-        endif(RCC_VERBOSE_CONFIG AND rel_)
-
-        if(rel__)
-          #get_filename_component(rel__ "${rel__}" NAME_WE)
-          rcc_strip_extension(rel__ rel__)
-          string(SUBSTRING "${rel__}" 0 3 sub)
-          if(${sub} STREQUAL lib)
-            string(SUBSTRING "${rel__}" 3 -1 rel__)
-          endif()
-        #STRING(REPLACE "lib" "" rel__ "${rel__}")
-
-          LIST(APPEND LINK_LIBS_RELEASE ${rel__})
-        endif()
-
-        if(deb__)
-          #get_filename_component(deb__ "${deb__}" NAME_WE)
-          rcc_strip_extension(deb__ deb__)
-          string(SUBSTRING "${rel__}" 0 3 sub)
-          if(${sub} STREQUAL lib)
-            string(SUBSTRING "${rel__}" 3 -1 rel__)
-          endif()
-
-          #STRING(REPLACE "lib" "" deb__ "${deb__}")
-          LIST(APPEND LINK_LIBS_DEBUG ${deb__})
-        endif()
-
-        GET_TARGET_PROPERTY(imp_libs_rel_with_deb ${lib} IMPORTED_LINK_INTERFACE_LIBRARIES_RELWITHDEBINFO)
-        GET_TARGET_PROPERTY(imp_libs_rel ${lib} IMPORTED_LINK_INTERFACE_LIBRARIES_RELEASE)
-        GET_TARGET_PROPERTY(imp_libs_deb ${lib} IMPORTED_LINK_INTERFACE_LIBRARIES_DEBUG)
-
-        foreach(imp_lib ${imp_libs_rel})
-          if(EXISTS ${imp_lib})
-            GET_FILENAME_COMPONENT(dir ${imp_lib} DIRECTORY)
-            LIST(APPEND LINK_DIRS_RELEASE "${dir}")
-            #get_filename_component(name ${imp_lib} NAME_WE)
-            rcc_strip_extension(imp_lib name)
-            if(RCC_VERBOSE_CONFIG)
-              message(STATUS "  Link dir: [${name}] ${dir}")
-            endif(RCC_VERBOSE_CONFIG)
-            string(SUBSTRING "${name}" 0 3 sub)
-			string(LENGTH "${sub}" len_)
-			if(${len_} GREATER 3)
-              if(${sub} STREQUAL lib)
-                string(SUBSTRING "${name}" 3 -1 name)
-              endif()
-			endif()
-            LIST(APPEND LINK_LIBS_RELEASE ${name})
-          endif()
-        endforeach()
-
-        foreach(imp_lib ${imp_libs_rel_with_deb})
-          if(EXISTS ${imp_lib})
-            GET_FILENAME_COMPONENT(dir ${imp_lib} DIRECTORY)
-            LIST(APPEND LINK_DIRS_RELEASE "${dir}")
-            #get_filename_component(name ${imp_lib} NAME_WE)
-            rcc_strip_extension(imp_lib name)
-            if(RCC_VERBOSE_CONFIG)
-              message(STATUS "  Link dir: [${name}] ${dir}")
-            endif(RCC_VERBOSE_CONFIG)
-            list(APPEND LINK_LIBS_RELEASE ${name})
-          endif()
-        endforeach()
-
-        foreach(imp_lib ${imp_libs_deb})
-          if(EXISTS ${imp_lib})
-            GET_FILENAME_COMPONENT(dir ${imp_lib} DIRECTORY)
-            LIST(APPEND LINK_DIRS_DEBUG "${dir}")
-            #get_filename_component(name ${imp_lib} NAME_WE)
-            rcc_strip_extension(imp_lib name)
-            if(RCC_VERBOSE_CONFIG)
-              message(STATUS "  Link dir: [${name}] ${dir}")
-            endif(RCC_VERBOSE_CONFIG)
-            list(APPEND LINK_LIBS_DEBUG ${name})
-          endif()
-        endforeach()
-      else(TARGET ${lib})
-        IF(EXISTS ${lib})
-        # if it's a file on disk
-          TARGET_LINK_LIBRARIES(${TARGET} ${lib})
-          GET_FILENAME_COMPONENT(DIR ${lib} DIRECTORY)
-          LIST(APPEND LINK_DIRS_DEBUG "${DIR}")
-          LIST(APPEND LINK_DIRS_RELEASE "${DIR}")
-          #get_filename_component(name ${lib} NAME_WE)
-          rcc_strip_extension(lib name)
-          if(RCC_VERBOSE_CONFIG AND DIR)
-            message(STATUS "  Link dir: [${name}] ${dir}")
-          endif(RCC_VERBOSE_CONFIG AND DIR)
-          string(SUBSTRING "${name}" 0 3 sub)
-          if("${sub}" STREQUAL "lib")
-            string(SUBSTRING "${name}" 3 -1 name)
-          endif()
-        #string(REPLACE "lib" "" name "${name}")
-          if(${IS_DEBUG} STREQUAL "0")
-            list(APPEND LINK_LIBS_RELEASE "${name}")
-          elseif(${IS_DEBUG} STREQUAL "1")
-            list(APPEND LINK_LIBS_DEBUG "${name}")
-          else() # IS_DEBUG == 2  thus debug / optimized was not specified
-            list(APPEND LINK_LIBS_DEBUG "${name}")
-            list(APPEND LINK_LIBS_RELEASE "${name}")
-          endif()
-        endif(EXISTS ${lib})
-      endif(TARGET ${lib})
-      TARGET_LINK_LIBRARIES(${TARGET} ${PREFIX}${lib})
-    ENDIF(${SKIP} STREQUAL "0")
-  ENDFOREACH(lib)
-  LIST(REMOVE_DUPLICATES LINK_DIRS_DEBUG)
-  LIST(REMOVE_DUPLICATES LINK_DIRS_RELEASE)
-
-ENDMACRO(RCC_LINK_LIB TARGET)
-
-
 
 
 if(UNIX AND NOT APPLE)
@@ -300,9 +110,6 @@ else()
 endif()
 
 include(Aurora/cmake/ProjectFilesExternal.cmake)
-include_directories(${IObject_INCLUDE})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem)
 
 FIND_PACKAGE(CUDA QUIET)
 message(STATUS 
@@ -311,9 +118,6 @@ message(STATUS
   NVCC: ${CUDA_TOOLKIT_ROOT_DIR}"
 )
 
-
-
-SET(RCC_INCLUDE_DIRS "${IObject_INCLUDE};${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem;${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler" PARENT_SCOPE)
 if(RCC_INCLUDE_DEPENDENCIES)
   LIST(REMOVE_DUPLICATES RCC_INCLUDE_DEPENDENCIES) 
 endif()
@@ -327,89 +131,88 @@ if(RCC_LIBRARY_DIRS_RELWITHDEBINFO)
   LIST(REMOVE_DUPLICATES RCC_LIBRARY_DIRS_RELWITHDEBINFO)
 endif()
 
-macro(WRITE_RCC_CONFIG RCC_INCLUDE_DEPENDENCIES RCC_LIBRARY_DIRS_DEBUG RCC_LIBRARY_DIRS_RELEASE RCC_COMPILE_FLAGS)
-
-string(REGEX REPLACE ";" "\n" includes_ "${RCC_INCLUDE_DEPENDENCIES}")
-string(REGEX REPLACE ";" "\n" lib_dirs_deb_ "${RCC_LIBRARY_DIRS_DEBUG}")
-string(REGEX REPLACE ";" "\n" lib_dirs_rel_ "${RCC_LIBRARY_DIRS_RELEASE}")
-string(REGEX REPLACE ";" "\n" flags_ "${RCC_COMPILE_FLAGS}")
-#string(REGEX REPLACE ";" "\n" lib_dirs_reldeb_ "${RCC_LIBRARY_DIRS_RELWITHDEBINFO}")
-set(NVCC_COMPILER "")
-IF(CUDA_FOUND)
-    set(NVCC_COMPILER "${CUDA_NVCC_EXECUTABLE}")
-ENDIF()
-set(COMPILER_PATH ${CMAKE_CXX_COMPILER};${NVCC_COMPILER})
-IF(WIN32)
-    FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/RCC_config.txt" 
-        "project_id:\n0\n"
-        "include_dirs:\n${includes_}\n"
-        "lib_dirs_debug:\n${lib_dirs_deb_}\n"
-        "compile_options:\n/FS ${flags_}\n"
-        "compiler_locations:\n${COMPILER_PATH}")
-
-    FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/RCC_config.txt" 
-        "project_id:\n0"
-        "\ninclude_dirs:\n${includes_}"
-        "\nlib_dirs_release:\n${lib_dirs_rel_}"
-        "\ncompile_options:\n/FS ${flags_}"
-        "\ncompiler_location:\n${COMPILER_PATH}")
-	
-    FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/RCC_config.txt" 
-        "project_id:\n0"
-        "\ninclude_dirs:\n${includes_}"
-        "lib_dirs_release:\n${lib_dirs_rel_}"
-        "compile_options:\n/FS ${flags_}"
-        "compiler_location:\n${COMPILER_PATH}")
-	
-    FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RCC_config.txt" 
-        "project_id:\n0"
-        "\ninclude_dirs:\n${includes_}"
-        "\nlib_dirs_debug:\n${lib_dirs_deb_}"
-        "\nlib_dirs_release:\n${lib_dirs_rel_}"
-        "\ncompile_options:\n\n/FS ${flags_}"
-        "\ncompiler_location:\n${COMPILER_PATH}")
-ELSE()
-    FILE(WRITE "${CMAKE_BINARY_DIR}/RCC_config.txt"
-        "project_id:\n0\n"
-        "\ninclude_dirs:\n${includes_}\n"
-        "\nlib_dirs_debug:\n${lib_dirs_deb_}\n${CMAKE_BINARY_DIR}\n"
-        "\nlib_dirs_release:\n${lib_dirs_rel_}\n${CMAKE_BINARY_DIR}"
-        "\ncompile_options:\n${flags_}\n"
-        "\ncompiler_location:\n${COMPILER_PATH}")
-
-    FILE(WRITE "${CMAKE_CURRENT_BINARY_DIR}/RCC_config.txt"
-        "project_id:\n0\n"
-        "\ninclude_dirs:\n${includes_}\n"
-        "\nlib_dirs_debug:\n${lib_dirs_deb_}\n${CMAKE_BINARY_DIR}\n"
-        "\nlib_dirs_release:\n${lib_dirs_rel_}\n${CMAKE_BINARY_DIR}"
-        "\ncompile_options:\n${flags_}\n"
-        "\ncompiler_location:\n${COMPILER_PATH}")
-ENDIF()
-endmacro()
-
 WRITE_RCC_CONFIG("${RCC_INCLUDE_DEPENDENCIES}" "${RCC_LIBARY_DIRS_DEBUG}" "${RCC_LIBRARY_DIRS_RELEASE}" "${RCC_COMPILE_FLAGS}")
-set(RCC_PERMODULE_INTERFACE_SOURCE "${CMAKE_CURRENT_LIST_DIR}/Aurora/RuntimeObjectSystem/ObjectInterfacePerModuleSource.cpp" PARENT_SCOPE)
 
 add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
 
-if(NOT WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fvisibility=hidden")
-endif(NOT WIN32)
 add_library(RuntimeObjectSystem STATIC ${RuntimeObjectSystem_SRCS})
 target_link_libraries(RuntimeObjectSystem RuntimeCompiler)
+
+if(NOT IObject_INCLUDE)
+  set(IObject_INCLUDE Aurora/include)
+endif(NOT IObject_INCLUDE)
+
+target_include_directories(RuntimeCompiler 
+  PUBLIC 
+    $<BUILD_INTERFACE:${IObject_INCLUDE};
+      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem;
+      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler;
+      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora>
+)
+
+target_include_directories(RuntimeObjectSystem 
+  PUBLIC 
+    $<BUILD_INTERFACE:${IObject_INCLUDE};
+      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem;
+      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler;
+      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora>
+)
+
+if(NOT WIN32)
+    target_compile_options(RuntimeCompiler PRIVATE -fPIC -fvisibility=hidden)
+    target_compile_options(RuntimeObjectSystem PRIVATE -fPIC -fvisibility=hidden)
+endif(NOT WIN32)
+
+export(TARGETS RuntimeCompiler RuntimeObjectSystem
+      FILE "${PROJECT_BINARY_DIR}/rccTargets.cmake")
+
+export(PACKAGE RCC)
+
+configure_file(rccConfig.cmake.in
+  "${PROJECT_BINARY_DIR}/RCCConfig.cmake" @ONLY)
 
 install(TARGETS RuntimeObjectSystem RuntimeCompiler
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 
+install(TARGETS RuntimeObjectSystem RuntimeCompiler
+        DESTINATION lib
+        EXPORT RCCTargets)
+
 install(DIRECTORY Aurora/include/
         DESTINATION include
         FILES_MATCHING PATTERN "*.h")
+
 install(DIRECTORY Aurora/include/
         DESTINATION include
         FILES_MATCHING PATTERN "*.hpp")
 
+install(DIRECTORY Aurora/RuntimeObjectSystem
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.hpp")
+
+install(DIRECTORY Aurora/RuntimeCompiler
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.hpp")
+
+install(DIRECTORY Aurora/RuntimeObjectSystem
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.h")
+
+install(DIRECTORY Aurora/RuntimeCompiler
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.h")
+
+install(DIRECTORY cmake DESTINATION ./ FILES_MATCHING PATTERN "*.cmake")
+
+install(FILES
+  "${PROJECT_BINARY_DIR}/RCCConfig.cmake"
+  DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT dev)
+
+
+install(EXPORT RCCTargets DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT dev)
+
 if(UNIX)
-        target_link_libraries(RuntimeObjectSystem dl)
+  target_link_libraries(RuntimeObjectSystem dl)
 endif()
