@@ -1,0 +1,19 @@
+# - Config file for the FooBar package
+# It defines the following variables
+#  RCC_INCLUDE_DIRS - include directories for rcc
+#  RCC_LIBRARIES    - libraries to link against
+#  RCC_DIR          - base directory
+ 
+# Compute paths
+get_filename_component(RCC_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(RCC_INCLUDE_DIRS "${RCC_DIR}/include")
+include(${RCC_DIR}/cmake/rcc_link_lib.cmake)
+include(${RCC_DIR}/cmake/rcc_find_path.cmake)
+include(${RCC_DIR}/cmake/rcc_find_library.cmake)
+include(${RCC_DIR}/cmake/rcc_config.cmake)
+
+if(NOT TARGET RuntimeCompiler AND NOT TARGET RuntimeObjectSystem)
+  include("${RCC_DIR}/rccTargets.cmake")
+endif()
+
+set(RCC_LIBRARIES RuntimeCompiler RuntimeObjectSystem)

@@ -27,7 +27,7 @@
 #include <vector>
 #include <assert.h>
 #include <IObjectInfo.h>
-#include <boost/preprocessor.hpp>
+#include "RuntimeMacros.hpp"
 #include "IObjectState.hpp"
 #include "shared_ptr.hpp"
 
@@ -492,9 +492,9 @@ private:
 #define REGISTERSINGLETON_3( T, bIsAutoConstructSingleton, pObjectInfo )    REGISTERBASE( T, true, bIsAutoConstructSingleton, pObjectInfo )
 
 #ifdef _MSC_VER
-#define REGISTERCLASS(...) BOOST_PP_CAT(BOOST_PP_OVERLOAD( REGISTERCLASS_, __VA_ARGS__ )(__VA_ARGS__), BOOST_PP_EMPTY())
+#define REGISTERCLASS(...) BOOST_PP_CAT(RCC_PP_OVERLOAD( REGISTERCLASS_, __VA_ARGS__ )(__VA_ARGS__), RCC_PP_EMPTY())
 
-#define REGISTERSINGLETON(...) BOOST_PP_CAT(BOOST_PP_OVERLOAD( REGISTERSINGLETON_, __VA_ARGS__ )(__VA_ARGS__), BOOST_PP_EMPTY())
+#define REGISTERSINGLETON(...) BOOST_PP_CAT(RCC_PP_OVERLOAD( REGISTERSINGLETON_, __VA_ARGS__ )(__VA_ARGS__), RCC_PP_EMPTY())
 #else
 #define REGISTERCLASS(...) BOOST_PP_OVERLOAD( REGISTERCLASS_, __VA_ARGS__ )(__VA_ARGS__)
 
