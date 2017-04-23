@@ -116,9 +116,6 @@ add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
 add_library(RuntimeObjectSystem STATIC ${RuntimeObjectSystem_SRCS})
 target_link_libraries(RuntimeObjectSystem RuntimeCompiler)
 
-add_executable(test_tinterface "tests/test_tinterface.cpp")
-target_link_libraries(test_tinterface RuntimeCompiler RuntimeObjectSystem)
-
 if(NOT IObject_INCLUDE)
   set(IObject_INCLUDE Aurora/include)
 endif(NOT IObject_INCLUDE)
