@@ -98,6 +98,10 @@ struct IObject
         GetInterface( T::s_interfaceID, (void**)pReturn );
     }
 
+    static std::string GetInterfaceName()
+    {
+        return "IObject";
+    }
 
     IObject() : _isRuntimeDelete(false) {}
     virtual ~IObject()
