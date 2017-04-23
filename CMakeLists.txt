@@ -116,6 +116,9 @@ add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
 add_library(RuntimeObjectSystem STATIC ${RuntimeObjectSystem_SRCS})
 target_link_libraries(RuntimeObjectSystem RuntimeCompiler)
 
+add_executable(test_tinterface "tests/test_tinterface.cpp")
+target_link_libraries(test_tinterface RuntimeCompiler RuntimeObjectSystem)
+
 if(NOT IObject_INCLUDE)
   set(IObject_INCLUDE Aurora/include)
 endif(NOT IObject_INCLUDE)
@@ -191,6 +194,21 @@ install(DIRECTORY Aurora/RuntimeCompiler
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
 )
+
+if(WIN32)
+    install(FILES ${CMAKE_BINARY_DIR}/RuntimeCompiler.dir/Debug/RuntimeCompiler.pdb
+        DESTINATION lib COMPONENT dev RENAME RuntimeCompilerd.pdb
+	)
+	install(FILES ${CMAKE_BINARY_DIR}/RuntimeObjectSystem.dir/Debug/RuntimeObjectSystem.pdb
+        DESTINATION lib COMPONENT dev RENAME RuntimeObjectSystemd.pdb
+	)
+    install(FILES ${CMAKE_BINARY_DIR}/RuntimeCompiler.dir/RelWithDebInfo/RuntimeCompiler.pdb
+        DESTINATION lib COMPONENT dev
+	)
+	install(FILES ${CMAKE_BINARY_DIR}/RuntimeObjectSystem.dir/RelWithDebInfo/RuntimeObjectSystem.pdb
+        DESTINATION lib COMPONENT dev
+	)
+endif(WIN32)
 
 install(DIRECTORY cmake DESTINATION ./ FILES_MATCHING PATTERN "*.cmake")
 
