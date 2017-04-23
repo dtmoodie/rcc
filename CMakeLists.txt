@@ -126,6 +126,7 @@ target_include_directories(RuntimeCompiler
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem;
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler;
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora>
+	$<INSTALL_INTERFACE:include>
 )
 
 target_include_directories(RuntimeObjectSystem 
@@ -134,6 +135,7 @@ target_include_directories(RuntimeObjectSystem
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem;
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler;
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora>
+	  $<INSTALL_INTERFACE:include>
 )
 
 if(NOT WIN32)
@@ -142,7 +144,7 @@ if(NOT WIN32)
 endif(NOT WIN32)
 
 export(TARGETS RuntimeCompiler RuntimeObjectSystem
-      FILE "${PROJECT_BINARY_DIR}/rccTargets.cmake")
+      FILE "${PROJECT_BINARY_DIR}/RCCTargets.cmake")
 
 export(PACKAGE RCC)
 
@@ -152,42 +154,49 @@ configure_file(rccConfig.cmake.in
 install(TARGETS RuntimeObjectSystem RuntimeCompiler
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
+        ARCHIVE DESTINATION lib
+)
 
 install(TARGETS RuntimeObjectSystem RuntimeCompiler
         DESTINATION lib
-        EXPORT RCCTargets)
+        EXPORT RCCTargets
+)
 
 install(DIRECTORY Aurora/include/
         DESTINATION include
-        FILES_MATCHING PATTERN "*.h")
+        FILES_MATCHING PATTERN "*.h"
+)
 
 install(DIRECTORY Aurora/include/
         DESTINATION include
-        FILES_MATCHING PATTERN "*.hpp")
+        FILES_MATCHING PATTERN "*.hpp"
+)
 
 install(DIRECTORY Aurora/RuntimeObjectSystem
         DESTINATION include
-        FILES_MATCHING PATTERN "*.hpp")
+        FILES_MATCHING PATTERN "*.hpp"
+)
 
 install(DIRECTORY Aurora/RuntimeCompiler
         DESTINATION include
-        FILES_MATCHING PATTERN "*.hpp")
+        FILES_MATCHING PATTERN "*.hpp"
+)
 
 install(DIRECTORY Aurora/RuntimeObjectSystem
         DESTINATION include
-        FILES_MATCHING PATTERN "*.h")
+        FILES_MATCHING PATTERN "*.h"
+)
 
 install(DIRECTORY Aurora/RuntimeCompiler
         DESTINATION include
-        FILES_MATCHING PATTERN "*.h")
+        FILES_MATCHING PATTERN "*.h"
+)
 
 install(DIRECTORY cmake DESTINATION ./ FILES_MATCHING PATTERN "*.cmake")
 
 install(FILES
   "${PROJECT_BINARY_DIR}/RCCConfig.cmake"
   DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT dev)
-
 
 install(EXPORT RCCTargets DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT dev)
 
