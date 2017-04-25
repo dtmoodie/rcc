@@ -1,21 +1,21 @@
 # How to include RCC in your own project
-# 
+#
 #  # Get all include directories for this project and pass them to RCC.
-#  # Alternatively you can only include the directories that you know you need in runtime compilable classes 
-#  GET_PROPERTY(RCC_INCLUDE_DEPENDENCIES DIRECTORY PROPERTY INCLUDE_DIRECTORIES) 
-#  
+#  # Alternatively you can only include the directories that you know you need in runtime compilable classes
+#  GET_PROPERTY(RCC_INCLUDE_DEPENDENCIES DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
+#
 #  # Set the include directory for RCC to find your definition of an IObject
 #  SET(IObject_INCLUDE ".....")
-#  
+#
 #  # Semi-colon separated list of directories for searching for libraries
-#  SET(RCC_LIBRARY_DIRS "..... linked library dirs ..........") 
+#  SET(RCC_LIBRARY_DIRS "..... linked library dirs ..........")
 #  Add this to your project to gain access to the object factory system
 #  ADD_SUBDIRECTORY("RCC")
 #  INCLUDE_DIRECTORIES(${RCC_INCLUDE_DIRS})
-# 
+#
 #
 # ================ C++ code example ====================================
-# 
+#
 # #include "RuntimeObjectSystem.h"
 #
 # int main()
@@ -90,14 +90,14 @@ endif()
 include(Aurora/cmake/ProjectFilesExternal.cmake)
 
 FIND_PACKAGE(CUDA QUIET)
-message(STATUS 
+message(STATUS
 "RCC config:
   IObject include dir: ${IObject_INCLUDE}
   NVCC: ${CUDA_TOOLKIT_ROOT_DIR}"
 )
 
 if(RCC_INCLUDE_DEPENDENCIES)
-  LIST(REMOVE_DUPLICATES RCC_INCLUDE_DEPENDENCIES) 
+  LIST(REMOVE_DUPLICATES RCC_INCLUDE_DEPENDENCIES)
 endif()
 if(RCC_LIBRARY_DIRS_RELEASE)
   LIST(REMOVE_DUPLICATES RCC_LIBRARY_DIRS_RELEASE)
@@ -120,22 +120,22 @@ if(NOT IObject_INCLUDE)
   set(IObject_INCLUDE Aurora/include)
 endif(NOT IObject_INCLUDE)
 
-target_include_directories(RuntimeCompiler 
-  PUBLIC 
+target_include_directories(RuntimeCompiler
+  PUBLIC
     $<BUILD_INTERFACE:${IObject_INCLUDE};
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem;
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler;
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora>
-	$<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include>
 )
 
-target_include_directories(RuntimeObjectSystem 
-  PUBLIC 
+target_include_directories(RuntimeObjectSystem
+  PUBLIC
     $<BUILD_INTERFACE:${IObject_INCLUDE};
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem;
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler;
       ${CMAKE_CURRENT_SOURCE_DIR}/Aurora>
-	  $<INSTALL_INTERFACE:include>
+      $<INSTALL_INTERFACE:include>
 )
 
 if(NOT WIN32)
@@ -148,8 +148,10 @@ export(TARGETS RuntimeCompiler RuntimeObjectSystem
 
 export(PACKAGE RCC)
 
-configure_file(rccConfig.cmake.in
+configure_file(RCCConfig.cmake.in
   "${PROJECT_BINARY_DIR}/RCCConfig.cmake" @ONLY)
+
+file(COPY "cmake" DESTINATION ${PROJECT_BINARY_DIR})
 
 install(TARGETS RuntimeObjectSystem RuntimeCompiler
         RUNTIME DESTINATION bin
@@ -195,25 +197,26 @@ install(DIRECTORY Aurora/RuntimeCompiler
 if(WIN32)
     install(FILES ${CMAKE_BINARY_DIR}/RuntimeCompiler.dir/Debug/RuntimeCompiler.pdb
         DESTINATION lib COMPONENT dev RENAME RuntimeCompilerd.pdb
-	)
-	install(FILES ${CMAKE_BINARY_DIR}/RuntimeObjectSystem.dir/Debug/RuntimeObjectSystem.pdb
+    )
+    install(FILES ${CMAKE_BINARY_DIR}/RuntimeObjectSystem.dir/Debug/RuntimeObjectSystem.pdb
         DESTINATION lib COMPONENT dev RENAME RuntimeObjectSystemd.pdb
-	)
+    )
     install(FILES ${CMAKE_BINARY_DIR}/RuntimeCompiler.dir/RelWithDebInfo/RuntimeCompiler.pdb
         DESTINATION lib COMPONENT dev
-	)
-	install(FILES ${CMAKE_BINARY_DIR}/RuntimeObjectSystem.dir/RelWithDebInfo/RuntimeObjectSystem.pdb
+    )
+    install(FILES ${CMAKE_BINARY_DIR}/RuntimeObjectSystem.dir/RelWithDebInfo/RuntimeObjectSystem.pdb
         DESTINATION lib COMPONENT dev
-	)
+    )
 endif(WIN32)
 
 install(DIRECTORY cmake DESTINATION ./ FILES_MATCHING PATTERN "*.cmake")
+
 
 install(FILES
   "${PROJECT_BINARY_DIR}/RCCConfig.cmake"
   DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT dev)
 
-install(EXPORT RCCTargets DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT dev)
+install(EXPORT RCCTargets DESTINATION "${PROJECT_BINARY_DIR}" COMPONENT dev)
 
 if(UNIX)
   target_link_libraries(RuntimeObjectSystem dl)
