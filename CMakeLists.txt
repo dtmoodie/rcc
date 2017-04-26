@@ -73,6 +73,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 include(cmake/rcc_find_path.cmake)
 include(cmake/rcc_find_library.cmake)
 include(cmake/rcc_link_lib.cmake)
+include(cmake/rcc_strip_extension.cmake)
 include(cmake/rcc_config.cmake)
 
 cmake_policy(SET CMP0054 NEW)
@@ -122,36 +123,44 @@ endif(NOT IObject_INCLUDE)
 
 target_include_directories(RuntimeCompiler
   PUBLIC
-    $<BUILD_INTERFACE:${IObject_INCLUDE};
-      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem;
-      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler;
-      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora>
     $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Aurora>
+)
+
+target_include_directories(RuntimeCompiler
+  PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem;
+    ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler>
 )
 
 target_include_directories(RuntimeObjectSystem
   PUBLIC
-    $<BUILD_INTERFACE:${IObject_INCLUDE};
-      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeObjectSystem;
-      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler;
-      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora>
-      $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Aurora>
 )
+
+target_include_directories(RuntimeObjectSystem
+    PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/Aurora/RuntimeObjectSystem;
+        ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler>
+)
+set(RCC_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/Aurora" CACHE PATH "")
 
 if(NOT WIN32)
     target_compile_options(RuntimeCompiler PRIVATE -fPIC -fvisibility=hidden)
     target_compile_options(RuntimeObjectSystem PRIVATE -fPIC -fvisibility=hidden)
 endif(NOT WIN32)
 
-export(TARGETS RuntimeCompiler RuntimeObjectSystem
-      FILE "${PROJECT_BINARY_DIR}/RCCTargets.cmake")
-
-export(PACKAGE RCC)
-
 configure_file(RCCConfig.cmake.in
   "${PROJECT_BINARY_DIR}/RCCConfig.cmake" @ONLY)
 
+export(TARGETS RuntimeCompiler RuntimeObjectSystem
+      FILE "${PROJECT_BINARY_DIR}/RCCTargets.cmake"
+)
+
 file(COPY "cmake" DESTINATION ${PROJECT_BINARY_DIR})
+
+export(PACKAGE RCC)
 
 install(TARGETS RuntimeObjectSystem RuntimeCompiler
         RUNTIME DESTINATION bin
@@ -211,12 +220,11 @@ endif(WIN32)
 
 install(DIRECTORY cmake DESTINATION ./ FILES_MATCHING PATTERN "*.cmake")
 
-
 install(FILES
   "${PROJECT_BINARY_DIR}/RCCConfig.cmake"
   DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT dev)
 
-install(EXPORT RCCTargets DESTINATION "${PROJECT_BINARY_DIR}" COMPONENT dev)
+install(EXPORT RCCTargets DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
 if(UNIX)
   target_link_libraries(RuntimeObjectSystem dl)

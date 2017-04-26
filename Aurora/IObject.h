@@ -16,7 +16,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 // IObject header file.
 //
 // The RuntimeCompiler library does not declare an IObject interface, only forward declares it.
@@ -61,7 +61,9 @@ template< typename TInferior, typename TSuper> struct TInterface : public TSuper
         return std::string(__FUNCTION__).substr(ct::findFirst(__FUNCTION__, ' ') + 1,
             ct::findFirst(__FUNCTION__, ',') - ct::findFirst(__FUNCTION__, ' ') - 1);
 #else
-        // TODO GCC equivalent with __PRETTY_FUNCTION__
+        std::string str = __PRETTY_FUNCTION__;
+        auto pos1 = str.find("TInferior = ");
+        return str.substr(pos1 + 12, str.find(';', pos1+13) - pos1 - 12);
 #endif
     }
     virtual IObject* GetInterface( InterfaceID _iid)
@@ -106,7 +108,7 @@ struct IObject
     IObject() : _isRuntimeDelete(false) {}
     virtual ~IObject()
     {
-        
+
     }
 
     // Perform any object initialization
@@ -139,7 +141,7 @@ struct IObject
     //serialise is not pure virtual as many objects do not need state
     virtual void Serialize(ISimpleSerializer *pSerializer)
     {
-        
+
 
     }
 
