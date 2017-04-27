@@ -218,13 +218,15 @@ if(WIN32)
     )
 endif(WIN32)
 
-install(DIRECTORY cmake DESTINATION ./ FILES_MATCHING PATTERN "*.cmake")
+install(DIRECTORY cmake DESTINATION share/RCC FILES_MATCHING PATTERN "*.cmake")
 
 install(FILES
   "${PROJECT_BINARY_DIR}/RCCConfig.cmake"
-  DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT dev)
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/share/RCC" COMPONENT dev
+)
 
-install(EXPORT RCCTargets DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(EXPORT RCCTargets DESTINATION "${CMAKE_INSTALL_PREFIX}/share/RCC"
+)
 
 if(UNIX)
   target_link_libraries(RuntimeObjectSystem dl)

@@ -6,7 +6,8 @@
 
 # Compute paths
 get_filename_component(RCC_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set(RCC_INCLUDE_DIRS "${RCC_DIR}/include")
+
+set(RCC_INCLUDE_DIRS "${RCC_DIR}/../../include")
 include(${RCC_DIR}/cmake/rcc_link_lib.cmake)
 include(${RCC_DIR}/cmake/rcc_find_path.cmake)
 include(${RCC_DIR}/cmake/rcc_find_library.cmake)
