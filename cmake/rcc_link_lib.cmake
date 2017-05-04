@@ -2,7 +2,9 @@
 MACRO(RCC_LINK_LIB TARGET)
   SET(PREFIX "")
   set(LINK_LIBS_RELEASE "")
+  set(LINK_DIRS_RELEASE "")
   set(LINK_LIBS_DEBUG "")
+  set(LINK_DIRS_DEBUG "")
   if(RCC_VERBOSE_CONFIG)
     message(STATUS "===================================================================
              RCC config information for ${TARGET}")
