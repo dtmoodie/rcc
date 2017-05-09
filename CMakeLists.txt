@@ -116,7 +116,8 @@ add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
 
 add_library(RuntimeObjectSystem STATIC ${RuntimeObjectSystem_SRCS})
 target_link_libraries(RuntimeObjectSystem RuntimeCompiler)
-
+set_property(TARGET RuntimeCompiler PROPERTY CXX_STANDARD 11)
+set_property(TARGET RuntimeObjectSystem PROPERTY CXX_STANDARD 11)
 if(NOT IObject_INCLUDE)
   set(IObject_INCLUDE Aurora/include)
 endif(NOT IObject_INCLUDE)
