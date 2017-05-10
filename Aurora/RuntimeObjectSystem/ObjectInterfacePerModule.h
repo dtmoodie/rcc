@@ -202,7 +202,7 @@ public:
                 m_ConstructedObjects[ id ] = state;
             }
         }
-        return pT;    
+        return pT;
     }
 
     virtual void ConstructNull()
@@ -390,10 +390,14 @@ public:
         m_FreeIds.clear();
         m_ConstructedObjects.clear();
     }
-        virtual int GetInterfaceId() const
-        {
-            return T::s_interfaceID;
-        }
+    virtual int GetInterfaceId() const
+    {
+        return T::s_interfaceID;
+    }
+    std::string GetInterfaceName() const
+    {
+        return T::GetInterfaceName();
+    }
 
 private:
     bool                            m_bIsSingleton;
@@ -445,8 +449,8 @@ public:
     }
 #endif //_WIN32
     friend class TObjectConstructorConcrete<TActual>;
-    virtual ~TActual() 
-    {  
+    virtual ~TActual()
+    {
         if(!T::IsRuntimeDelete())
         {
             if(auto state = m_Constructor.GetState(m_Id))

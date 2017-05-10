@@ -19,7 +19,7 @@
 
 #ifndef OBJECTINTERFACE_INCLUDED
 #define OBJECTINTERFACE_INCLUDED
-
+#include <string>
 #include <vector>
 #include <stdlib.h>
 
@@ -64,7 +64,7 @@ struct ObjectId
     {
         return (m_ConstructorId != InvalidId && m_PerTypeId != InvalidId);
     }
-    void SetInvalid() 
+    void SetInvalid()
     {
         m_ConstructorId = InvalidId;
         m_PerTypeId = InvalidId;
@@ -104,8 +104,9 @@ struct IObjectConstructor
     virtual ConstructorId        GetConstructorId() const = 0;
     virtual void                 SetConstructorId( ConstructorId id ) = 0;                    //take care how you use this - should only be used by id service
     virtual void                 ClearIfAllDeleted() = 0;                                    //if there are no objects left then clear internal memory (does not reduce memory consumption)
-    
+
     virtual int                  GetInterfaceId() const = 0;
+    virtual std::string          GetInterfaceName() const = 0;
 protected:
     friend struct IObjectSharedState;
     virtual void                 DeRegister(PerTypeObjectId id) = 0;
