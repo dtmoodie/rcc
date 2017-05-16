@@ -1,25 +1,25 @@
-
 # helper function to recursively get dependent library directories and includes
 
-macro(_link_lib_helper LIB_VAR INC_VAR tgt )
-
-endmacro(_link_lib_helper)
-
 macro(_target_helper LIB_VAR INC_VAR tgt tab)
+    if(RCC_VERBOSE_CONFIG)
+        message(STATUS "${tab}${tgt}")
+    endif(RCC_VERBOSE_CONFIG)
     if(TARGET ${tgt})
-        message(${tab}${tgt})
         get_target_property(int_link_lib ${tgt} INTERFACE_LINK_LIBRARIES)
         foreach(lib ${int_link_lib})
             if(TARGET ${lib})
                 _target_helper(${LIB_VAR} ${INC_VAR} ${lib} "${tab}  ")
             else(TARGET ${lib})
-
             endif(TARGET ${lib})
         endforeach(lib ${int_link_lib})
         get_target_property(out_dir ${tgt} LIBRARY_OUTPUT_DIRECTORY)
         if(out_dir)
             list(APPEND ${LIB_VAR} ${out_dir})
         endif(out_dir)
+        get_target_property(lib_path ${tgt} LIBRARY_OUTPUT_DIRECTORY)
+        if(lib_path)
+            list(APPEND ${LIB_VAR} ${out_dir})
+        endif(lib_path)
         get_target_property(inc_dir ${tgt} INTERFACE_INCLUDE_DIRECTORIES)
         if(inc_dir)
             list(APPEND ${INC_VAR} ${inc_dir})
@@ -28,19 +28,55 @@ macro(_target_helper LIB_VAR INC_VAR tgt tab)
         if(inc_dir)
             list(APPEND ${INC_VAR} ${inc_dir})
         endif()
+        get_target_property(imp ${tgt} IMPORTED)
+        if(imp)
+            get_target_property(imp_lib ${tgt} LOCATION)
+            get_filename_component(dir ${imp_lib} DIRECTORY)
+            list(APPEND ${LIB_VAR} ${dir})
+        endif(imp)
     else(TARGET ${tgt})
-        message("${tgt} is not a target")
     endif(TARGET ${tgt})
 endmacro(_target_helper)
 
 macro(RCC_TARGET_CONFIG target)
+    set(inc_dirs "")
+    set(lib_dirs "")
+    _target_helper(lib_dirs inc_dirs ${target} "  ")
+    get_target_property(dest_dir ${target} RUNTIME_OUTPUT_DIRECTORY)
+    get_target_property(flags ${target} COMPILE_OPTIONS)
+    set(NVCC_COMPILER "")
+    IF(CUDA_FOUND)
+        set(NVCC_COMPILER "${CUDA_NVCC_EXECUTABLE}")
+    ENDIF()
+    set(COMPILER_PATH ${CMAKE_CXX_COMPILER};${NVCC_COMPILER})
+    list(REMOVE_DUPLICATES inc_dirs)
+    list(REMOVE_DUPLICATES flags)
+    list(REMOVE_DUPLICATES lib_dirs)
 
+    set(inc "")
+    foreach(dir "${inc_dirs}")
+        set(inc "${dir}\n")
+    endforeach(dir)
+    set(lib "")
+    foreach(dir "${lib_dirs}")
+        set(lib "${dir}\n")
+    endforeach(dir)
+    string(REGEX REPLACE ";" "\n" inc "${inc}")
+    string(REGEX REPLACE ";" "\n" lib "${lib}")
 
-
+    if(WIN32)
+        list(APPEND flags "/FS")
+    endif(WIN32)
+    message(STATUS "Writing ${dest_dir}/${target}_config.txt")
+    FILE(WRITE "${dest_dir}/${target}_config.txt"
+        "project_id:\n0\n\n"
+        "include_dirs:\n${inc}\n"
+        "lib_dirs_debug:\n${lib}\n"
+        "lib_dirs_release:\n${lib}\n"
+        "compile_options:\n${flags}\n\n"
+        "compiler_location:\n${COMPILER_PATH}"
+    )
 endmacro(RCC_TARGET_CONFIG)
-
-
-
 
 macro(WRITE_RCC_CONFIG RCC_INCLUDE_DEPENDENCIES RCC_LIBRARY_DIRS_DEBUG RCC_LIBRARY_DIRS_RELEASE RCC_COMPILE_FLAGS)
 
