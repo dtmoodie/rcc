@@ -104,6 +104,7 @@ xcuserdata
 ####
 # CLion IDE files
 cmake-build-debug/
+cmake-build-release/
 .idea/
 
 
