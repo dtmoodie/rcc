@@ -2,7 +2,7 @@
 #include "IObject.h"
 #include "shared_ptr.hpp"
 
-IObjectSharedState* IObjectSharedState::Get(IObject* obj)
+IObjectSharedState* IObjectSharedState::Get(const IObject* obj)
 {
     return obj->GetConstructor()->GetState(obj->GetPerTypeId());
 }
