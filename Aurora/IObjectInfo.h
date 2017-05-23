@@ -2,11 +2,11 @@
 #include <string>
 struct IObjectInfo
 {
-    virtual unsigned int GetInterfaceId() const = 0;
-    virtual std::string GetInterfaceName() const = 0;
+    virtual unsigned int getInterfaceId() const = 0;
+    virtual std::string getInterfaceName() const = 0;
     // This is what actually gets displayed
-    virtual std::string GetObjectName() const = 0;
-    virtual std::string GetObjectTooltip() const = 0;
-    virtual std::string GetObjectHelp() const = 0;
-    virtual std::string Print() const = 0;
+    virtual std::string getObjectName() const = 0;
+    virtual std::string getObjectTooltip() const = 0;
+    virtual std::string getObjectHelp() const = 0;
+    virtual std::string print() const = 0;
 };

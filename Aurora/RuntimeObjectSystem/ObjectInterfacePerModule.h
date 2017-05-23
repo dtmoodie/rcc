@@ -212,7 +212,7 @@ public:
         m_ConstructedObjects.push_back( NULL );
     }
 
-    virtual const char* GetName()
+    virtual const char* getName()
     {
         return T::GetTypeNameStatic();
     }

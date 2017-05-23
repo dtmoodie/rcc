@@ -77,7 +77,7 @@ struct IObjectConstructor
     virtual IObject*             Construct() = 0;
     virtual IObject*             Construct(IObjectSharedState* state) = 0;
     virtual void                 ConstructNull() = 0;    //for use in object replacement, ensures a deleted object can be replaced
-    virtual const char*          GetName() = 0;
+    virtual const char*          getName() = 0;
     virtual const char*          GetFileName() = 0;
     virtual const char*          GetCompiledPath() = 0;
     virtual size_t               GetMaxNumIncludeFiles() const = 0;
@@ -93,7 +93,7 @@ struct IObjectConstructor
     // Singleton functions
     virtual bool                 GetIsSingleton() const = 0;
     virtual bool                 GetIsAutoConstructSingleton() const = 0;
-    IObject*                     GetSingleton()
+    IObject*                     getSingleton()
     {
         return Construct();
     }

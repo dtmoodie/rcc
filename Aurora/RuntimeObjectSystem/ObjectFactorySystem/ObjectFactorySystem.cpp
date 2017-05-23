@@ -85,7 +85,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
     {
         IObjectConstructor* pConstructor = m_ConstructorsToAdd[i];
         //replace constructor, but if one exists then replace objects
-        IObjectConstructor* pOldConstructor = m_pObjectFactorySystem->GetConstructor( pConstructor->GetName() );
+        IObjectConstructor* pOldConstructor = m_pObjectFactorySystem->GetConstructor( pConstructor->getName() );
 
         if( pOldConstructor == pConstructor )
         {
@@ -119,7 +119,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
         else
         {
             ConstructorId id = constructorsNew.size();
-            m_pObjectFactorySystem->m_ConstructorIds[ pConstructor->GetName() ] = id;
+            m_pObjectFactorySystem->m_ConstructorIds[ pConstructor->getName() ] = id;
             constructorsNew.push_back( pConstructor );
             pConstructor->SetConstructorId( id );
         }
@@ -156,7 +156,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
         {
             if( 0 == pConstructor->GetNumberConstructedObjects() )
             {
-                pConstructor->GetSingleton();
+                pConstructor->getSingleton();
                 bSingletonConstructed[i] = true;
             }
         }
