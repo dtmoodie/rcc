@@ -48,7 +48,7 @@ public:
 
     void AddConstructor( IObjectConstructor* pConstructor );
 
-    virtual std::vector<IObjectConstructor*>& GetConstructors();
+    virtual std::vector<IObjectConstructor*>& getConstructors();
     virtual void SetProjectIdForAllConstructors( unsigned short projectId_ );
     virtual void SetSystemTable( SystemTable* pSystemTable );
 
@@ -212,7 +212,7 @@ public:
         m_ConstructedObjects.push_back( NULL );
     }
 
-    virtual const char* getName()
+    virtual const char* GetName()
     {
         return T::GetTypeNameStatic();
     }

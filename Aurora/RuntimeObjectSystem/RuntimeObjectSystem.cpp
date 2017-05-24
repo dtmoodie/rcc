@@ -590,7 +590,7 @@ void RuntimeObjectSystem::SetupObjectConstructors(IPerModuleInterface* pPerModul
     pPerModuleInterface->SetSystemTable( m_pSystemTable );
 
     // get hold of the constructors
-    const std::vector<IObjectConstructor*> &objectConstructors = pPerModuleInterface->GetConstructors();
+    const std::vector<IObjectConstructor*> &objectConstructors = pPerModuleInterface->getConstructors();
     AUDynArray<IObjectConstructor*> constructors(objectConstructors.size());
     for (size_t i = 0, iMax = objectConstructors.size(); i < iMax; ++i)
     {

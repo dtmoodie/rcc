@@ -9,9 +9,9 @@ namespace rcc
     public:
         typedef T element_type;
 
-        static shared_ptr Create()
+        static shared_ptr create()
         {
-            return T::Create();
+            return T::create();
         }
 
         shared_ptr():
@@ -213,11 +213,11 @@ namespace rcc
 
 
         T& operator*(){
-            return *this->Get();
+            return *this->get();
         }
 
         const T& operator*() const{
-            return *this->Get();
+            return *this->get();
         }
 
         template<class U> shared_ptr& operator=(const T& obj){
@@ -236,7 +236,7 @@ namespace rcc
 
 
 
-        T* Get()
+        T* get()
         {
             if(obj_state)
             {
@@ -252,7 +252,7 @@ namespace rcc
             return nullptr;
         }
 
-        const T* Get() const
+        const T* get() const
         {
             if (obj_state)
             {
@@ -270,12 +270,12 @@ namespace rcc
 
         T* operator->()
         {
-            return Get();
+            return get();
         }
 
         const T* operator->() const
         {
-            return Get();
+            return get();
         }
 
         bool empty() const
@@ -344,7 +344,7 @@ namespace rcc
 
         explicit operator T*()
         {
-            return Get();
+            return get();
         }
 
         IObjectSharedState* GetState() const
@@ -531,13 +531,13 @@ private:
             }
         }
 
-        T* Get()
+        T* get()
         {
             if(obj_state)
                 return dynamic_cast<T*>(obj_state->GetIObject());
             return nullptr;
         }
-        const T* Get() const
+        const T* get() const
         {
             if(obj_state)
                 return dynamic_cast<T*>(obj_state->GetIObject());
@@ -545,21 +545,21 @@ private:
         }
 
         T& operator*(){
-            return *this->Get();
+            return *this->get();
         }
 
         const T& operator*() const{
-            return *this->Get();
+            return *this->get();
         }
 
         T* operator->()
         {
-            return Get();
+            return get();
         }
 
         const T* operator->() const
         {
-            return Get();
+            return get();
         }
 
         bool empty() const
@@ -596,7 +596,7 @@ private:
 
         explicit operator T*()
         {
-            return Get();
+            return get();
         }
 
         IObjectSharedState* GetState() const

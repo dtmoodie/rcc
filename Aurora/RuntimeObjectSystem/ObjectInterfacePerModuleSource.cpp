@@ -47,7 +47,7 @@ void PerModuleInterface::AddConstructor( IObjectConstructor* pConstructor )
     m_ObjectConstructors.push_back( pConstructor );
 }
 
-std::vector<IObjectConstructor*>& PerModuleInterface::GetConstructors()
+std::vector<IObjectConstructor*>& PerModuleInterface::getConstructors()
 {
     return m_ObjectConstructors;
 }

@@ -71,7 +71,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
             if (pOldObject)
             {
                 m_Serializer.Serialize( pOldObject );
-            }        
+            }
         }
     }
     // swap serializer
@@ -85,7 +85,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
     {
         IObjectConstructor* pConstructor = m_ConstructorsToAdd[i];
         //replace constructor, but if one exists then replace objects
-        IObjectConstructor* pOldConstructor = m_pObjectFactorySystem->GetConstructor( pConstructor->getName() );
+        IObjectConstructor* pOldConstructor = m_pObjectFactorySystem->GetConstructor( pConstructor->GetName() );
 
         if( pOldConstructor == pConstructor )
         {
@@ -102,7 +102,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
             for( PerTypeObjectId objId = 0; objId < pOldConstructor->GetNumberConstructedObjects(); ++ objId )
             {
                 // create new object
-                
+
                 if(IObject* old_object = pOldConstructor->GetConstructedObject( objId ) )
                 {
                     old_objects.push_back(old_object);
@@ -119,7 +119,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
         else
         {
             ConstructorId id = constructorsNew.size();
-            m_pObjectFactorySystem->m_ConstructorIds[ pConstructor->getName() ] = id;
+            m_pObjectFactorySystem->m_ConstructorIds[ pConstructor->GetName() ] = id;
             constructorsNew.push_back( pConstructor );
             pConstructor->SetConstructorId( id );
         }
@@ -222,7 +222,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
             }
             pOldConstructor->ClearIfAllDeleted();
             assert( 0 == pOldConstructor->GetNumberConstructedObjects() );
-            
+
         }
     }*/
 }
@@ -344,7 +344,7 @@ void ObjectFactorySystem::CompleteConstructorSwap( ProtectedObjectSwapper& swapp
                     if (pObject)
                     {
                         swapper.m_Serializer.Serialize( pObject );
-                    }            
+                    }
                 }
             }
 
@@ -358,7 +358,7 @@ void ObjectFactorySystem::CompleteConstructorSwap( ProtectedObjectSwapper& swapp
                     if (pObject)
                     {
                         pObject->Init(false);
-                    }            
+                    }
                 }
             }
         }
