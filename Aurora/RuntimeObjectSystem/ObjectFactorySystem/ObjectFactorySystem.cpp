@@ -156,7 +156,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
         {
             if( 0 == pConstructor->GetNumberConstructedObjects() )
             {
-                pConstructor->getSingleton();
+                pConstructor->GetSingleton();
                 bSingletonConstructed[i] = true;
             }
         }
