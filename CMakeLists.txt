@@ -261,3 +261,4 @@ install(EXPORT RCCTargets DESTINATION "${CMAKE_INSTALL_PREFIX}/share/RCC"
 if(UNIX)
   target_link_libraries(RuntimeObjectSystem dl)
 endif()
+add_subdirectory("Aurora/tests")
