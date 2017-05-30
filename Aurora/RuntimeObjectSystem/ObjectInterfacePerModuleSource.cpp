@@ -22,7 +22,7 @@ PerModuleInterface* PerModuleInterface::ms_pObjectManager = NULL;
 
 SystemTable* PerModuleInterface::g_pSystemTable = 0;
 
-extern "C" 
+extern "C"
 #ifdef _WIN32
     __declspec(dllexport)    //should create file with export import macros etc.
 #else
@@ -47,7 +47,7 @@ void PerModuleInterface::AddConstructor( IObjectConstructor* pConstructor )
     m_ObjectConstructors.push_back( pConstructor );
 }
 
-std::vector<IObjectConstructor*>& PerModuleInterface::getConstructors()
+std::vector<IObjectConstructor*>& PerModuleInterface::GetConstructors()
 {
     return m_ObjectConstructors;
 }

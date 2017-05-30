@@ -129,7 +129,7 @@ bool RuntimeObjectSystem::Initialise( ICompilerLogger * pLogger, SystemTable* pS
         }
 #endif
     }
-    
+
     return true;
 }
 int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
@@ -331,7 +331,7 @@ bool RuntimeObjectSystem::AbortCompilation()
     {
         m_bCompiling = false;
         return true;
-    }    
+    }
     return false;
 }
 
@@ -547,7 +547,7 @@ bool RuntimeObjectSystem::LoadCompiledModule()
     pPerModuleInterfaceProcAdd = (GETPerModuleInterface_PROC) GetProcAddress(module, "GetPerModuleInterface");
 #else
     pPerModuleInterfaceProcAdd = (GETPerModuleInterface_PROC) dlsym(module,"GetPerModuleInterface");
-    
+
 #endif
     if (!pPerModuleInterfaceProcAdd)
     {
@@ -590,7 +590,7 @@ void RuntimeObjectSystem::SetupObjectConstructors(IPerModuleInterface* pPerModul
     pPerModuleInterface->SetSystemTable( m_pSystemTable );
 
     // get hold of the constructors
-    const std::vector<IObjectConstructor*> &objectConstructors = pPerModuleInterface->getConstructors();
+    const std::vector<IObjectConstructor*> &objectConstructors = pPerModuleInterface->GetConstructors();
     AUDynArray<IObjectConstructor*> constructors(objectConstructors.size());
     for (size_t i = 0, iMax = objectConstructors.size(); i < iMax; ++i)
     {
@@ -670,7 +670,7 @@ void RuntimeObjectSystem::SetupRuntimeFileTracking(const IAUDynArray<IObjectCons
                 project.m_RuntimeIncludeMap.insert( includePathPair );
             }
         }
-            
+
 
          //add link library file mappings
         for (size_t linklibraryNum = 0; linklibraryNum <= constructors_[i]->GetMaxNumLinkLibraries(); ++linklibraryNum)
@@ -725,7 +725,7 @@ void RuntimeObjectSystem::SetupRuntimeFileTracking(const IAUDynArray<IObjectCons
                 sourcePathPair.first = filePath;
                 sourcePathPair.second = pathSrc;
                 project.m_RuntimeSourceDependencyMap.insert( sourcePathPair );
-                
+
                 // if the include file with a source dependancy is logged as an runtime include, then we mark this .cpp as compile dependencies on change
                 for( int inc=0; inc<2; ++inc )
                 {
@@ -895,7 +895,7 @@ FileSystemUtils::Path RuntimeObjectSystem::FindFile( const FileSystemUtils::Path
                     bFoundMapping = true;
                 }
             }
-            
+
             if( !bFoundMapping )
             {
                 // Step 3: Attempt to find a mapping from a known path
@@ -1078,7 +1078,7 @@ static int TestBuildFile( ICompilerLogger* pLog, RuntimeObjectSystem* pRTObjSys,
 int RuntimeObjectSystem::TestBuildAllRuntimeSourceFiles(  ITestBuildNotifier* callback, bool bTestFileTracking )
 {
     if( m_pCompilerLogger ) { m_pCompilerLogger->LogInfo("TestBuildAllRuntimeSourceFiles Starting\n"); }
-   
+
     ITestBuildNotifier* failCallbackLocal = callback;
     if( !failCallbackLocal )
     {
@@ -1097,7 +1097,7 @@ int RuntimeObjectSystem::TestBuildAllRuntimeSourceFiles(  ITestBuildNotifier* ca
     {
         failCallbackLocal->TestBuildCallback( NULL, TESTBUILDRRESULT_NO_FILES_TO_BUILD );
     }
-    
+
     for( unsigned short proj = 0; proj < m_Projects.size(); ++proj )
     {
         TFileList filesToTest = m_Projects[ proj ].m_RuntimeFileList; // m_RuntimeFileList could change if file content changes (new includes or source dependencies) so make copy to ensure iterators valid.
@@ -1174,7 +1174,7 @@ int RuntimeObjectSystem::TestBuildAllRuntimeHeaders(      ITestBuildNotifier* ca
         }
     }
 
-    
+
     if( 0 == numErrors )
     {
         if( m_pCompilerLogger ) { m_pCompilerLogger->LogInfo("All Tests Passed\n"); }

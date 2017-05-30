@@ -48,7 +48,7 @@ public:
 
     void AddConstructor( IObjectConstructor* pConstructor );
 
-    virtual std::vector<IObjectConstructor*>& getConstructors();
+    virtual std::vector<IObjectConstructor*>& GetConstructors();
     virtual void SetProjectIdForAllConstructors( unsigned short projectId_ );
     virtual void SetSystemTable( SystemTable* pSystemTable );
 
@@ -70,6 +70,11 @@ public:
 #else
         return "";
 #endif
+    }
+
+    virtual const char* GetModuleFileName() const
+    {
+        return m_ModuleFilename.c_str();
     }
 
 private:
@@ -398,7 +403,10 @@ public:
     {
         return T::GetInterfaceName();
     }
-
+    virtual const IPerModuleInterface*  GetPerModuleInterface() const
+    {
+        return m_pModuleInterface;
+    }
 private:
     bool                            m_bIsSingleton;
     bool                            m_bIsAutoConstructSingleton;
@@ -459,6 +467,7 @@ public:
     }
     virtual PerTypeObjectId GetPerTypeId() const { return m_Id; }
     virtual IObjectConstructor* GetConstructor() const { return &m_Constructor; }
+    static IObjectConstructor* GetConstructorStatic(){ return &m_Constructor; }
     static const char* GetTypeNameStatic();
     virtual const char* GetTypeName() const
     {
