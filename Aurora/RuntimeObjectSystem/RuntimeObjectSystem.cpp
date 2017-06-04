@@ -199,6 +199,9 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             {
                 if (line.size())
                 {
+                    auto pos = line.find(':');
+                    if(pos != std::string::npos)
+                        line= line.substr(pos + 1, line.size() - 2 - pos);
                     AddIncludeDir(line.c_str(), projectId);
                     if (m_pCompilerLogger)
                     {
