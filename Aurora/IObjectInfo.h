@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-class IObjectConstructor;
+struct IObjectConstructor;
 struct IObjectInfo
 {
     virtual ~IObjectInfo();
