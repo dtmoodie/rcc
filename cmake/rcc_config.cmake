@@ -92,6 +92,11 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_VAR)
     _target_helper(lib_dirs inc_dirs ${LIB_FILES_VAR} ${target} "  ")
 
     get_target_property(dest_dir ${target} CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+	if(MSVC)
+		get_target_property(dest_dir_deb ${target} ARCHIVE_OUTPUT_DIRECTORY_DEBUG)
+		get_target_property(dest_dir_rel ${target} ARCHIVE_OUTPUT_DIRECTORY_RELEASE)
+		get_target_property(dest_dir_reldeb ${target} ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO)
+	endif(MSVC)
 
     get_target_property(flags_ ${target} COMPILE_OPTIONS)
     if(flags_)
@@ -137,15 +142,45 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_VAR)
     string(REGEX REPLACE ";" "\n" defs "${defs}")
 
     message(STATUS "Writing ${dest_dir}/${target}_config.txt")
-    FILE(WRITE "${dest_dir}/${target}_config.txt"
-        "project_id:\n0\n\n"
-        "include_dirs:\n${inc}\n"
-        "lib_dirs_debug:\n${lib}\n"
-        "lib_dirs_release:\n${lib}\n"
-        "compile_options:\n${flags}\n\n"
-        "compile_definitions:\n${defs}\n\n"
-        "compiler_location:\n${COMPILER_PATH}"
-    )
+	if(MSVC)
+		FILE(WRITE "${dest_dir_deb}/${target}_config.txt"
+			"project_id:\n0\n\n"
+			"include_dirs:\n${inc}\n"
+			"lib_dirs_debug:\n${lib}\n"
+			"lib_dirs_release:\n${lib}\n"
+			"compile_options:\n${flags}\n\n"
+			"compile_definitions:\n${defs}\n\n"
+			"compiler_location:\n${COMPILER_PATH}"
+		)
+		FILE(WRITE "${dest_dir_rel}/${target}_config.txt"
+			"project_id:\n0\n\n"
+			"include_dirs:\n${inc}\n"
+			"lib_dirs_debug:\n${lib}\n"
+			"lib_dirs_release:\n${lib}\n"
+			"compile_options:\n${flags}\n\n"
+			"compile_definitions:\n${defs}\n\n"
+			"compiler_location:\n${COMPILER_PATH}"
+		)
+		FILE(WRITE "${dest_dir_reldeb}/${target}_config.txt"
+			"project_id:\n0\n\n"
+			"include_dirs:\n${inc}\n"
+			"lib_dirs_debug:\n${lib}\n"
+			"lib_dirs_release:\n${lib}\n"
+			"compile_options:\n${flags}\n\n"
+			"compile_definitions:\n${defs}\n\n"
+			"compiler_location:\n${COMPILER_PATH}"
+		)
+	else(MSVC)
+		FILE(WRITE "${dest_dir}/${target}_config.txt"
+			"project_id:\n0\n\n"
+			"include_dirs:\n${inc}\n"
+			"lib_dirs_debug:\n${lib}\n"
+			"lib_dirs_release:\n${lib}\n"
+			"compile_options:\n${flags}\n\n"
+			"compile_definitions:\n${defs}\n\n"
+			"compiler_location:\n${COMPILER_PATH}"
+		)
+	endif(MSVC)
 endmacro(RCC_TARGET_CONFIG)
 
 macro(WRITE_RCC_CONFIG RCC_INCLUDE_DEPENDENCIES RCC_LIBRARY_DIRS_DEBUG RCC_LIBRARY_DIRS_RELEASE RCC_COMPILE_FLAGS)
