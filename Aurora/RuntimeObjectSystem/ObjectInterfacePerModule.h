@@ -72,6 +72,11 @@ public:
 #endif
     }
 
+    virtual const char* GetModuleFileName() const
+    {
+        return m_ModuleFilename.c_str();
+    }
+
 private:
     PerModuleInterface();
 
@@ -398,7 +403,10 @@ public:
     {
         return T::GetInterfaceName();
     }
-
+    virtual const IPerModuleInterface*  GetPerModuleInterface() const
+    {
+        return m_pModuleInterface;
+    }
 private:
     bool                            m_bIsSingleton;
     bool                            m_bIsAutoConstructSingleton;
@@ -459,6 +467,7 @@ public:
     }
     virtual PerTypeObjectId GetPerTypeId() const { return m_Id; }
     virtual IObjectConstructor* GetConstructor() const { return &m_Constructor; }
+    static IObjectConstructor* GetConstructorStatic(){ return &m_Constructor; }
     static const char* GetTypeNameStatic();
     virtual const char* GetTypeName() const
     {

@@ -22,7 +22,7 @@ PerModuleInterface* PerModuleInterface::ms_pObjectManager = NULL;
 
 SystemTable* PerModuleInterface::g_pSystemTable = 0;
 
-extern "C" 
+extern "C"
 #ifdef _WIN32
     __declspec(dllexport)    //should create file with export import macros etc.
 #else

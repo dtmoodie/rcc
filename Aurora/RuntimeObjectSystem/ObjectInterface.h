@@ -29,7 +29,7 @@ struct IObject;
 struct IObjectInfo;
 struct SourceDependencyInfo;
 struct IObjectSharedState;
-
+struct IPerModuleInterface;
 const size_t InvalidId = (size_t)-1;
 typedef size_t PerTypeObjectId;
 typedef size_t ConstructorId;
@@ -89,6 +89,7 @@ struct IObjectConstructor
     virtual void                 SetProjectId( unsigned short projectId_ ) = 0;
     virtual unsigned short       GetProjectId() const = 0;
     virtual IObjectInfo*         GetObjectInfo() const = 0;
+    virtual const IPerModuleInterface*  GetPerModuleInterface() const = 0;
 
     // Singleton functions
     virtual bool                 GetIsSingleton() const = 0;
@@ -120,6 +121,7 @@ struct IPerModuleInterface
     virtual const std::vector<const char*>& GetRequiredSourceFiles() const = 0;
     virtual void AddRequiredSourceFiles( const char* file_ ) = 0;
     virtual void SetModuleFileName( const char* name ) = 0;
+    virtual const char* GetModuleFileName() const = 0;
     virtual ~IPerModuleInterface() {}
 };
 

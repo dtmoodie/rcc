@@ -41,9 +41,14 @@ endmacro(_target_helper)
 macro(RCC_TARGET_CONFIG target)
     set(inc_dirs "")
     set(lib_dirs "")
+    set(flags "")
     _target_helper(lib_dirs inc_dirs ${target} "  ")
-    get_target_property(dest_dir ${target} RUNTIME_OUTPUT_DIRECTORY)
-    get_target_property(flags ${target} COMPILE_OPTIONS)
+    get_target_property(dest_dir ${target} CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+
+    get_target_property(flags_ ${target} COMPILE_OPTIONS)
+    if(flags_)
+        set(flags ${flags_})
+    endif()
     set(NVCC_COMPILER "")
     IF(CUDA_FOUND)
         set(NVCC_COMPILER "${CUDA_NVCC_EXECUTABLE}")
@@ -61,12 +66,13 @@ macro(RCC_TARGET_CONFIG target)
     foreach(dir "${lib_dirs}")
         set(lib "${dir}\n")
     endforeach(dir)
-    string(REGEX REPLACE ";" "\n" inc "${inc}")
-    string(REGEX REPLACE ";" "\n" lib "${lib}")
-
     if(WIN32)
         list(APPEND flags "/FS")
     endif(WIN32)
+    string(REGEX REPLACE ";" "\n" inc "${inc}")
+    string(REGEX REPLACE ";" "\n" lib "${lib}")
+    string(REGEX REPLACE ";" "\n" flags "${flags}")
+
     message(STATUS "Writing ${dest_dir}/${target}_config.txt")
     FILE(WRITE "${dest_dir}/${target}_config.txt"
         "project_id:\n0\n\n"
@@ -80,60 +86,65 @@ endmacro(RCC_TARGET_CONFIG)
 
 macro(WRITE_RCC_CONFIG RCC_INCLUDE_DEPENDENCIES RCC_LIBRARY_DIRS_DEBUG RCC_LIBRARY_DIRS_RELEASE RCC_COMPILE_FLAGS)
 
-string(REGEX REPLACE ";" "\n" includes_ "${RCC_INCLUDE_DEPENDENCIES}")
-string(REGEX REPLACE ";" "\n" lib_dirs_deb_ "${RCC_LIBRARY_DIRS_DEBUG}")
-string(REGEX REPLACE ";" "\n" lib_dirs_rel_ "${RCC_LIBRARY_DIRS_RELEASE}")
-string(REGEX REPLACE ";" "\n" flags_ "${RCC_COMPILE_FLAGS}")
-#string(REGEX REPLACE ";" "\n" lib_dirs_reldeb_ "${RCC_LIBRARY_DIRS_RELWITHDEBINFO}")
-set(NVCC_COMPILER "")
-IF(CUDA_FOUND)
-    set(NVCC_COMPILER "${CUDA_NVCC_EXECUTABLE}")
-ENDIF()
-set(COMPILER_PATH ${CMAKE_CXX_COMPILER};${NVCC_COMPILER})
-IF(WIN32)
-    FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/RCC_config.txt"
-        "project_id:\n0\n"
-        "include_dirs:\n${includes_}\n"
-        "lib_dirs_debug:\n${lib_dirs_deb_}\n"
-        "compile_options:\n/FS ${flags_}\n"
-        "compiler_locations:\n${COMPILER_PATH}")
+    string(REGEX REPLACE ";" "\n" includes_ "${RCC_INCLUDE_DEPENDENCIES}")
+    #string(REGEX REPLACE "$<BUILD_INTERFACE:" "" includes_ "${includes_}")
+    #string(REGEX REPLACE "" "" includes_ "${includes_}")
+    string(REGEX REPLACE ";" "\n" lib_dirs_deb_ "${RCC_LIBRARY_DIRS_DEBUG}")
+    string(REGEX REPLACE ";" "\n" lib_dirs_rel_ "${RCC_LIBRARY_DIRS_RELEASE}")
+    if(RCC_COMPILE_FLAGS)
+        string(REGEX REPLACE ";" "\n" flags_ "${RCC_COMPILE_FLAGS}")
+    else()
+        set(flags_ "")
+    endif()
+    set(NVCC_COMPILER "")
+    IF(CUDA_FOUND)
+        set(NVCC_COMPILER "${CUDA_NVCC_EXECUTABLE}")
+    ENDIF()
+    set(COMPILER_PATH ${CMAKE_CXX_COMPILER};${NVCC_COMPILER})
+    IF(WIN32)
+        FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/RCC_config.txt"
+            "project_id:\n0\n"
+            "include_dirs:\n${includes_}\n"
+            "lib_dirs_debug:\n${lib_dirs_deb_}\n"
+            "compile_options:\n/FS ${flags_}\n"
+            "compiler_locations:\n${COMPILER_PATH}")
 
-    FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/RCC_config.txt"
-        "project_id:\n0"
-        "\ninclude_dirs:\n${includes_}"
-        "\nlib_dirs_release:\n${lib_dirs_rel_}"
-        "\ncompile_options:\n/FS ${flags_}"
-        "\ncompiler_location:\n${COMPILER_PATH}")
+        FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/RCC_config.txt"
+            "project_id:\n0"
+            "\ninclude_dirs:\n${includes_}"
+            "\nlib_dirs_release:\n${lib_dirs_rel_}"
+            "\ncompile_options:\n/FS ${flags_}"
+            "\ncompiler_location:\n${COMPILER_PATH}")
 
-    FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/RCC_config.txt"
-        "project_id:\n0"
-        "\ninclude_dirs:\n${includes_}"
-        "lib_dirs_release:\n${lib_dirs_rel_}"
-        "compile_options:\n/FS ${flags_}"
-        "compiler_location:\n${COMPILER_PATH}")
+        FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/RCC_config.txt"
+            "project_id:\n0"
+            "\ninclude_dirs:\n${includes_}"
+            "lib_dirs_release:\n${lib_dirs_rel_}"
+            "compile_options:\n/FS ${flags_}"
+            "compiler_location:\n${COMPILER_PATH}")
 
-    FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RCC_config.txt"
-        "project_id:\n0"
-        "\ninclude_dirs:\n${includes_}"
-        "\nlib_dirs_debug:\n${lib_dirs_deb_}"
-        "\nlib_dirs_release:\n${lib_dirs_rel_}"
-        "\ncompile_options:\n\n/FS ${flags_}"
-        "\ncompiler_location:\n${COMPILER_PATH}")
-ELSE()
-    FILE(WRITE "${CMAKE_BINARY_DIR}/RCC_config.txt"
-        "project_id:\n0\n"
-        "\ninclude_dirs:\n${includes_}\n"
-        "\nlib_dirs_debug:\n${lib_dirs_deb_}\n${CMAKE_BINARY_DIR}\n"
-        "\nlib_dirs_release:\n${lib_dirs_rel_}\n${CMAKE_BINARY_DIR}"
-        "\ncompile_options:\n${flags_}\n"
-        "\ncompiler_location:\n${COMPILER_PATH}")
+        FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RCC_config.txt"
+            "project_id:\n0"
+            "\ninclude_dirs:\n${includes_}"
+            "\nlib_dirs_debug:\n${lib_dirs_deb_}"
+            "\nlib_dirs_release:\n${lib_dirs_rel_}"
+            "\ncompile_options:\n\n/FS ${flags_}"
+            "\ncompiler_location:\n${COMPILER_PATH}")
+    ELSE(WIN32)
+        FILE(WRITE "${CMAKE_BINARY_DIR}/RCC_config.txt"
+            "project_id:\n0\n"
+            "\ninclude_dirs:\n${includes_}\n"
+            "\nlib_dirs_debug:\n${lib_dirs_deb_}\n${CMAKE_BINARY_DIR}\n"
+            "\nlib_dirs_release:\n${lib_dirs_rel_}\n${CMAKE_BINARY_DIR}"
+            "\ncompile_options:\n${flags_}\n"
+            "\ncompiler_location:\n${COMPILER_PATH}")
 
-    FILE(WRITE "${CMAKE_CURRENT_BINARY_DIR}/RCC_config.txt"
-        "project_id:\n0\n"
-        "\ninclude_dirs:\n${includes_}\n"
-        "\nlib_dirs_debug:\n${lib_dirs_deb_}\n${CMAKE_BINARY_DIR}\n"
-        "\nlib_dirs_release:\n${lib_dirs_rel_}\n${CMAKE_BINARY_DIR}"
-        "\ncompile_options:\n${flags_}\n"
-        "\ncompiler_location:\n${COMPILER_PATH}")
-ENDIF()
+        FILE(WRITE "${CMAKE_CURRENT_BINARY_DIR}/RCC_config.txt"
+            "project_id:\n0\n"
+            "\ninclude_dirs:\n${includes_}\n"
+            "\nlib_dirs_debug:\n${lib_dirs_deb_}\n${CMAKE_BINARY_DIR}\n"
+            "\nlib_dirs_release:\n${lib_dirs_rel_}\n${CMAKE_BINARY_DIR}"
+            "\ncompile_options:\n${flags_}\n"
+            "\ncompiler_location:\n${COMPILER_PATH}")
+    ENDIF(WIN32)
 endmacro()
