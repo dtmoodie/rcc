@@ -44,44 +44,44 @@ const char	c_CompletionToken[] = "_COMPLETION_TOKEN_" ;
 class PlatformCompilerImplData
 {
 public:
-	PlatformCompilerImplData()
-		: m_bCompileIsComplete( false )
+    PlatformCompilerImplData()
+        : m_bCompileIsComplete( false )
         , m_pLogger( 0 )
         , m_ChildForCompilationPID( 0 )
-	{
+    {
         m_PipeStdOut[0] = 0;
         m_PipeStdOut[1] = 1;
         m_PipeStdErr[0] = 0;
         m_PipeStdErr[1] = 1;
-	}
+    }
 
-	volatile bool		m_bCompileIsComplete;
-	ICompilerLogger*	m_pLogger;
+    volatile bool		m_bCompileIsComplete;
+    ICompilerLogger*	m_pLogger;
     pid_t               m_ChildForCompilationPID;
     int                 m_PipeStdOut[2];
     int                 m_PipeStdErr[2];
 };
 
-Compiler::Compiler() 
-	: m_pImplData( 0 )
+Compiler::Compiler()
+    : m_pImplData( 0 )
 {
 }
 
 Compiler::~Compiler()
 {
-	delete m_pImplData;
+    delete m_pImplData;
 }
 
 std::string Compiler::GetObjectFileExtension() const
 {
-	return ".o";
+    return ".o";
 }
 
 bool Compiler::GetIsComplete() const
 {
     if( !m_pImplData->m_bCompileIsComplete && m_pImplData->m_ChildForCompilationPID )
     {
-        
+
         // check for whether process is closed
         int procStatus;
         pid_t ret = waitpid( m_pImplData->m_ChildForCompilationPID, &procStatus, WNOHANG);
@@ -89,7 +89,7 @@ bool Compiler::GetIsComplete() const
         {
             m_pImplData->m_bCompileIsComplete = true;
             m_pImplData->m_ChildForCompilationPID = 0;
- 
+
             // get output and log
             if( m_pImplData->m_pLogger )
             {
@@ -101,7 +101,7 @@ bool Compiler::GetIsComplete() const
                     buffer[numread] = 0;
                     m_pImplData->m_pLogger->LogInfo( buffer );
                 }
-                
+
                 while( ( numread = read( m_pImplData->m_PipeStdErr[0], buffer, buffSize-1 ) )> 0 )
                 {
                     buffer[numread] = 0;
@@ -116,7 +116,7 @@ bool Compiler::GetIsComplete() const
             m_pImplData->m_PipeStdErr[0] = 0;
         }
     }
-	return m_pImplData->m_bCompileIsComplete;
+    return m_pImplData->m_bCompileIsComplete;
 }
 
 void Compiler::Initialise( ICompilerLogger * pLogger )
@@ -126,9 +126,9 @@ void Compiler::Initialise( ICompilerLogger * pLogger )
 }
 
 void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToCompile_,
-			   const CompilerOptions&			compilerOptions_,
-			   std::vector<FileSystemUtils::Path>		linkLibraryList_,
-			    const FileSystemUtils::Path&		moduleName_ )
+               const CompilerOptions&			compilerOptions_,
+               std::vector<FileSystemUtils::Path>		linkLibraryList_,
+                const FileSystemUtils::Path&		moduleName_ )
 
 {
     const std::vector<FileSystemUtils::Path>& includeDirList = compilerOptions_.includeDirList;
@@ -153,10 +153,18 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
             compilerLocation = compilerLocation.substr(0, pos);
         }
     }
-
+    bool need_nvcc = false;
+    for(const auto& file : filesToCompile_){
+        if(file.Extension() == ".cu"){
+            need_nvcc = true;
+            break;
+        }
+    }
+    if(!need_nvcc)
+        nvccCompiler.clear();
     //NOTE: Currently doesn't check if a prior compile is ongoing or not, which could lead to memory leaks
-	m_pImplData->m_bCompileIsComplete = false;
-    
+    m_pImplData->m_bCompileIsComplete = false;
+
     //create pipes
     if ( pipe( m_pImplData->m_PipeStdOut ) != 0 )
     {
@@ -175,7 +183,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
         }
         return;
     }
-    
+
     pid_t retPID;
     switch( retPID = fork() )
     {
@@ -195,7 +203,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
             m_pImplData->m_ChildForCompilationPID = retPID;
            return;
     }
-    
+
     //duplicate the pipe to stdout, so output goes to pipe
     dup2( m_pImplData->m_PipeStdErr[1], STDERR_FILENO );
     dup2( m_pImplData->m_PipeStdOut[1], STDOUT_FILENO );
@@ -221,55 +229,55 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     }
 
 #ifndef __LP64__
-	compileString += "-m32 ";
+    compileString += "-m32 ";
 #endif
 
-	RCppOptimizationLevel optimizationLevel = GetActualOptimizationLevel( compilerOptions_.optimizationLevel );
-	switch( optimizationLevel )
-	{
-	case RCCPPOPTIMIZATIONLEVEL_DEFAULT:
-		assert(false);
-	case RCCPPOPTIMIZATIONLEVEL_DEBUG:
-		compileString += "-O0 ";
-		break;
-	case RCCPPOPTIMIZATIONLEVEL_PERF:
+    RCppOptimizationLevel optimizationLevel = GetActualOptimizationLevel( compilerOptions_.optimizationLevel );
+    switch( optimizationLevel )
+    {
+    case RCCPPOPTIMIZATIONLEVEL_DEFAULT:
+        assert(false);
+    case RCCPPOPTIMIZATIONLEVEL_DEBUG:
+        compileString += "-O0 ";
+        break;
+    case RCCPPOPTIMIZATIONLEVEL_PERF:
         if(nvccCompiler.size())
             compileString += "-O2 ";
         else
             compileString += "-O2 -DNDEBUG ";
-		break;
-	case RCCPPOPTIMIZATIONLEVEL_NOT_SET:;
+        break;
+    case RCCPPOPTIMIZATIONLEVEL_NOT_SET:;
 
     case RCCPPOPTIMIZATIONLEVEL_SIZE:
         compileString += "-O3 ";
         break;
-	}
-    
-	// Check for intermediate directory, create it if required
-	// There are a lot more checks and robustness that could be added here
-	if( !compilerOptions_.intermediatePath.Exists() )
-	{
-		bool success = compilerOptions_.intermediatePath.CreateDir();
-		if( success && m_pImplData->m_pLogger ) { m_pImplData->m_pLogger->LogInfo("Created intermediate folder \"%s\"\n", compilerOptions_.intermediatePath.c_str()); }
-		else if( m_pImplData->m_pLogger ) { m_pImplData->m_pLogger->LogError("Error creating intermediate folder \"%s\"\n", compilerOptions_.intermediatePath.c_str()); }
-	}
+    }
 
-	FileSystemUtils::Path	output = moduleName_;
-	bool bCopyOutput = false;
-	if( compilerOptions_.intermediatePath.Exists() )
-	{
-		// add save object files
+    // Check for intermediate directory, create it if required
+    // There are a lot more checks and robustness that could be added here
+    if( !compilerOptions_.intermediatePath.Exists() )
+    {
+        bool success = compilerOptions_.intermediatePath.CreateDir();
+        if( success && m_pImplData->m_pLogger ) { m_pImplData->m_pLogger->LogInfo("Created intermediate folder \"%s\"\n", compilerOptions_.intermediatePath.c_str()); }
+        else if( m_pImplData->m_pLogger ) { m_pImplData->m_pLogger->LogError("Error creating intermediate folder \"%s\"\n", compilerOptions_.intermediatePath.c_str()); }
+    }
+
+    FileSystemUtils::Path	output = moduleName_;
+    bool bCopyOutput = false;
+    if( compilerOptions_.intermediatePath.Exists() )
+    {
+        // add save object files
         compileString = "cd \"" + compilerOptions_.intermediatePath.m_string + "\"\n" + compileString + " ";
-		output = compilerOptions_.intermediatePath / "a.out";
-		bCopyOutput = true;
-	}
-	
-	
+        output = compilerOptions_.intermediatePath / "a.out";
+        bCopyOutput = true;
+    }
+
+
     // include directories
     std::set<std::string> uniqueIncludes;
 
     for( size_t i = 0; i < includeDirList.size(); ++i )
-	{
+    {
         uniqueIncludes.insert(includeDirList[i].m_string);
         //compileString += "-I\"" + includeDirList[i].m_string + "\" ";
     }
@@ -277,7 +285,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     {
         compileString += "-I\"" + *it + "\" ";
     }
-    
+
     // library and framework directories
     for( size_t i = 0; i < libraryDirList.size(); ++i )
     {
@@ -285,27 +293,27 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
         if(nvccCompiler.empty())
             compileString += "-F\"" + libraryDirList[i].m_string + "\" ";
     }
-    
-	if( !bCopyOutput )
-	{
-	    // output file
-	    compileString += "-o " + output.m_string + " ";
-	}
+
+    if( !bCopyOutput )
+    {
+        // output file
+        compileString += "-o " + output.m_string + " ";
+    }
 
 
-	if( pCompileOptions )
-	{
-		compileString += pCompileOptions;
-		compileString += " ";
-	}
-	if( pLinkOptions && strlen(pLinkOptions) )
-	{
+    if( pCompileOptions )
+    {
+        compileString += pCompileOptions;
+        compileString += " ";
+    }
+    if( pLinkOptions && strlen(pLinkOptions) )
+    {
         if(nvccCompiler.empty())
             compileString += "-Wl,";
-		compileString += pLinkOptions;
-		compileString += " ";
-	}
-	
+        compileString += pLinkOptions;
+        compileString += " ";
+    }
+
     // files to compile
     for( size_t i = 0; i < filesToCompile_.size(); ++i )
     {
@@ -322,12 +330,12 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
         compileString += " " + *it + " ";
     }
 
-	if( bCopyOutput )
-	{
+    if( bCopyOutput )
+    {
         compileString += "\n mv \"" + output.m_string + "\" \"" + moduleName_.m_string + "\"\n";
-	}
+    }
 
-    
+
     std::cout << compileString << std::endl << std::endl;
 
     execl("/bin/sh", "sh", "-c", compileString.c_str(), (const char*)NULL);

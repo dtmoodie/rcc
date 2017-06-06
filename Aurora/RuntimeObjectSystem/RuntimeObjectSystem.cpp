@@ -169,6 +169,8 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             }else if(line.find("compiler_location:") == 0)
             {
                 return 5;
+            } else if(line.find("compile_definitions:") == 0){
+                return 6;
             }
             return current_state;
         };
@@ -249,6 +251,24 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
                     {
                         m_pCompilerLogger->LogDebug("Adding compiler location (%d): %s", projectId, line.c_str());
                     }
+                }
+            } else if(state == 6){
+                if(line.size()){
+#ifdef _MSC_VER
+                    line = "/D" + line + " ";
+                    AppendAdditionalCompileOptions(line.c_str(), projectId);
+                    if (m_pCompilerLogger)
+                    {
+                        m_pCompilerLogger->LogDebug("Adding compile definition (%d): %s", projectId, line.c_str());
+                    }
+#else
+                    line = "-D" + line + " ";
+                    AppendAdditionalCompileOptions(line.c_str(), projectId);
+                    if (m_pCompilerLogger)
+                    {
+                        m_pCompilerLogger->LogDebug("Adding compile definition (%d): %s", projectId, line.c_str());
+                    }
+#endif
                 }
             }
         }
