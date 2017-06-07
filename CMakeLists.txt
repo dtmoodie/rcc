@@ -117,7 +117,6 @@ if(UNIX AND NOT APPLE)
     set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 else()
     set(BUILD_TYPE STATIC)
-    list(APPEND CMAKE_CXX_FLAGS_DEBUG "-D_DEBUG")
 endif()
 
 include(Aurora/cmake/ProjectFilesExternal.cmake)
