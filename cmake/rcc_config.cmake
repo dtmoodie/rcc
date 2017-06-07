@@ -154,33 +154,39 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
 
     message(STATUS "Writing ${dest_dir}/${target}_config.txt")
 	if(MSVC)
-		FILE(WRITE "${dest_dir_deb}/${target}_config.txt"
-			"project_id:\n0\n\n"
-			"include_dirs:\n${inc}\n"
-			"lib_dirs_debug:\n${lib}\n"
-			"lib_dirs_release:\n${lib}\n"
-			"compile_options:\n${flags}\n\n"
-			"compile_definitions:\n${defs}\n\n"
-			"compiler_location:\n${COMPILER_PATH}"
-		)
-		FILE(WRITE "${dest_dir_rel}/${target}_config.txt"
-			"project_id:\n0\n\n"
-			"include_dirs:\n${inc}\n"
-			"lib_dirs_debug:\n${lib}\n"
-			"lib_dirs_release:\n${lib}\n"
-			"compile_options:\n${flags}\n\n"
-			"compile_definitions:\n${defs}\n\n"
-			"compiler_location:\n${COMPILER_PATH}"
-		)
-		FILE(WRITE "${dest_dir_reldeb}/${target}_config.txt"
-			"project_id:\n0\n\n"
-			"include_dirs:\n${inc}\n"
-			"lib_dirs_debug:\n${lib}\n"
-			"lib_dirs_release:\n${lib}\n"
-			"compile_options:\n${flags}\n\n"
-			"compile_definitions:\n${defs}\n\n"
-			"compiler_location:\n${COMPILER_PATH}"
-		)
+		if(dest_dir_deb)
+			FILE(WRITE "${dest_dir_deb}/${target}_config.txt"
+				"project_id:\n0\n\n"
+				"include_dirs:\n${inc}\n"
+				"lib_dirs_debug:\n${lib}\n"
+				"lib_dirs_release:\n${lib}\n"
+				"compile_options:\n${flags}\n\n"
+				"compile_definitions:\n${defs}\n\n"
+				"compiler_location:\n${COMPILER_PATH}"
+			)
+		endif()
+		if(dest_dir_rel)
+			FILE(WRITE "${dest_dir_rel}/${target}_config.txt"
+				"project_id:\n0\n\n"
+				"include_dirs:\n${inc}\n"
+				"lib_dirs_debug:\n${lib}\n"
+				"lib_dirs_release:\n${lib}\n"
+				"compile_options:\n${flags}\n\n"
+				"compile_definitions:\n${defs}\n\n"
+				"compiler_location:\n${COMPILER_PATH}"
+			)
+		endif()
+		if(dest_dir_reldeb)
+			FILE(WRITE "${dest_dir_reldeb}/${target}_config.txt"
+				"project_id:\n0\n\n"
+				"include_dirs:\n${inc}\n"
+				"lib_dirs_debug:\n${lib}\n"
+				"lib_dirs_release:\n${lib}\n"
+				"compile_options:\n${flags}\n\n"
+				"compile_definitions:\n${defs}\n\n"
+				"compiler_location:\n${COMPILER_PATH}"
+			)
+		endif()
 	else(MSVC)
 		FILE(WRITE "${dest_dir}/${target}_config.txt"
 			"project_id:\n0\n\n"
