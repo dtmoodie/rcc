@@ -201,14 +201,16 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             {
                 if (line.size())
                 {
-                    auto pos = line.find(':');
-                    if(pos != std::string::npos)
-                        line= line.substr(pos + 1, line.size() - 2 - pos);
-                    AddIncludeDir(line.c_str(), projectId);
-                    if (m_pCompilerLogger)
-                    {
-                        m_pCompilerLogger->LogDebug("Adding include dir (%d): %s", projectId, line.c_str());
+                    // handle artifacts from the cmake generator script.
+                    auto pos = line.find('$');
+                    if(pos == std::string::npos){
+                        AddIncludeDir(line.c_str(), projectId);
+                        if (m_pCompilerLogger)
+                        {
+                            m_pCompilerLogger->LogDebug("Adding include dir (%d): %s", projectId, line.c_str());
+                        }
                     }
+                    
                 }
             }else if(state == 2)
             {
