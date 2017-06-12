@@ -1,21 +1,21 @@
 # helper function to recursively get dependent library directories and includes
 
 macro(_handle_imported_target LIB_DIR_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE TGT)
-	if(NOT "${TGT}" STREQUAL Threads::Threads)
-		get_target_property(tgt_location ${TGT} LOCATION_DEBUG)
-		get_filename_component(name_ ${tgt_location} NAME_WE)
-		get_filename_component(dir_ ${tgt_location} DIRECTORY)
-		
-		LIST(APPEND ${LIB_DIR_VAR} ${dir_})
-		LIST(APPEND ${LIB_FILES_DEBUG} ${name_})
-		
-		get_target_property(tgt_location ${TGT} LOCATION_RELEASE)
-		get_filename_component(name_ ${tgt_location} NAME_WE)
-		get_filename_component(dir_ ${tgt_location} DIRECTORY)
-		
-		list(APPEND ${LIB_DIR_VAR} ${dir})
-		LIST(APPEND ${LIB_FILES_RELEASE} ${name_})
-	endif()
+    if(NOT "${TGT}" STREQUAL Threads::Threads)
+        get_target_property(tgt_location ${TGT} LOCATION_DEBUG)
+        get_filename_component(name_ ${tgt_location} NAME_WE)
+        get_filename_component(dir_ ${tgt_location} DIRECTORY)
+
+        LIST(APPEND ${LIB_DIR_VAR} ${dir_})
+        LIST(APPEND ${LIB_FILES_DEBUG} ${name_})
+
+        get_target_property(tgt_location ${TGT} LOCATION_RELEASE)
+        get_filename_component(name_ ${tgt_location} NAME_WE)
+        get_filename_component(dir_ ${tgt_location} DIRECTORY)
+
+        list(APPEND ${LIB_DIR_VAR} ${dir})
+        LIST(APPEND ${LIB_FILES_RELEASE} ${name_})
+    endif()
 endmacro(_handle_imported_target)
 
 macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE tgt tab TGTS)
@@ -29,25 +29,25 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE tgt 
             get_target_property(imported_ ${tgt} IMPORTED)
             if(${imported_})
                 _handle_imported_target(${LIB_DIR_VAR} ${LIB_FILES_DEBUG} ${LIB_FILES_RELEASE} ${tgt})
-			else(${imported_})
-				get_target_property(out_dir ${tgt} LIBRARY_OUTPUT_DIRECTORY)
-				if(out_dir)
-					list(APPEND ${LIB_DIR_VAR} ${out_dir})
-				endif(out_dir)
-				get_target_property(lib_path ${tgt} LIBRARY_OUTPUT_DIRECTORY)
-				if(lib_path)
-					list(APPEND ${LIB_DIR_VAR} ${out_dir})
-				endif(lib_path)
-				get_target_property(inc_dir ${tgt} INTERFACE_INCLUDE_DIRECTORIES)
-				if(inc_dir)
-					list(APPEND ${INC_VAR} ${inc_dir})
-				endif()
-				get_target_property(inc_dir ${tgt} INCLUDE_DIRECTORIES)
-				if(inc_dir)
-					list(APPEND ${INC_VAR} ${inc_dir})
-				endif()			
+            else(${imported_})
+                get_target_property(out_dir ${tgt} LIBRARY_OUTPUT_DIRECTORY)
+                if(out_dir)
+                    list(APPEND ${LIB_DIR_VAR} ${out_dir})
+                endif(out_dir)
+                get_target_property(lib_path ${tgt} LIBRARY_OUTPUT_DIRECTORY)
+                if(lib_path)
+                    list(APPEND ${LIB_DIR_VAR} ${out_dir})
+                endif(lib_path)
+                get_target_property(inc_dir ${tgt} INTERFACE_INCLUDE_DIRECTORIES)
+                if(inc_dir)
+                    list(APPEND ${INC_VAR} ${inc_dir})
+                endif()
+                get_target_property(inc_dir ${tgt} INCLUDE_DIRECTORIES)
+                if(inc_dir)
+                    list(APPEND ${INC_VAR} ${inc_dir})
+                endif()
             endif(${imported_})
-			
+
             get_target_property(int_link_lib ${tgt} INTERFACE_LINK_LIBRARIES)
             foreach(lib ${int_link_lib})
                 if(TARGET ${lib})
@@ -97,17 +97,17 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
     set(inc_dirs "")
     set(lib_dirs "")
     set(${LIB_FILES_DEBUG_VAR} "")
-	set(${LIB_FILES_RELEASE_VAR} "")
+    set(${LIB_FILES_RELEASE_VAR} "")
     set(flags "")
     set(defs "")
     _target_helper(lib_dirs inc_dirs ${LIB_FILES_DEBUG_VAR} ${LIB_FILES_RELEASE_VAR} ${target} "  ")
 
     get_target_property(dest_dir ${target} CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-	if(MSVC)
-		get_target_property(dest_dir_deb ${target} ARCHIVE_OUTPUT_DIRECTORY_DEBUG)
-		get_target_property(dest_dir_rel ${target} ARCHIVE_OUTPUT_DIRECTORY_RELEASE)
-		get_target_property(dest_dir_reldeb ${target} ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO)
-	endif(MSVC)
+    if(MSVC)
+        get_target_property(dest_dir_deb ${target} ARCHIVE_OUTPUT_DIRECTORY_DEBUG)
+        get_target_property(dest_dir_rel ${target} ARCHIVE_OUTPUT_DIRECTORY_RELEASE)
+        get_target_property(dest_dir_reldeb ${target} ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO)
+    endif(MSVC)
 
     get_target_property(flags_ ${target} COMPILE_OPTIONS)
     if(flags_)
@@ -148,59 +148,59 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
         list(APPEND flags "/FS")
     endif(WIN32)
     string(REGEX REPLACE ";" "\n" inc "${inc}")
-	string(REGEX REPLACE "BUILD_INTERFACE:" "\n" inc "${inc}")
-	string(REGEX REPLACE "$<" "" inc "${inc}")
-	string(REGEX REPLACE ">" "" inc "${inc}")
+    string(REGEX REPLACE "BUILD_INTERFACE:" "\n" inc "${inc}")
+    string(REGEX REPLACE "\$<" "" inc "${inc}")
+    string(REGEX REPLACE ">" "" inc "${inc}")
     string(REGEX REPLACE ";" "\n" lib "${lib}")
     string(REGEX REPLACE ";" "\n" flags "${flags}")
     string(REGEX REPLACE ";" "\n" defs "${defs}")
 
     message(STATUS "Writing ${dest_dir}/${target}_config.txt")
-	if(MSVC)
-		if(dest_dir_deb)
-			FILE(WRITE "${dest_dir_deb}/${target}_config.txt"
-				"project_id:\n0\n\n"
-				"include_dirs:\n${inc}\n"
-				"lib_dirs_debug:\n${lib}\n"
-				"lib_dirs_release:\n${lib}\n"
-				"compile_options:\n${flags}\n\n"
-				"compile_definitions:\n${defs}\n\n"
-				"compiler_location:\n${COMPILER_PATH}"
-			)
-		endif()
-		if(dest_dir_rel)
-			FILE(WRITE "${dest_dir_rel}/${target}_config.txt"
-				"project_id:\n0\n\n"
-				"include_dirs:\n${inc}\n"
-				"lib_dirs_debug:\n${lib}\n"
-				"lib_dirs_release:\n${lib}\n"
-				"compile_options:\n${flags}\n\n"
-				"compile_definitions:\n${defs}\n\n"
-				"compiler_location:\n${COMPILER_PATH}"
-			)
-		endif()
-		if(dest_dir_reldeb)
-			FILE(WRITE "${dest_dir_reldeb}/${target}_config.txt"
-				"project_id:\n0\n\n"
-				"include_dirs:\n${inc}\n"
-				"lib_dirs_debug:\n${lib}\n"
-				"lib_dirs_release:\n${lib}\n"
-				"compile_options:\n${flags}\n\n"
-				"compile_definitions:\n${defs}\n\n"
-				"compiler_location:\n${COMPILER_PATH}"
-			)
-		endif()
-	else(MSVC)
-		FILE(WRITE "${dest_dir}/${target}_config.txt"
-			"project_id:\n0\n\n"
-			"include_dirs:\n${inc}\n"
-			"lib_dirs_debug:\n${lib}\n"
-			"lib_dirs_release:\n${lib}\n"
-			"compile_options:\n${flags}\n\n"
-			"compile_definitions:\n${defs}\n\n"
-			"compiler_location:\n${COMPILER_PATH}"
-		)
-	endif(MSVC)
+    if(MSVC)
+        if(dest_dir_deb)
+            FILE(WRITE "${dest_dir_deb}/${target}_config.txt"
+                "project_id:\n0\n\n"
+                "include_dirs:\n${inc}\n"
+                "lib_dirs_debug:\n${lib}\n"
+                "lib_dirs_release:\n${lib}\n"
+                "compile_options:\n${flags}\n\n"
+                "compile_definitions:\n${defs}\n\n"
+                "compiler_location:\n${COMPILER_PATH}"
+            )
+        endif()
+        if(dest_dir_rel)
+            FILE(WRITE "${dest_dir_rel}/${target}_config.txt"
+                "project_id:\n0\n\n"
+                "include_dirs:\n${inc}\n"
+                "lib_dirs_debug:\n${lib}\n"
+                "lib_dirs_release:\n${lib}\n"
+                "compile_options:\n${flags}\n\n"
+                "compile_definitions:\n${defs}\n\n"
+                "compiler_location:\n${COMPILER_PATH}"
+            )
+        endif()
+        if(dest_dir_reldeb)
+            FILE(WRITE "${dest_dir_reldeb}/${target}_config.txt"
+                "project_id:\n0\n\n"
+                "include_dirs:\n${inc}\n"
+                "lib_dirs_debug:\n${lib}\n"
+                "lib_dirs_release:\n${lib}\n"
+                "compile_options:\n${flags}\n\n"
+                "compile_definitions:\n${defs}\n\n"
+                "compiler_location:\n${COMPILER_PATH}"
+            )
+        endif()
+    else(MSVC)
+        FILE(WRITE "${dest_dir}/${target}_config.txt"
+            "project_id:\n0\n\n"
+            "include_dirs:\n${inc}\n"
+            "lib_dirs_debug:\n${lib}\n"
+            "lib_dirs_release:\n${lib}\n"
+            "compile_options:\n${flags}\n\n"
+            "compile_definitions:\n${defs}\n\n"
+            "compiler_location:\n${COMPILER_PATH}"
+        )
+    endif(MSVC)
 endmacro(RCC_TARGET_CONFIG)
 
 macro(WRITE_RCC_CONFIG RCC_INCLUDE_DEPENDENCIES RCC_LIBRARY_DIRS_DEBUG RCC_LIBRARY_DIRS_RELEASE RCC_COMPILE_FLAGS)
