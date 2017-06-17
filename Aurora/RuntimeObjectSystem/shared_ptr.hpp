@@ -252,7 +252,7 @@ namespace rcc
             return nullptr;
         }
 
-        const T* get() const
+        T* get() const
         {
             if (obj_state)
             {
@@ -273,7 +273,7 @@ namespace rcc
             return get();
         }
 
-        const T* operator->() const
+        T* operator->() const
         {
             return get();
         }
@@ -537,7 +537,7 @@ private:
                 return dynamic_cast<T*>(obj_state->GetIObject());
             return nullptr;
         }
-        const T* get() const
+        T* get() const
         {
             if(obj_state)
                 return dynamic_cast<T*>(obj_state->GetIObject());
