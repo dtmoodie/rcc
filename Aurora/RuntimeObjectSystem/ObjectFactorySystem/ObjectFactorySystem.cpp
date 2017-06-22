@@ -57,7 +57,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
     m_ProtectedPhase = PHASE_SERIALIZEOUT;
 
     // serialize all out
-    if( m_pLogger ) m_pLogger->LogInfo( "Serializing out from %d old constructors...\n", (int)m_ConstructorsOld.size());
+    if( m_pLogger ) m_pLogger->LogInfo( "Serializing out from %d old constructors...", (int)m_ConstructorsOld.size());
 
     // use a temporary serializer in case there is an exception, so preserving any old state (if there is any)
     m_Serializer.SetIsLoading( false );
@@ -75,7 +75,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
         }
     }
     // swap serializer
-    if( m_pLogger ) m_pLogger->LogInfo( "Swapping in and creating objects for %d new constructors...\n", (int)m_ConstructorsToAdd.size());
+    if( m_pLogger ) m_pLogger->LogInfo( "Swapping in and creating objects for %d new constructors...", (int)m_ConstructorsToAdd.size());
 
     m_ProtectedPhase = PHASE_CONSTRUCTNEW;
     TConstructors& constructorsNew = m_pObjectFactorySystem->m_Constructors;
@@ -125,7 +125,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
         }
     }
 
-    if( m_pLogger ) m_pLogger->LogInfo( "Serialising in...\n");
+    if( m_pLogger ) m_pLogger->LogInfo( "Serialising in...");
 
     //serialize back
     m_ProtectedPhase = PHASE_SERIALIZEIN;
@@ -148,7 +148,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
     // now in 2 phases - construct then init
     m_ProtectedPhase = PHASE_AUTOCONSTRUCTSINGLETONS;
     std::vector<bool> bSingletonConstructed( constructorsNew.size(), false );
-    if( m_pLogger ) m_pLogger->LogInfo( "Auto Constructing Singletons...\n");
+    if( m_pLogger ) m_pLogger->LogInfo( "Auto Constructing Singletons...");
     for( size_t i = 0; i < constructorsNew.size(); ++i )
     {
         IObjectConstructor* pConstructor = constructorsNew[i];
@@ -168,11 +168,11 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
     m_ProtectedPhase = PHASE_INITANDSERIALIZEOUTTEST;
     if( m_bTestSerialization )
     {
-        if( m_pLogger ) m_pLogger->LogInfo( "Initialising and testing new serialisation...\n");
+        if( m_pLogger ) m_pLogger->LogInfo( "Initialising and testing new serialisation...");
     }
     else
     {
-        if( m_pLogger ) m_pLogger->LogInfo( "Initialising...\n");
+        if( m_pLogger ) m_pLogger->LogInfo( "Initialising...");
     }
 
     for( size_t i = 0; i < constructorsNew.size(); ++i )
@@ -203,35 +203,13 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
         pOldObject->_isRuntimeDelete = true;
         delete pOldObject;
     }
-    /*for( size_t i = 0; i < m_ConstructorsOld.size(); ++i )
-    {
-        if( m_ConstructorsOld[i] != constructorsNew[i] )
-        {
-            //TODO: could put a constructor around this.
-            //constructor has been replaced
-            IObjectConstructor* pOldConstructor = m_ConstructorsOld[i];
-            size_t numObjects = pOldConstructor->GetNumberConstructedObjects();
-            for( size_t j = 0; j < numObjects; ++j )
-            {
-                IObject* pOldObject = pOldConstructor->GetConstructedObject( j );
-                if( pOldObject )
-                {
-                    pOldObject->_isRuntimeDelete = true;
-                    delete pOldObject;
-                }
-            }
-            pOldConstructor->ClearIfAllDeleted();
-            assert( 0 == pOldConstructor->GetNumberConstructedObjects() );
-
-        }
-    }*/
 }
 
 bool ObjectFactorySystem::HandleRedoUndo( const TConstructors& constructors )
 {
     if( constructors.size() == 0 )
     {
-        m_pLogger->LogInfo( "ObjectFactorySystem::HandleRedoUndo() called with no constructors.\n" );
+        m_pLogger->LogInfo( "ObjectFactorySystem::HandleRedoUndo() called with no constructors." );
         return true;
     }
 
@@ -255,13 +233,13 @@ void ObjectFactorySystem::AddConstructors( IAUDynArray<IObjectConstructor*> &con
 {
     if( constructors.Size() == 0 )
     {
-        m_pLogger->LogInfo( "ObjectFactorySystem::AddConstructors() called with no constructors.\n" );
+        m_pLogger->LogInfo( "ObjectFactorySystem::AddConstructors() called with no constructors." );
         return;
     }
 
     if( m_HistoryCurrentLocation )
     {
-        m_pLogger->LogInfo( "Need to fast forward undo system to current state of source code.\n" );
+        m_pLogger->LogInfo( "Need to fast forward undo system to current state of source code." );
         while( RedoObjectConstructorChange() ) {}
     }
 
@@ -295,32 +273,32 @@ void ObjectFactorySystem::CompleteConstructorSwap( ProtectedObjectSwapper& swapp
     {
         if( m_pLogger )
         {
-            m_pLogger->LogError( "Exception during object swapping, switching back to previous objects.\n" );
+            m_pLogger->LogError( "Exception during object swapping, switching back to previous objects." );
             switch( swapper.m_ProtectedPhase  )
             {
             case PHASE_NONE:
                 AU_ASSERT( false );
                 break;
             case PHASE_SERIALIZEOUT:
-                m_pLogger->LogError( "\tError occured during serialize out old objects phase.\n" );
+                m_pLogger->LogError( "\tError occured during serialize out old objects phase." );
                 break;
             case PHASE_CONSTRUCTNEW:
-                m_pLogger->LogError( "\tError occured during constructing new objects phase.\n" );
+                m_pLogger->LogError( "\tError occured during constructing new objects phase." );
                 break;
             case PHASE_SERIALIZEIN:
-                m_pLogger->LogError( "\tError occured during serialize into the new objects phase.\n" );
+                m_pLogger->LogError( "\tError occured during serialize into the new objects phase." );
                 break;
             case PHASE_AUTOCONSTRUCTSINGLETONS:
-                m_pLogger->LogError( "\tError occured during auto construct singletons phase.\n" );
+                m_pLogger->LogError( "\tError occured during auto construct singletons phase." );
                 break;
             case PHASE_INITANDSERIALIZEOUTTEST:
                 if( m_bTestSerialization )
                 {
-                    m_pLogger->LogError( "\tError occured during Initialization and serialize test of new objects phase.\n" );
+                    m_pLogger->LogError( "\tError occured during Initialization and serialize test of new objects phase." );
                 }
                 else
                 {
-                    m_pLogger->LogError( "\tError occured during Initialization phase.\n" );
+                    m_pLogger->LogError( "\tError occured during Initialization phase." );
                 }
                 break;
            case PHASE_DELETEOLD:
@@ -365,10 +343,10 @@ void ObjectFactorySystem::CompleteConstructorSwap( ProtectedObjectSwapper& swapp
     }
     else
     {
-        if( m_pLogger ) m_pLogger->LogInfo( "Object swap completed\n");
+        if( m_pLogger ) m_pLogger->LogInfo( "Object swap completed");
         if( swapper.HasHadException() && PHASE_DELETEOLD == swapper.m_ProtectedPhase )
         {
-            if( m_pLogger ) m_pLogger->LogError( "Exception during object destruction of old objects, leaking.\n" );
+            if( m_pLogger ) m_pLogger->LogError( "Exception during object destruction of old objects, leaking." );
         }
     }
 
