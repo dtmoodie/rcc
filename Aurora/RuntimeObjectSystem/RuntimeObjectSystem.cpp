@@ -295,7 +295,7 @@ void RuntimeObjectSystem::OnFileChange(const IAUDynArray<const char*>& filelist)
         }
 
 
-        if (m_pCompilerLogger) { m_pCompilerLogger->LogInfo( "FileChangeNotifier triggered recompile with changes to:\n" ); }
+        //if (m_pCompilerLogger) { m_pCompilerLogger->LogInfo( "FileChangeNotifier triggered recompile with changes to:\n" ); }
         for( size_t i = 0; i < filelist.Size(); ++i )
         {
             // check this file is in our project list
@@ -305,7 +305,7 @@ void RuntimeObjectSystem::OnFileChange(const IAUDynArray<const char*>& filelist)
                 continue;
             }
 
-            if (m_pCompilerLogger) { m_pCompilerLogger->LogInfo( "    File %s\n", filelist[ i ] ); }
+            if (m_pCompilerLogger) { m_pCompilerLogger->LogInfo( "FileChangeNotifier triggered recompile with changes to: %s", filelist[ i ] ); }
             BuildTool::FileToBuild fileToBuild( filelist[ i ] );
 
             bool bFindIncludeDependencies = true;  // if this is a header or a source dependency need to find include dependencies
