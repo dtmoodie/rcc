@@ -395,7 +395,7 @@ public:
         m_FreeIds.clear();
         m_ConstructedObjects.clear();
     }
-    virtual int GetInterfaceId() const
+    virtual uint32_t GetInterfaceId() const
     {
         return T::s_interfaceID;
     }

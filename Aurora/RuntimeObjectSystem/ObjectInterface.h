@@ -106,7 +106,7 @@ struct IObjectConstructor
     virtual void                 SetConstructorId( ConstructorId id ) = 0;                    //take care how you use this - should only be used by id service
     virtual void                 ClearIfAllDeleted() = 0;                                    //if there are no objects left then clear internal memory (does not reduce memory consumption)
 
-    virtual int                  GetInterfaceId() const = 0;
+    virtual uint32_t             GetInterfaceId() const = 0;
     virtual std::string          GetInterfaceName() const = 0;
 protected:
     friend struct IObjectSharedState;
