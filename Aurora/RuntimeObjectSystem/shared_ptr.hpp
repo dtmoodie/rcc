@@ -53,8 +53,9 @@ namespace rcc
             {
                 obj_state->IncrementState();
                 obj_state->IncrementObject();
-
             }
+            other.obj_pointer = nullptr;
+            other.obj_state = nullptr;
         }
 
         shared_ptr(const weak_ptr<T>& other)
@@ -548,7 +549,7 @@ private:
             return *this->get();
         }
 
-        const T& operator*() const{
+        T& operator*() const{
             return *this->get();
         }
 
@@ -557,7 +558,7 @@ private:
             return get();
         }
 
-        const T* operator->() const
+        T* operator->() const
         {
             return get();
         }
@@ -571,7 +572,7 @@ private:
             return true;
         }
 
-        template<class U> U* DynamicCast()
+        template<class U> U* DynamicCast() const
         {
             if(obj_state)
             {
@@ -580,7 +581,7 @@ private:
             return nullptr;
         }
 
-        template<class U> U* StaticCast()
+        template<class U> U* StaticCast() const
         {
             if(obj_state)
             {
