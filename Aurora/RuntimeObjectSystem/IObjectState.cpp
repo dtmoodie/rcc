@@ -66,19 +66,16 @@ rcc::weak_ptr<IObject> IObjectSharedState::GetWeakPtr()
 
 void IObjectSharedState::IncrementObject()
 {
-    //++object_ref_count;
     CV_XADD(&object_ref_count, 1);
 }
 
 void IObjectSharedState::IncrementState()
 {
-    //++state_ref_count;
     CV_XADD(&state_ref_count, 1);
 }
 
 void IObjectSharedState::DecrementObject()
 {
-    //--object_ref_count;
     CV_XADD(&object_ref_count, -1);
     if(object_ref_count == 0)
     {
@@ -89,8 +86,7 @@ void IObjectSharedState::DecrementObject()
 
 void IObjectSharedState::DecrementState()
 {
-    //--state_ref_count;
-    CV_XADD(&state_ref_count, 1);
+    CV_XADD(&state_ref_count, -1);
     if(state_ref_count == 0)
     {
         delete this;
