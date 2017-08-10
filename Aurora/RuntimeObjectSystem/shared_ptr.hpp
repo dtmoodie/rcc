@@ -557,7 +557,7 @@ private:
             return get();
         }
 
-        const T* operator->() const
+        T* operator->() const
         {
             return get();
         }
@@ -571,7 +571,7 @@ private:
             return true;
         }
 
-        template<class U> U* DynamicCast()
+        template<class U> U* DynamicCast() const
         {
             if(obj_state)
             {
