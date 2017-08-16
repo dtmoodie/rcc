@@ -166,7 +166,7 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
             } else if(line.find("compile_options:") == 0)
             {
                 return 4;
-            }else if(line.find("compiler_location:") == 0)
+            }else if(line.find("compiler_location:") == 0 || line.find("compiler_locations:") == 0)
             {
                 return 5;
             } else if(line.find("compile_definitions:") == 0){

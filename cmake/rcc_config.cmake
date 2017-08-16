@@ -1,34 +1,85 @@
 # helper function to recursively get dependent library directories and includes
 
-macro(_handle_imported_target LIB_DIR_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE TGT)
+macro(_handle_imported_target LIB_DIR_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE TGT tab)
     if(NOT "${TGT}" STREQUAL Threads::Threads)
-        get_target_property(tgt_location ${TGT} LOCATION_DEBUG)
-        get_filename_component(name_ ${tgt_location} NAME_WE)
-        get_filename_component(dir_ ${tgt_location} DIRECTORY)
-
-        LIST(APPEND ${LIB_DIR_VAR} ${dir_})
-        LIST(APPEND ${LIB_FILES_DEBUG} ${name_})
-
-        get_target_property(tgt_location ${TGT} LOCATION_RELEASE)
-        get_filename_component(name_ ${tgt_location} NAME_WE)
-        get_filename_component(dir_ ${tgt_location} DIRECTORY)
-
-        list(APPEND ${LIB_DIR_VAR} ${dir})
-        LIST(APPEND ${LIB_FILES_RELEASE} ${name_})
-    endif()
+			set(found_ OFF)
+			if(NOT WIN32)
+				get_target_property(tgt_location ${TGT} IMPORTED_IMPLIB)
+				if(tgt_location)
+					set(found_ ON)
+					get_filename_component(name_ ${tgt_location} NAME_WE)
+					get_filename_component(dir_ ${tgt_location} DIRECTORY)
+					list(APPEND ${LIB_DIR_VAR} ${dir_})
+					LIST(APPEND ${LIB_FILES_RELEASE} ${name_})
+					set(tgt_location "")
+				else()
+					get_target_property(tgt_location ${TGT} LOCATION)
+					if(tgt_location)
+						set(found_ ON)
+						get_filename_component(name_ ${tgt_location} NAME_WE)
+						get_filename_component(dir_ ${tgt_location} DIRECTORY)
+						LIST(APPEND ${LIB_DIR_VAR} ${dir_})
+						LIST(APPEND ${LIB_FILES_DEBUG} ${name_})
+						LIST(APPEND ${LIB_FILES_RELEASE} ${name_})
+						set(tgt_location "")
+					endif()
+				endif()
+			endif()
+			get_target_property(tgt_location ${TGT} IMPORTED_IMPLIB_RELEASE)
+			if(tgt_location)
+				set(found_ ON)
+				get_filename_component(name_ ${tgt_location} NAME_WE)
+				get_filename_component(dir_ ${tgt_location} DIRECTORY)
+				list(APPEND ${LIB_DIR_VAR} ${dir_})
+				LIST(APPEND ${LIB_FILES_RELEASE} ${name_})
+				set(tgt_location "")
+			else()
+				get_target_property(tgt_location ${TGT} LOCATION_RELEASE)
+				if(tgt_location)
+					set(found_ ON)
+					get_filename_component(name_ ${tgt_location} NAME_WE)
+					get_filename_component(dir_ ${tgt_location} DIRECTORY)
+					list(APPEND ${LIB_DIR_VAR} ${dir_})
+					LIST(APPEND ${LIB_FILES_RELEASE} ${name_})
+					set(tgt_location "")
+				endif()
+			endif()
+			
+			get_target_property(tgt_location ${TGT} IMPORTED_IMPLIB_DEBUG)
+			if(tgt_location)
+				get_filename_component(name_ ${tgt_location} NAME_WE)
+				get_filename_component(dir_ ${tgt_location} DIRECTORY)
+				list(APPEND ${LIB_DIR_VAR} ${dir_})
+				LIST(APPEND ${LIB_FILES_DEBUG} ${name_})
+				set(tgt_location "")
+				if(NOT found_)
+					LIST(APPEND ${LIB_FILES_RELEASE} ${name_})
+				endif()
+			else()
+				get_target_property(tgt_location ${TGT} LOCATION_DEBUG)
+				if(tgt_location)
+					get_filename_component(name_ ${tgt_location} NAME_WE)
+					get_filename_component(dir_ ${tgt_location} DIRECTORY)
+					list(APPEND ${LIB_DIR_VAR} ${dir_})
+					LIST(APPEND ${LIB_FILES_DEBUG} ${name_})
+					if(NOT found_)
+						LIST(APPEND ${LIB_FILES_RELEASE} ${name_})
+					endif()
+					set(tgt_location "")
+				endif()
+			endif()
+			
+    endif(NOT "${TGT}" STREQUAL Threads::Threads)
 endmacro(_handle_imported_target)
 
 macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE tgt tab TGTS)
     list(FIND ${TGTS} ${tgt} index_)
     if(${index_} EQUAL -1 AND NOT "${tgt}" STREQUAL Threads::Threads)
-        if(RCC_VERBOSE_CONFIG)
-            message(STATUS "${tab}${tgt}")
-        endif(RCC_VERBOSE_CONFIG)
         if(TARGET ${tgt})
             list(APPEND ${TGTS} ${tgt})
             get_target_property(imported_ ${tgt} IMPORTED)
             if(${imported_})
-                _handle_imported_target(${LIB_DIR_VAR} ${LIB_FILES_DEBUG} ${LIB_FILES_RELEASE} ${tgt})
+                _handle_imported_target(${LIB_DIR_VAR} ${LIB_FILES_DEBUG} ${LIB_FILES_RELEASE} ${tgt} "${tab}  ")
             else(${imported_})
                 get_target_property(out_dir ${tgt} LIBRARY_OUTPUT_DIRECTORY)
                 if(out_dir)
@@ -46,6 +97,9 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE tgt 
                 if(inc_dir)
                     list(APPEND ${INC_VAR} ${inc_dir})
                 endif()
+				if(RCC_VERBOSE_CONFIG)
+					message(STATUS "${tab}${tgt} (${inc_dir}) (${lib_path})")
+				endif(RCC_VERBOSE_CONFIG)
             endif(${imported_})
 
             get_target_property(int_link_lib ${tgt} INTERFACE_LINK_LIBRARIES)
@@ -72,6 +126,8 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE tgt 
                         list(APPEND ${LIB_DIR_VAR} ${dir_})
                         get_filename_component(name_ ${lib} NAME_WE)
                         list(APPEND ${LIB_FILES_DEBUG} ${name_})
+						# TODO VALIDATE
+						list(APPEND ${LIB_FILES_RELEASE} ${name_})
                     endif(EXISTS ${lib})
                 endif(TARGET ${lib})
             endforeach(lib ${int_link_lib})
@@ -83,6 +139,8 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE tgt 
                 list(APPEND ${LIB_DIR_VAR} ${dir_})
                 get_filename_component(name_ ${tgt} NAME_WE)
                 list(APPEND ${LIB_FILES_DEBUG} ${name_})
+				# TODO VALIDATE
+				list(APPEND ${LIB_FILES_RELEASE} ${name_})
             endif(EXISTS ${tgt})
         endif(TARGET ${tgt})
     endif(${index_} EQUAL -1 AND NOT "${tgt}" STREQUAL Threads::Threads)
@@ -101,7 +159,7 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
     set(flags "")
     set(defs "")
     _target_helper(lib_dirs inc_dirs ${LIB_FILES_DEBUG_VAR} ${LIB_FILES_RELEASE_VAR} ${target} "  ")
-
+	
     get_target_property(dest_dir ${target} CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
     if(MSVC)
         get_target_property(dest_dir_deb ${target} ARCHIVE_OUTPUT_DIRECTORY_DEBUG)
@@ -117,6 +175,7 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
     if(flags_)
         set(flags ${flags_})
     endif()
+	list(APPEND flags ${CMAKE_CXX_FLAGS})
 
     get_target_property(defs_ ${target} COMPILE_DEFINITIONS)
     if(defs_)
@@ -126,6 +185,11 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
     if(defs_)
         set(defs "${defs};${defs_}")
     endif()
+	get_directory_property(link_dirs ${CMAKE_CURRENT_SOURCE_DIR} LINK_DIRECTORIES)
+	if(link_dirs)
+		list(APPEND lib_dirs ${link_dirs})
+	endif(link_dirs)
+	
     set(NVCC_COMPILER "")
     IF(CUDA_FOUND)
         set(NVCC_COMPILER "${CUDA_NVCC_EXECUTABLE}")
@@ -146,6 +210,7 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
     endforeach(dir)
     if(WIN32)
         list(APPEND flags "/FS")
+		list(REMOVE_ITEM lib ${CMAKE_BINARY_DIR})
     endif(WIN32)
     string(REGEX REPLACE ";" "\n" inc "${inc}")
     string(REGEX REPLACE "BUILD_INTERFACE:" "\n" inc "${inc}")
@@ -155,13 +220,12 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
     string(REGEX REPLACE ";" "\n" flags "${flags}")
     string(REGEX REPLACE ";" "\n" defs "${defs}")
 
-    message(STATUS "Writing ${dest_dir}/${target}_config.txt")
     if(MSVC)
         if(dest_dir_deb)
             FILE(WRITE "${dest_dir_deb}/${target}_config.txt"
                 "project_id:\n0\n\n"
                 "include_dirs:\n${inc}\n"
-                "lib_dirs_debug:\n${lib}\n"
+                "lib_dirs_debug:\n${CMAKE_BINARY_DIR}/Debug\n${lib}\n"
                 "lib_dirs_release:\n${lib}\n"
                 "compile_options:\n${flags}\n\n"
                 "compile_definitions:\n${defs}\n\n"
@@ -173,7 +237,7 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
                 "project_id:\n0\n\n"
                 "include_dirs:\n${inc}\n"
                 "lib_dirs_debug:\n${lib}\n"
-                "lib_dirs_release:\n${lib}\n"
+                "lib_dirs_release:\n${CMAKE_BINARY_DIR}/Release\n${lib}\n"
                 "compile_options:\n${flags}\n\n"
                 "compile_definitions:\n${defs}\n\n"
                 "compiler_location:\n${COMPILER_PATH}"
@@ -184,12 +248,23 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
                 "project_id:\n0\n\n"
                 "include_dirs:\n${inc}\n"
                 "lib_dirs_debug:\n${lib}\n"
-                "lib_dirs_release:\n${lib}\n"
+                "lib_dirs_release:\n${CMAKE_BINARY_DIR}/RelWithDebInfo\n${lib}\n"
                 "compile_options:\n${flags}\n\n"
                 "compile_definitions:\n${defs}\n\n"
                 "compiler_location:\n${COMPILER_PATH}"
             )
         endif()
+		if(dest_dir)
+			FILE(WRITE "${dest_dir}/${target}_config.txt"
+                "project_id:\n0\n\n"
+                "include_dirs:\n${inc}\n"
+                "lib_dirs_debug:\n${lib}\n"
+                "lib_dirs_release:\n${lib}\n"
+                "compile_options:\n${flags}\n\n"
+                "compile_definitions:\n${defs}\n\n"
+                "compiler_location:\n${COMPILER_PATH}"
+            )
+		endif()
     else(MSVC)
         FILE(WRITE "${dest_dir}/${target}_config.txt"
             "project_id:\n0\n\n"
@@ -226,7 +301,7 @@ macro(WRITE_RCC_CONFIG RCC_INCLUDE_DEPENDENCIES RCC_LIBRARY_DIRS_DEBUG RCC_LIBRA
             "include_dirs:\n${includes_}\n"
             "lib_dirs_debug:\n${lib_dirs_deb_}\n"
             "compile_options:\n/FS ${flags_}\n"
-            "compiler_locations:\n${COMPILER_PATH}")
+            "compiler_location:\n${COMPILER_PATH}")
 
         FILE(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/RCC_config.txt"
             "project_id:\n0"
