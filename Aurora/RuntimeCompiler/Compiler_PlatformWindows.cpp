@@ -466,10 +466,14 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>&    filesToCo
         }
     }
 
+    std::set<std::string> link_libraries;
+    for(const auto& link_dir : linkLibraryList_){
+        link_libraries.insert(link_dir.m_string);
+    }
+
     std::string strLinkLibraries;
-    for( size_t i = 0; i < linkLibraryList_.size(); ++i )
-    {
-        strLinkLibraries += " \"" + linkLibraryList_[i].m_string + "\" ";
+    for(const auto& lib : link_libraries){
+        strLinkLibraries += " \"" + lib + "\" ";
     }
     
 char* pCharTypeFlags = "";
