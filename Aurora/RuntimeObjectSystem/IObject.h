@@ -80,6 +80,9 @@ template< typename TInferior, typename TSuper> struct TInterface : public TSuper
             return TSuper::GetInterface(_iid);
         }
     }
+    static bool InheritsFrom(InterfaceID id){
+        return id == s_interfaceID ? true : TSuper::InheritsFrom(id);
+    }
 };
 
 // IObject itself below is a special case as the base class
@@ -87,6 +90,9 @@ template< typename TInferior, typename TSuper> struct TInterface : public TSuper
 struct IObject
 {
     static const InterfaceID s_interfaceID = ct::ctcrc32("IObject");
+    static bool InheritsFrom(InterfaceID id){
+        return id == s_interfaceID;
+    }
 
     virtual IObject* GetInterface(InterfaceID __iid)
     {

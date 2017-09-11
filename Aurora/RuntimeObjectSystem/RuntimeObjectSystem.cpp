@@ -28,7 +28,7 @@
 #include "ObjectFactorySystem/ObjectFactorySystem.h"
 #include "ObjectInterfacePerModule.h"
 #include <algorithm>
-#include "IObject.h"
+#include "RuntimeObjectSystem/IObject.h"
 
 #ifndef _WIN32
 //TODO: fix below in a better generic fashion.

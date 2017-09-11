@@ -1,8 +1,10 @@
 #pragma once
 #include <string>
+#include <RuntimeObjectSystem/shared_ptr.hpp>
 struct IObjectConstructor;
 struct IObjectInfo
 {
+    IObjectInfo();
     virtual ~IObjectInfo();
     /*!
      * \brief The Verbosity enum determines how verbose of a print statement to use
@@ -24,4 +26,5 @@ struct IObjectInfo
      */
     virtual std::string Print(Verbosity verbosity = Verbosity::INFO) const = 0;
     virtual IObjectConstructor* GetConstructor() const = 0;
+    virtual bool InheritsFrom(unsigned int id) const = 0;
 };

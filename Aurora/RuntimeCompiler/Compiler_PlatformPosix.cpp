@@ -215,7 +215,21 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     if(nvccCompiler.size())
     {
 #if __cplusplus > 201100L
-        compileString = nvccCompiler + " -ccbin " + compilerLocation + " --std=c++11 -g --compiler-options '-fPIC -fvisibility=hidden -shared' ";
+        if(pCompileOptions){
+            compileString = nvccCompiler + " -ccbin " + compilerLocation + " --std=c++11 -g --compiler-options '-fPIC -fvisibility=hidden -shared ";
+            std::stringstream ss;
+            ss << pCompileOptions;
+            std::string op;
+            while(std::getline(ss, op, ' ')){
+                if(op.find("-Wl") == std::string::npos){
+                    compileString += op + " ";
+                }
+            }
+            compileString += "' ";
+        }else{
+            compileString = nvccCompiler + " -ccbin " + compilerLocation + " --std=c++11 -g --compiler-options '-fPIC -fvisibility=hidden -shared' ";
+        }
+
 #else
         compileString = nvccCompiler + " -ccbin " + compilerLocation + " -g --compiler-options '-fPIC -fvisibility=hidden -shared' ";
 #endif
@@ -301,7 +315,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     }
 
 
-    if( pCompileOptions )
+    if( pCompileOptions && nvccCompiler.empty())
     {
         compileString += pCompileOptions;
         compileString += " ";

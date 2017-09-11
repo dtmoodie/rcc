@@ -227,7 +227,6 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
     string(REGEX REPLACE ";" "\n" lib "${lib}")
     string(REGEX REPLACE ";" "\n" flags "${flags}")
     string(REGEX REPLACE ";" "\n" defs "${defs}")
-
     if(MSVC)
         if(dest_dir_deb)
             FILE(WRITE "${dest_dir_deb}/${target}_config.txt"

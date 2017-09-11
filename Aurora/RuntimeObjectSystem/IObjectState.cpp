@@ -1,5 +1,5 @@
 #include "IObjectState.hpp"
-#include "IObject.h"
+#include "RuntimeObjectSystem/IObject.h"
 #include "shared_ptr.hpp"
 #ifdef CV_XADD
   // allow to use user-defined macro
