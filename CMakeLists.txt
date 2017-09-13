@@ -225,6 +225,11 @@ install(DIRECTORY Aurora/RuntimeCompiler
         FILES_MATCHING PATTERN "*.hpp"
 )
 
+install(DIRECTORY Aurora/ct
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.hpp"
+)
+
 install(DIRECTORY Aurora/RuntimeObjectSystem
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
