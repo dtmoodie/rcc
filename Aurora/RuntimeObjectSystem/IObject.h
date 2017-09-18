@@ -51,13 +51,21 @@ typedef unsigned int InterfaceID;
 #endif
 
 // Template to help with IIDs
-template< typename TInferior, typename TSuper> struct TInterface : public TSuper
+template< typename TInferior, typename TSuper, size_t Version = 0> struct TInterface : public TSuper
 {
 #ifdef _MSC_VER
     static constexpr uint32_t getHash() { return ct::hashClassName(__FUNCTION__); }
 #else
     static constexpr uint32_t getHash() { return ct::hashClassName(__PRETTY_FUNCTION__); }
 #endif
+    static size_t GetInterfaceVersion(){
+        return Version;
+    }
+    static size_t GetInterfaceAbiHash(){
+        size_t seed = Version;
+        seed ^= TSuper::GetInterfaceAbiHash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
     static const InterfaceID s_interfaceID = getHash();
     static std::string GetInterfaceName()
     {
@@ -103,6 +111,9 @@ struct IObject
         default:
             return nullptr;
         }
+    }
+    static size_t GetInterfaceAbiHash(){
+        return 0;
     }
 
     template< typename T> void GetInterface( T** pReturn )

@@ -144,7 +144,7 @@ int RuntimeObjectSystem::ParseConfigFile(const char* file, bool first)
         }
         return -1;
     }
-    unsigned short projectId = 0;
+    int projectId = 0;
     if (config_file.is_open())
     {
         std::string line;
