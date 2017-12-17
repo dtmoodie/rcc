@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 #include <assert.h>
-#include <IObjectInfo.h>
+#include <RuntimeObjectSystem/IObjectInfo.h>
 #include "RuntimeMacros.hpp"
 #include "IObjectState.hpp"
 #include "shared_ptr.hpp"

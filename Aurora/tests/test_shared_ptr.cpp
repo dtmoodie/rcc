@@ -1,5 +1,5 @@
 #include <RuntimeObjectSystem/ObjectInterfacePerModule.h>
-#include <IObject.h>
+#include <RuntimeObjectSystem/IObject.h>
 #include <iostream>
 
 bool destroyed = false;

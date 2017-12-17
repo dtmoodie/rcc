@@ -1,4 +1,4 @@
-#include "IObjectInfo.h"
+#include "RuntimeObjectSystem/IObjectInfo.h"
 
 IObjectInfo::~IObjectInfo(){
 

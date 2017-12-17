@@ -19,7 +19,7 @@
 
 #include "../ObjectInterface.h"
 #include "../ObjectInterfacePerModule.h"
-#include "IObject.h"
+#include "RuntimeObjectSystem/IObject.h"
 #include "../IRuntimeObjectSystem.h"
 
 

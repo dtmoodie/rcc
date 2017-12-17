@@ -1,4 +1,4 @@
-#include "IObject.h"
+#include "RuntimeObjectSystem/IObject.h"
 #include <iostream>
 #ifdef _MSC_VER
 #define __PRETTY_FUNCTION__ __FUNCTION__
