@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 struct IObjectConstructor;
+typedef unsigned int InterfaceID;
 struct IObjectInfo
 {
     virtual ~IObjectInfo();
@@ -24,4 +25,5 @@ struct IObjectInfo
      */
     virtual std::string Print(Verbosity verbosity = Verbosity::INFO) const = 0;
     virtual IObjectConstructor* GetConstructor() const = 0;
+    virtual bool InheritsFrom(InterfaceID iid) const = 0;
 };

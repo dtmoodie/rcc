@@ -37,11 +37,6 @@
 
 struct ISimpleSerializer;
 class ObjectFactorySystem;
-namespace rcc
-{
-    template<typename T> class shared_ptr;
-    template<typename T> class weak_ptr;
-}
 
 typedef unsigned int InterfaceID;
 #ifdef _MSC_VER
@@ -51,7 +46,8 @@ typedef unsigned int InterfaceID;
 #endif
 
 // Template to help with IIDs
-template< typename TInferior, typename TSuper> struct TInterface : public TSuper
+template< typename TInferior, typename TSuper>
+struct TInterface : public TSuper
 {
 #ifdef _MSC_VER
     static constexpr uint32_t getHash() { return ct::hashClassName(__FUNCTION__); }
@@ -70,6 +66,18 @@ template< typename TInferior, typename TSuper> struct TInterface : public TSuper
         return str.substr(pos1 + 12, str.find(';', pos1+13) - pos1 - 12);
 #endif
     }
+
+    static bool InheritsFrom(InterfaceID iid)
+    {
+        if(iid == s_interfaceID)
+        {
+            return true;
+        }else
+        {
+            return TSuper::InheritsFrom(iid);
+        }
+    }
+
     virtual IObject* GetInterface( InterfaceID _iid)
     {
         switch(_iid)
@@ -88,71 +96,43 @@ struct IObject
 {
     static const InterfaceID s_interfaceID = ct::ctcrc32("IObject");
 
-    virtual IObject* GetInterface(InterfaceID __iid)
+    virtual IObject* GetInterface(InterfaceID __iid);
+
+    template< typename T>
+    void GetInterface( T** pReturn )
     {
-        switch(__iid)
-        {
-        case s_interfaceID:
-            return this;
-        default:
-            return nullptr;
-        }
+        GetInterface( T::s_interfaceID, static_cast<void**>(pReturn) );
     }
 
-    template< typename T> void GetInterface( T** pReturn )
-    {
-        GetInterface( T::s_interfaceID, (void**)pReturn );
-    }
+    static bool InheritsFrom(InterfaceID iid);
 
-    static std::string GetInterfaceName()
-    {
-        return "IObject";
-    }
+    static std::string GetInterfaceName();
 
-    IObject() : _isRuntimeDelete(false) {}
-    virtual ~IObject()
-    {
-
-    }
+    IObject();
+    virtual ~IObject();
 
     // Perform any object initialization
     // Should be called with isFirstInit=true on object creation
     // Will automatically be called with isFirstInit=false whenever a system serialization is performed
-    virtual void Init( bool isFirstInit )
-    {
-
-    }
+    virtual void Init( bool isFirstInit );
 
     //return the PerTypeObjectId of this object, which is unique per class
     virtual PerTypeObjectId GetPerTypeId() const = 0;
 
-    virtual void GetObjectId( ObjectId& id ) const
-    {
-        id.m_ConstructorId = GetConstructor()->GetConstructorId();
-        id.m_PerTypeId = GetPerTypeId();
-    }
-    virtual ObjectId GetObjectId() const
-    {
-        ObjectId ret;
-        GetObjectId( ret );
-        return ret;
-    }
+    virtual void GetObjectId( ObjectId& id ) const;
 
+    virtual ObjectId GetObjectId() const;
 
     //return the constructor for this class
     virtual IObjectConstructor* GetConstructor() const = 0;
 
     //serialise is not pure virtual as many objects do not need state
-    virtual void Serialize(ISimpleSerializer *pSerializer)
-    {
-
-
-    }
+    virtual void Serialize(ISimpleSerializer *pSerializer);
 
     virtual const char* GetTypeName() const = 0;
 
 protected:
-    bool IsRuntimeDelete() { return _isRuntimeDelete; }
+    bool IsRuntimeDelete();
 
 private:
     friend class ObjectFactorySystem;
