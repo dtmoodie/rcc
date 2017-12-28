@@ -30,6 +30,7 @@
 #ifndef IOBJECT_INCLUDED
 #define IOBJECT_INCLUDED
 #include "RuntimeObjectSystem/ObjectInterface.h"
+#include "RuntimeObjectSystem/InterfaceDatabase.hpp"
 #include <ct/String.hpp>
 #include <iostream>
 #include <algorithm>
@@ -45,10 +46,27 @@ typedef unsigned int InterfaceID;
 #define INTERFACE_HASH static constexpr InterfaceID class_hash() {return hashClassName(__PRETTY_FUNCTION__);}
 #endif
 
+
+template<class TInterface>
+struct RegisterInterface
+{
+    RegisterInterface()
+    {
+        rcc::InterfaceDatabase::Instance()->RegisterInterface(TInterface::GetInterfaceName(),
+                                                              TInterface::s_interfaceID,
+                                                              &TInterface::InheritsFrom,
+                                                              &TInterface::DirectlyInheritsFrom);
+    }
+};
+
 // Template to help with IIDs
 template< typename TInferior, typename TSuper>
 struct TInterface : public TSuper
 {
+    TInterface()
+    {
+        (void)&s_register_interface;
+    }
 #ifdef _MSC_VER
     static constexpr uint32_t getHash() { return ct::hashClassName(__FUNCTION__); }
 #else
@@ -78,6 +96,11 @@ struct TInterface : public TSuper
         }
     }
 
+    static bool DirectlyInheritsFrom(InterfaceID iid)
+    {
+        return iid == TSuper::s_interfaceID;
+    }
+
     virtual IObject* GetInterface( InterfaceID _iid)
     {
         switch(_iid)
@@ -88,7 +111,12 @@ struct TInterface : public TSuper
             return TSuper::GetInterface(_iid);
         }
     }
+private:
+    static RegisterInterface<TInterface<TInferior, TSuper>> s_register_interface;
 };
+
+template<typename TInferior, typename TSuper>
+RegisterInterface<TInterface<TInferior, TSuper>> TInterface<TInferior, TSuper>::s_register_interface;
 
 // IObject itself below is a special case as the base class
 // Also it doesn't hurt to have it coded up explicitly for reference
@@ -105,6 +133,8 @@ struct IObject
     }
 
     static bool InheritsFrom(InterfaceID iid);
+
+    static bool DirectlyInheritsFrom(InterfaceID iid);
 
     static std::string GetInterfaceName();
 

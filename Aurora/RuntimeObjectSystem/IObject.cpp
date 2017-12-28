@@ -42,6 +42,12 @@ bool IObject::InheritsFrom(InterfaceID iid)
     return false;
 }
 
+
+bool IObject::DirectlyInheritsFrom(InterfaceID /*iid*/)
+{
+    return false;
+}
+
 std::string IObject::GetInterfaceName()
 {
     return "IObject";
