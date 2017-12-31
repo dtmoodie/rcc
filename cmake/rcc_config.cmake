@@ -170,9 +170,9 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
         get_target_property(dest_dir_deb ${target} ARCHIVE_OUTPUT_DIRECTORY_DEBUG)
         get_target_property(dest_dir_rel ${target} ARCHIVE_OUTPUT_DIRECTORY_RELEASE)
         get_target_property(dest_dir_reldeb ${target} ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO)
-		list(APPEND lib_dirs ${dest_dir_deb})
-		list(APPEND lib_dirs ${dest_dir_rel})
-		list(APPEND lib_dirs ${dest_dir_reldeb})
+        list(APPEND lib_dirs ${dest_dir_deb})
+        list(APPEND lib_dirs ${dest_dir_rel})
+        list(APPEND lib_dirs ${dest_dir_reldeb})
     endif(MSVC)
 
     get_target_property(flags_ ${target} COMPILE_OPTIONS)
@@ -218,7 +218,7 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
     endforeach(dir)
     if(WIN32)
         list(APPEND flags "/FS")
-		list(REMOVE_ITEM lib ${CMAKE_BINARY_DIR})
+        list(REMOVE_ITEM lib ${CMAKE_BINARY_DIR})
     endif(WIN32)
     string(REGEX REPLACE ";" "\n" inc "${inc}")
     string(REGEX REPLACE "BUILD_INTERFACE:" "\n" inc "${inc}")
@@ -262,8 +262,8 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
                 "compiler_location:\n${COMPILER_PATH}"
             )
         endif()
-		if(dest_dir)
-			FILE(WRITE "${dest_dir}/${target}_config.txt"
+            if(dest_dir)
+                FILE(WRITE "${dest_dir}/${target}_config.txt"
                 "project_id:\n0\n\n"
                 "include_dirs:\n${inc}\n"
                 "lib_dirs_debug:\n${lib}\n"
@@ -271,9 +271,15 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
                 "compile_options:\n${flags}\n\n"
                 "compile_definitions:\n${defs}\n\n"
                 "compiler_location:\n${COMPILER_PATH}"
-            )
-		endif()
+                )
+            endif()
     else(MSVC)
+        get_target_property(cxx_standard_reqd ${target} CXX_STANDARD_REQUIRED)
+        if(cxx_standard_reqd)
+            get_target_property(cxx_standard ${target} CXX_STANDARD)
+            set(flags "${flags} -std=c++${cxx_standard}")
+        endif()
+
         FILE(WRITE "${dest_dir}/${target}_config.txt"
             "project_id:\n0\n\n"
             "include_dirs:\n${inc}\n"
