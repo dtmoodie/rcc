@@ -241,10 +241,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
         compileString += "-O0 ";
         break;
     case RCCPPOPTIMIZATIONLEVEL_PERF:
-        if(nvccCompiler.size())
-            compileString += "-O2 ";
-        else
-            compileString += "-O2 -DNDEBUG ";
+        compileString += "-O2 -DNDEBUG ";
         break;
     case RCCPPOPTIMIZATIONLEVEL_NOT_SET:;
 
@@ -301,7 +298,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     }
 
 
-    if( pCompileOptions )
+    if( pCompileOptions && nvccCompiler.empty() )
     {
         compileString += pCompileOptions;
         compileString += " ";
