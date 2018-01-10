@@ -29,12 +29,12 @@
 
 #ifndef IOBJECT_INCLUDED
 #define IOBJECT_INCLUDED
-#include "RuntimeObjectSystem/ObjectInterface.h"
 #include "RuntimeObjectSystem/InterfaceDatabase.hpp"
-#include <ct/String.hpp>
-#include <iostream>
+#include "RuntimeObjectSystem/ObjectInterface.h"
 #include <algorithm>
 #include <assert.h>
+#include <ct/String.hpp>
+#include <iostream>
 
 struct ISimpleSerializer;
 class ObjectFactorySystem;
@@ -61,7 +61,7 @@ struct RegisterInterface
 
 // Template to help with IIDs
 template< typename TInferior, typename TSuper>
-struct TInterface : public TSuper
+struct TInterface : virtual public TSuper
 {
     TInterface()
     {
