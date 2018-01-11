@@ -67,12 +67,16 @@ struct TInterface : virtual public TSuper
     {
         (void)&s_register_interface;
     }
-#ifdef _MSC_VER
+#ifdef _WIN32
     static constexpr uint32_t getHash() { return ct::hashClassName(__FUNCTION__); }
 #else
     static constexpr uint32_t getHash() { return ct::hashClassName(__PRETTY_FUNCTION__); }
 #endif
-    static const InterfaceID s_interfaceID = getHash();
+    static const InterfaceID s_interfaceID
+#ifndef __CUDACC__
+        = getHash()
+#endif
+        ;
     static std::string GetInterfaceName()
     {
 #ifdef _MSC_VER
@@ -87,6 +91,7 @@ struct TInterface : virtual public TSuper
 
     static bool InheritsFrom(InterfaceID iid)
     {
+#ifndef __CUDACC__
         if(iid == s_interfaceID)
         {
             return true;
@@ -94,15 +99,23 @@ struct TInterface : virtual public TSuper
         {
             return TSuper::InheritsFrom(iid);
         }
+#else
+        return false;
+#endif
     }
 
     static bool DirectlyInheritsFrom(InterfaceID iid)
     {
+#ifndef __CUDACC__
         return iid == TSuper::s_interfaceID;
+#else
+        return false;
+#endif
     }
 
     virtual IObject* GetInterface( InterfaceID _iid)
     {
+#ifndef __CUDACC__
         switch(_iid)
         {
         case s_interfaceID:
@@ -110,6 +123,9 @@ struct TInterface : virtual public TSuper
         default:
             return TSuper::GetInterface(_iid);
         }
+#else
+        return nullptr;
+#endif
     }
 private:
     static RegisterInterface<TInterface<TInferior, TSuper>> s_register_interface;
@@ -122,14 +138,21 @@ RegisterInterface<TInterface<TInferior, TSuper>> TInterface<TInferior, TSuper>::
 // Also it doesn't hurt to have it coded up explicitly for reference
 struct IObject
 {
-    static const InterfaceID s_interfaceID = ct::ctcrc32("IObject");
+
+    static const InterfaceID s_interfaceID
+#ifndef __CUDACC__
+        = ct::ctcrc32("IObject")
+#endif
+        ;
 
     virtual IObject* GetInterface(InterfaceID __iid);
 
     template< typename T>
     void GetInterface( T** pReturn )
     {
+#ifndef __CUDACC__
         GetInterface( T::s_interfaceID, static_cast<void**>(pReturn) );
+#endif
     }
 
     static bool InheritsFrom(InterfaceID iid);
