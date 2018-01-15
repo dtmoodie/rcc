@@ -77,8 +77,7 @@ namespace rcc
         shared_ptr(const shared_ptr& other)
         {
             this->obj_state = other.obj_state;
-            if (obj_state)
-                obj_pointer = dynamic_cast<T*>(this->obj_state->GetIObject());
+            obj_pointer = other.obj_pointer; 
             if(obj_state && obj_pointer)
             {
                 obj_state->IncrementState();
@@ -139,7 +138,8 @@ namespace rcc
             }
             obj_state = other.obj_state;
             if(obj_state){
-                if((obj_pointer = dynamic_cast<T*>(this->obj_state->GetIObject()))){
+                if (obj_pointer = other.obj_pointer)
+                {
                     obj_state->IncrementObject();
                     obj_state->IncrementState();
                 }else{

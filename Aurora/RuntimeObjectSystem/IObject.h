@@ -33,7 +33,8 @@
 #include "RuntimeObjectSystem/ObjectInterface.h"
 #include <algorithm>
 #include <assert.h>
-#include <ct/String.hpp>
+#include <ct/Hash.hpp>
+#include <ct/Object.hpp>
 #include <iostream>
 
 struct ISimpleSerializer;
