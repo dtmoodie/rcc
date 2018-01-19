@@ -68,11 +68,8 @@ struct TInterface : virtual public TSuper
     {
         (void)&s_register_interface;
     }
-#ifdef _WIN32
-    static constexpr uint32_t getHash() { return ct::hashClassName(__FUNCTION__); }
-#else
-    static constexpr uint32_t getHash() { return ct::hashClassName(__PRETTY_FUNCTION__); }
-#endif
+    static constexpr uint32_t getHash() { return ct::ctcrc32(__CT_STRUCT_MAGIC_FUNCTION__); }
+
     static const InterfaceID s_interfaceID
 #ifndef __CUDACC__
         = getHash()

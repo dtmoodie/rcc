@@ -131,14 +131,17 @@ namespace rcc
             return *this;
         }
 
-        shared_ptr& operator=(const shared_ptr<T>& other){
-            if(obj_state){
+        shared_ptr& operator=(const shared_ptr<T>& other)
+        {
+            if(obj_state)
+            {
                 obj_state->DecrementObject();
                 obj_state->DecrementState();
             }
             obj_state = other.obj_state;
-            if(obj_state){
-                if (obj_pointer = other.obj_pointer)
+            if(obj_state)
+            {
+                if ((obj_pointer = other.obj_pointer))
                 {
                     obj_state->IncrementObject();
                     obj_state->IncrementState();

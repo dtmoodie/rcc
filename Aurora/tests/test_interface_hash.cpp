@@ -19,8 +19,12 @@ struct Bravo{
 };
 
 int main(){
-    static_assert(Alpha::getHash() != Bravo::getHash(), "A::getHash() != B::getHash()");
+    //static_assert(Alpha::getHash() != Bravo::getHash(), "A::getHash() != B::getHash()");
+    static_assert(ct::findLast("static const char* Bravo::name()", ' ') == 18, "ct::findLast(\"static const char* Bravo::name()\", ' ') == 18");
+    static_assert(ct::findFirst("static const char* Bravo::name()", ':' == 24), "ct::findFirst(\"static const char* Bravo::name()\", ':' == 24)");
+    static_assert(Bravo::getHash() == ct::ctcrc32("Bravo"), "Bravo::getHash() == ct::ctcrc32(\"Bravo\")");
     std::cout << "A: " << Alpha::getHash() << " " << Alpha::classIdx() << " " << Alpha::name() << std::endl;
     std::cout << "B: " << Bravo::getHash() << " " << Bravo::classIdx() << " " << Bravo::name() << std::endl;
+    static_assert(TInterface<Alpha, Bravo>::getHash() != 0, "asdf");
     return 0;
 }
