@@ -25,6 +25,5 @@ int main(){
     static_assert(Bravo::getHash() == ct::ctcrc32("Bravo"), "Bravo::getHash() == ct::ctcrc32(\"Bravo\")");
     std::cout << "A: " << Alpha::getHash() << " " << Alpha::classIdx() << " " << Alpha::name() << std::endl;
     std::cout << "B: " << Bravo::getHash() << " " << Bravo::classIdx() << " " << Bravo::name() << std::endl;
-    static_assert(TInterface<Alpha, Bravo>::getHash() != 0, "asdf");
     return 0;
 }
