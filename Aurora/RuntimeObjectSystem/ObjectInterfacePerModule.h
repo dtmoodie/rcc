@@ -77,6 +77,23 @@ public:
         return m_ModuleFilename.c_str();
     }
 
+    virtual void AddInterface(const std::string& name, unsigned int iid,
+                              bool(*inheritance_f)(unsigned int),
+                              bool(*direct_inheritance_f)(unsigned int))
+    {
+        InterfaceInfo info;
+        info.iid = iid;
+        info.inheritance_f = inheritance_f;
+        info.direct_inheritance_f = direct_inheritance_f;
+        info.name = name;
+        m_interface_info.emplace_back(std::move(info));
+    }
+
+    virtual std::vector<InterfaceInfo> GetInterfaces() const
+    {
+        return m_interface_info;
+    }
+
 private:
     PerModuleInterface();
 
@@ -89,6 +106,7 @@ private:
     std::vector<IObjectConstructor*>    m_ObjectConstructors;
     std::vector<const char*>            m_RequiredSourceFiles;
     std::string                         m_ModuleFilename;
+    std::vector<InterfaceInfo>  m_interface_info;
 };
 
 

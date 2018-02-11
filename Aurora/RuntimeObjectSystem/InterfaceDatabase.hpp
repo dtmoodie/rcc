@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include "ObjectInterfacePerModule.h"
+
 
 namespace rcc
 {
@@ -7,17 +9,11 @@ namespace rcc
     class InterfaceDatabase
     {
     public:
-        static InterfaceDatabase* Instance();
-        void RegisterInterface(const std::string& name,
+        static void RegisterInterface(const std::string& name,
                                unsigned int iid,
                                bool(*inheritance_f)(unsigned int),
                                bool(*direct_inheritance_f)(unsigned int));
-        void GetInheritanceGraph(InheritanceGraph& graph);
-    private:
-        struct Impl;
-        Impl* _pimpl;
-        InterfaceDatabase();
-        ~InterfaceDatabase();
+        static void GetInheritanceGraph(InheritanceGraph& graph);
     };
 
 }

@@ -53,7 +53,7 @@ struct RegisterInterface
 {
     RegisterInterface()
     {
-        rcc::InterfaceDatabase::Instance()->RegisterInterface(TInterface::GetInterfaceName(),
+        rcc::InterfaceDatabase::RegisterInterface(TInterface::GetInterfaceName(),
                                                               TInterface::s_interfaceID,
                                                               &TInterface::InheritsFrom,
                                                               &TInterface::DirectlyInheritsFrom);
