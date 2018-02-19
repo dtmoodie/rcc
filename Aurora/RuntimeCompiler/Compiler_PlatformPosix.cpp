@@ -99,7 +99,7 @@ bool Compiler::GetIsComplete() const
                 while( ( numread = read( m_pImplData->m_PipeStdOut[0], buffer, buffSize-1 ) ) > 0 )
                 {
                     buffer[numread] = 0;
-                    m_pImplData->m_pLogger->LogInfo( buffer );
+                    m_pImplData->m_pLogger->LogWarning( buffer );
                 }
 
                 while( ( numread = read( m_pImplData->m_PipeStdErr[0], buffer, buffSize-1 ) )> 0 )
