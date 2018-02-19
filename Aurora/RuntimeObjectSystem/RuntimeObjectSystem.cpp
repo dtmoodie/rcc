@@ -622,6 +622,8 @@ void RuntimeObjectSystem::SetupObjectConstructors(IPerModuleInterface* pPerModul
         constructors[i] = objectConstructors[i];
     }
 
+    auto interfaces = pPerModuleInterface->GetInterfaces();
+    m_interfaces.insert(m_interfaces.end(), interfaces.begin(), interfaces.end());
     if (m_bAutoCompile)
     {
         SetupRuntimeFileTracking(constructors);

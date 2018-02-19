@@ -29,19 +29,16 @@
 
 #ifndef IOBJECT_INCLUDED
 #define IOBJECT_INCLUDED
+#include "RuntimeObjectSystem/InterfaceDatabase.hpp"
 #include "RuntimeObjectSystem/ObjectInterface.h"
-#include <ct/String.hpp>
-#include <iostream>
 #include <algorithm>
 #include <assert.h>
+#include <ct/Hash.hpp>
+#include <ct/Object.hpp>
+#include <iostream>
 
 struct ISimpleSerializer;
 class ObjectFactorySystem;
-namespace rcc
-{
-    template<typename T> class shared_ptr;
-    template<typename T> class weak_ptr;
-}
 
 typedef unsigned int InterfaceID;
 #ifdef _MSC_VER
@@ -50,14 +47,35 @@ typedef unsigned int InterfaceID;
 #define INTERFACE_HASH static constexpr InterfaceID class_hash() {return hashClassName(__PRETTY_FUNCTION__);}
 #endif
 
-// Template to help with IIDs
-template< typename TInferior, typename TSuper, size_t Version = 0> struct TInterface : public TSuper
+
+template<class TInterface>
+struct RegisterInterface
 {
-#ifdef _MSC_VER
-    static constexpr uint32_t getHash() { return ct::hashClassName(__FUNCTION__); }
-#else
-    static constexpr uint32_t getHash() { return ct::hashClassName(__PRETTY_FUNCTION__); }
+    RegisterInterface()
+    {
+        rcc::InterfaceDatabase::RegisterInterface(TInterface::GetInterfaceName(),
+                                                              TInterface::s_interfaceID,
+                                                              &TInterface::InheritsFrom,
+                                                              &TInterface::DirectlyInheritsFrom);
+    }
+};
+
+// Template to help with IIDs
+template< typename TInferior, typename TSuper, size_t Version = 0>
+struct TInterface : public TSuper
+{
+    TInterface()
+    {
+        (void)&s_register_interface;
+    }
+    static constexpr uint32_t getHash() { return ct::ctcrc32(__CT_STRUCT_MAGIC_FUNCTION__); }
+
+    static const InterfaceID s_interfaceID
+#ifndef __CUDACC__
+        = getHash()
 #endif
+        ;
+
     static size_t GetInterfaceVersion(){
         return Version;
     }
@@ -66,7 +84,7 @@ template< typename TInferior, typename TSuper, size_t Version = 0> struct TInter
         seed ^= TSuper::GetInterfaceAbiHash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         return seed;
     }
-    static const InterfaceID s_interfaceID = getHash();
+
     static std::string GetInterfaceName()
     {
 #ifdef _MSC_VER
@@ -78,8 +96,34 @@ template< typename TInferior, typename TSuper, size_t Version = 0> struct TInter
         return str.substr(pos1 + 12, str.find(';', pos1+13) - pos1 - 12);
 #endif
     }
+
+    static bool InheritsFrom(InterfaceID iid)
+    {
+#ifndef __CUDACC__
+        if(iid == s_interfaceID)
+        {
+            return true;
+        }else
+        {
+            return TSuper::InheritsFrom(iid);
+        }
+#else
+        return false;
+#endif
+    }
+
+    static bool DirectlyInheritsFrom(InterfaceID iid)
+    {
+#ifndef __CUDACC__
+        return iid == TSuper::s_interfaceID;
+#else
+        return false;
+#endif
+    }
+
     virtual IObject* GetInterface( InterfaceID _iid)
     {
+#ifndef __CUDACC__
         switch(_iid)
         {
         case s_interfaceID:
@@ -87,89 +131,74 @@ template< typename TInferior, typename TSuper, size_t Version = 0> struct TInter
         default:
             return TSuper::GetInterface(_iid);
         }
+#else
+        return nullptr;
+#endif
     }
-    static bool InheritsFrom(InterfaceID id){
-        return id == s_interfaceID ? true : TSuper::InheritsFrom(id);
-    }
+
+private:
+    static RegisterInterface<TInterface<TInferior, TSuper>> s_register_interface;
+
 };
+
+template<typename TInferior, typename TSuper, size_t Version>
+RegisterInterface<TInterface<TInferior, TSuper>> TInterface<TInferior, TSuper, Version>::s_register_interface;
 
 // IObject itself below is a special case as the base class
 // Also it doesn't hurt to have it coded up explicitly for reference
 struct IObject
 {
-    static const InterfaceID s_interfaceID = ct::ctcrc32("IObject");
-    static bool InheritsFrom(InterfaceID id){
-        return id == s_interfaceID;
-    }
+    static const InterfaceID s_interfaceID
+#ifndef __CUDACC__
+        = ct::ctcrc32("IObject")
+#endif
+        ;
 
-    virtual IObject* GetInterface(InterfaceID __iid)
-    {
-        switch(__iid)
-        {
-        case s_interfaceID:
-            return this;
-        default:
-            return nullptr;
-        }
-    }
+    static bool InheritsFrom(InterfaceID id);
+
+    virtual IObject* GetInterface(InterfaceID __iid);
+
     static size_t GetInterfaceAbiHash(){
         return 0;
     }
 
-    template< typename T> void GetInterface( T** pReturn )
+    template< typename T>
+    void GetInterface( T** pReturn )
     {
-        GetInterface( T::s_interfaceID, (void**)pReturn );
+#ifndef __CUDACC__
+        GetInterface( T::s_interfaceID, static_cast<void**>(pReturn) );
+#endif
     }
 
-    static std::string GetInterfaceName()
-    {
-        return "IObject";
-    }
+    static bool DirectlyInheritsFrom(InterfaceID iid);
 
-    IObject() : _isRuntimeDelete(false) {}
-    virtual ~IObject()
-    {
+    static std::string GetInterfaceName();
 
-    }
+    IObject();
+    virtual ~IObject();
 
     // Perform any object initialization
     // Should be called with isFirstInit=true on object creation
     // Will automatically be called with isFirstInit=false whenever a system serialization is performed
-    virtual void Init( bool isFirstInit )
-    {
-
-    }
+    virtual void Init( bool isFirstInit );
 
     //return the PerTypeObjectId of this object, which is unique per class
     virtual PerTypeObjectId GetPerTypeId() const = 0;
 
-    virtual void GetObjectId( ObjectId& id ) const
-    {
-        id.m_ConstructorId = GetConstructor()->GetConstructorId();
-        id.m_PerTypeId = GetPerTypeId();
-    }
-    virtual ObjectId GetObjectId() const
-    {
-        ObjectId ret;
-        GetObjectId( ret );
-        return ret;
-    }
+    virtual void GetObjectId( ObjectId& id ) const;
 
+    virtual ObjectId GetObjectId() const;
 
     //return the constructor for this class
     virtual IObjectConstructor* GetConstructor() const = 0;
 
     //serialise is not pure virtual as many objects do not need state
-    virtual void Serialize(ISimpleSerializer *pSerializer)
-    {
-
-
-    }
+    virtual void Serialize(ISimpleSerializer *pSerializer);
 
     virtual const char* GetTypeName() const = 0;
 
 protected:
-    bool IsRuntimeDelete() { return _isRuntimeDelete; }
+    bool IsRuntimeDelete();
 
 private:
     friend class ObjectFactorySystem;

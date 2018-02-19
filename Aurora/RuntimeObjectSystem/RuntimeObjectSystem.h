@@ -164,6 +164,11 @@ public:
 
     std::vector<FileSystemUtils::Path> linkLibraryList;
 
+    virtual std::vector<IPerModuleInterface::InterfaceInfo> GetInterfaces() const
+    {
+        return m_interfaces;
+    }
+
 private:
     typedef std::vector<FileSystemUtils::Path>                              TFileList;
     typedef std::map<FileSystemUtils::Path,FileSystemUtils::Path>           TFileMap;
@@ -221,7 +226,7 @@ private:
     unsigned int            m_TotalLoadedModulesEver;
     bool                    m_bProtectionEnabled;
 
-
+    std::vector<IPerModuleInterface::InterfaceInfo> m_interfaces;
     // File mappings - we need to map from compiled path to a potentially different path
     // on the system the code is running on
     TFileMap                m_FoundSourceDirectoryMappings; // mappings between directories found and requested

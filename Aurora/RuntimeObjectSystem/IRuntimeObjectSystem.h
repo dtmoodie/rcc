@@ -21,6 +21,7 @@
 #define IRUNTIMEOBJECTSYSTEM_INCLUDED
 
 #include "../RuntimeCompiler/CompileOptions.h"
+#include "ObjectInterface.h"
 #include <string>
 #include <vector>
 struct ICompilerLogger;
@@ -151,7 +152,7 @@ struct IRuntimeObjectSystem : public ITestBuildNotifier
     virtual void AddPathToSourceSearch( const char* path ) = 0;
 
     virtual int ParseConfigFile(const char* file, bool first = false) = 0;
-
+    virtual std::vector<IPerModuleInterface::InterfaceInfo> GetInterfaces() const = 0;
 };
 
 #endif // IRUNTIMEOBJECTSYSTEM_INCLUDED

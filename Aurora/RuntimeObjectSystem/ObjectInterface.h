@@ -115,6 +115,12 @@ protected:
 
 struct IPerModuleInterface
 {
+    struct InterfaceInfo{
+        std::string name;
+        unsigned int iid;
+        bool(*inheritance_f)(unsigned int);
+        bool(*direct_inheritance_f)(unsigned int);
+    };
     virtual std::vector<IObjectConstructor*>& GetConstructors() = 0;
     virtual void SetProjectIdForAllConstructors( unsigned short projectId_ ) = 0;
     virtual void SetSystemTable( SystemTable* pSystemTable ) = 0;
@@ -122,6 +128,10 @@ struct IPerModuleInterface
     virtual void AddRequiredSourceFiles( const char* file_ ) = 0;
     virtual void SetModuleFileName( const char* name ) = 0;
     virtual const char* GetModuleFileName() const = 0;
+    virtual void AddInterface(const std::string& name, unsigned int iid,
+                              bool(*inheritance_f)(unsigned int),
+                              bool(*direct_inheritance_f)(unsigned int)) = 0;
+    virtual std::vector<InterfaceInfo> GetInterfaces() const = 0;
     virtual ~IPerModuleInterface() {}
 };
 

@@ -1,6 +1,4 @@
 #include "RuntimeObjectSystem/IObjectInfo.h"
-IObjectInfo::IObjectInfo(){
-}
 
 IObjectInfo::~IObjectInfo(){
 

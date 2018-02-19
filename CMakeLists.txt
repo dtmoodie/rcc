@@ -24,7 +24,7 @@
 #   objectFactory.Initialise(new CompileLogger(), nullptr);
 #   auto constructor = objectFactory.GetObjectFactorySystem()->GetConstructor("MyObject");
 #   MyObjectInterface* myObject = nullptr;
-#   if(constructor)
+#   if(constructor)											
 #   {
 #      IObject* obj = constructor->construct();
 #      if(obj && obj->GetInterface(MyObjectInterfaceID))
@@ -92,7 +92,6 @@ function(print_target_properties tgt)
       message("There is no target named '${tgt}'")
       return()
     endif()
-
     foreach (prop ${CMAKE_PROPERTY_LIST})
         print_property(${prop} ${tgt})
     endforeach(prop)
@@ -107,7 +106,7 @@ include(cmake/rcc_find_library.cmake)
 include(cmake/rcc_link_lib.cmake)
 include(cmake/rcc_strip_extension.cmake)
 include(cmake/rcc_config.cmake)
-
+add_subdirectory(Aurora/dependencies/ct)
 cmake_policy(SET CMP0054 NEW)
 
 
@@ -144,9 +143,13 @@ endif()
 #WRITE_RCC_CONFIG("${RCC_INCLUDE_DEPENDENCIES}" "${RCC_LIBARY_DIRS_DEBUG}" "${RCC_LIBRARY_DIRS_RELEASE}" "${RCC_COMPILE_FLAGS}")
 
 add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
+target_link_libraries(RuntimeCompiler ct)
 
 add_library(RuntimeObjectSystem STATIC ${RuntimeObjectSystem_SRCS})
-target_link_libraries(RuntimeObjectSystem RuntimeCompiler)
+target_link_libraries(RuntimeObjectSystem 
+	RuntimeCompiler 
+	ct
+)
 set_property(TARGET RuntimeCompiler PROPERTY CXX_STANDARD 11)
 set_property(TARGET RuntimeObjectSystem PROPERTY CXX_STANDARD 11)
 if(NOT IObject_INCLUDE)
@@ -174,7 +177,7 @@ target_include_directories(RuntimeObjectSystem
 target_include_directories(RuntimeObjectSystem
     PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/Aurora/RuntimeObjectSystem;
-        ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler>
+				      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler>
 )
 set(RCC_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/Aurora" CACHE PATH "")
 

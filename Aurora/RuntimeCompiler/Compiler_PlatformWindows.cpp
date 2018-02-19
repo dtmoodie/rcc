@@ -491,8 +491,10 @@ char* pCharTypeFlags = "";
         ss << "\"" << nvccPath << "\"";
         ss << " -ccbin cl";
         ss << " -Xcompiler ";
-        ss << ",\\\"/MP\\\"";
-        ss << ",\\\"/EHsc\\\"";
+        ss << "\"/MP ";
+        ss << " /Fd" + pdbName.m_string;
+        ss << " /EHsc\"";
+
         std::stringstream flag_stream;
         flag_stream << flags;
         std::string flag;
@@ -512,7 +514,7 @@ char* pCharTypeFlags = "";
         ss << strLinkLibraries;
         ss << linkOptions;
         ss << " -o ";
-        ss << moduleName_.m_string << " /Fd" + pdbName.m_string;
+        ss << moduleName_.m_string;
         ss << "\n echo ";
         cmdToSend = ss.str();
     }
@@ -583,6 +585,9 @@ void GetPathsOfVisualStudioInstalls( std::vector<VSVersionInfo>* pVersions )
 	case 1910:	//VS 2017
 		startVersion = 6;
 		break;
+    case 1911:
+        startVersion = 6;
+        break;
 	default:
 		assert( false ); //unsupported compiler, find MSCVERSION to add case
 	}

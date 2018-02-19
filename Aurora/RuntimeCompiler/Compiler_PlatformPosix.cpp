@@ -99,7 +99,7 @@ bool Compiler::GetIsComplete() const
                 while( ( numread = read( m_pImplData->m_PipeStdOut[0], buffer, buffSize-1 ) ) > 0 )
                 {
                     buffer[numread] = 0;
-                    m_pImplData->m_pLogger->LogInfo( buffer );
+                    m_pImplData->m_pLogger->LogWarning( buffer );
                 }
 
                 while( ( numread = read( m_pImplData->m_PipeStdErr[0], buffer, buffSize-1 ) )> 0 )
@@ -255,10 +255,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
         compileString += "-O0 ";
         break;
     case RCCPPOPTIMIZATIONLEVEL_PERF:
-        if(nvccCompiler.size())
-            compileString += "-O2 ";
-        else
-            compileString += "-O2 -DNDEBUG ";
+        compileString += "-O2 -DNDEBUG ";
         break;
     case RCCPPOPTIMIZATIONLEVEL_NOT_SET:;
 
@@ -314,8 +311,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
         compileString += "-o " + output.m_string + " ";
     }
 
-
-    if( pCompileOptions && nvccCompiler.empty())
+    if( pCompileOptions && nvccCompiler.empty() )
     {
         compileString += pCompileOptions;
         compileString += " ";
