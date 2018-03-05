@@ -100,7 +100,7 @@ struct TInterface : virtual public TSuper
     static bool DirectlyInheritsFrom(InterfaceID iid)
     {
 #ifndef __CUDACC__
-        return iid == TSuper::s_interfaceID;
+        return iid == TSuper::getHash();
 #else
         return false;
 #endif
@@ -130,11 +130,7 @@ RegisterInterface<TInterface<TInferior, TSuper>> TInterface<TInferior, TSuper>::
 struct IObject
 {
 
-    static const InterfaceID s_interfaceID
-#ifndef __CUDACC__
-        = ct::ctcrc32("IObject")
-#endif
-        ;
+    static uint32_t getHash() { return ct::ctcrc32(__CT_STRUCT_MAGIC_FUNCTION__); }
 
     virtual IObject* GetInterface(InterfaceID __iid);
 
@@ -142,7 +138,7 @@ struct IObject
     void GetInterface( T** pReturn )
     {
 #ifndef __CUDACC__
-        GetInterface( T::s_interfaceID, static_cast<void**>(pReturn) );
+        GetInterface( T::getHash(), static_cast<void**>(pReturn) );
 #endif
     }
 

@@ -415,7 +415,7 @@ public:
     }
     virtual uint32_t GetInterfaceId() const
     {
-        return T::s_interfaceID;
+        return T::getHash();
     }
     std::string GetInterfaceName() const
     {

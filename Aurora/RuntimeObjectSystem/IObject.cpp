@@ -23,19 +23,18 @@ void IObject::Init( bool isFirstInit )
 
 IObject* IObject::GetInterface(InterfaceID __iid)
 {
-    switch(__iid)
+    if(__iid == getHash())
     {
-    case s_interfaceID:
         return this;
-    default:
-        return nullptr;
     }
+    return nullptr;
+
 }
 
 
 bool IObject::InheritsFrom(InterfaceID iid)
 {
-    if(iid == s_interfaceID)
+    if(iid == getHash())
     {
         return true;
     }
