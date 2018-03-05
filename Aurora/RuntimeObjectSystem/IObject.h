@@ -54,7 +54,7 @@ struct RegisterInterface
     RegisterInterface()
     {
         rcc::InterfaceDatabase::RegisterInterface(TInterface::GetInterfaceName(),
-                                                              TInterface::s_interfaceID,
+                                                              TInterface::getHash(),
                                                               &TInterface::InheritsFrom,
                                                               &TInterface::DirectlyInheritsFrom);
     }
@@ -70,11 +70,6 @@ struct TInterface : virtual public TSuper
     }
     static constexpr uint32_t getHash() { return ct::ctcrc32(__CT_STRUCT_MAGIC_FUNCTION__); }
 
-    static const InterfaceID s_interfaceID
-#ifndef __CUDACC__
-        = getHash()
-#endif
-        ;
     static std::string GetInterfaceName()
     {
 #ifdef _MSC_VER
@@ -90,7 +85,7 @@ struct TInterface : virtual public TSuper
     static bool InheritsFrom(InterfaceID iid)
     {
 #ifndef __CUDACC__
-        if(iid == s_interfaceID)
+        if(iid == TInterface::getHash())
         {
             return true;
         }else
@@ -114,13 +109,11 @@ struct TInterface : virtual public TSuper
     virtual IObject* GetInterface( InterfaceID _iid)
     {
 #ifndef __CUDACC__
-        switch(_iid)
+        if(_iid == getHash())
         {
-        case s_interfaceID:
             return this;
-        default:
-            return TSuper::GetInterface(_iid);
         }
+        return TSuper::GetInterface(_iid);
 #else
         return nullptr;
 #endif
