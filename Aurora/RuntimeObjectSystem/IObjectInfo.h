@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <RuntimeObjectSystem/shared_ptr.hpp>
 struct IObjectConstructor;
 typedef unsigned int InterfaceID;
 struct IObjectInfo

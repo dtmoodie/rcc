@@ -53,6 +53,8 @@ struct SerializedValue : ISerializedValue
     const T value;
 };
 
+template<class T>
+struct TSerializer;
 
 struct ISimpleSerializer
 {
@@ -73,6 +75,7 @@ struct ISimpleSerializer
  
     virtual ~ISimpleSerializer( ) {}
 private:
+    template<class T> friend struct TSerializer;
     // Implementation requires backing the following functions with keyed storage
     // pValue should be deleted by implementation in destructor.
     virtual void SetISerializedValue(const char* propertyName, const ISerializedValue* pValue) = 0;
@@ -80,6 +83,28 @@ private:
 
 };
 
+template<class T>
+struct TSerializer
+{
+    static bool read(ISimpleSerializer* serializer, const char* propertyName, T& value)
+    {
+        const SerializedValue<T>* pSV = static_cast<const SerializedValue<T>*>(serializer->GetISerializedValue(propertyName));
+        if (!pSV)
+        {
+            return false;
+        }
+
+        value = pSV->value;
+        return true;
+    }
+
+    static bool write(ISimpleSerializer* serializer, const char* propertyName, T& value)
+    {
+        const SerializedValue<T>* pSv = new SerializedValue<T>(value);
+        serializer->SetISerializedValue(propertyName, pSv);
+        return true;
+    }
+};
 
 // NOTE: this is less efficient than having separate functions for setting and getting properties,
 // but allows for user code to generally have much simpler serialization methods without needing to 
@@ -89,21 +114,12 @@ inline bool ISimpleSerializer::SerializeProperty(const char* propertyName, T& va
 {
     if (IsLoading())
     {
-        const SerializedValue<T>* pSV = static_cast<const SerializedValue<T>*>(GetISerializedValue(propertyName));
-        if (!pSV)
-        {
-            return false;
-        }
-
-        value = pSV->value;
+        return TSerializer<T>::read(this, propertyName, value);
     }
     else
     {
-        const SerializedValue<T>* pSv = new SerializedValue<T>(value);
-        SetISerializedValue(propertyName, pSv);
+        return TSerializer<T>::write(this, propertyName, value);
     }
-
-    return true;
 }
 
 template <typename T, size_t N>

@@ -61,14 +61,29 @@ struct RegisterInterface
 };
 
 // Template to help with IIDs
-template< typename TInferior, typename TSuper>
-struct TInterface : virtual public TSuper
+template< typename TInferior, typename TSuper, size_t Version = 0>
+struct TInterface : public TSuper
 {
     TInterface()
     {
         (void)&s_register_interface;
     }
     static uint32_t getHash() { return ct::ctcrc32(__CT_STRUCT_MAGIC_FUNCTION__); }
+
+    static const InterfaceID s_interfaceID
+#ifndef __CUDACC__
+        = getHash()
+#endif
+        ;
+
+    static size_t GetInterfaceVersion(){
+        return Version;
+    }
+    static size_t GetInterfaceAbiHash(){
+        size_t seed = Version;
+        seed ^= TSuper::GetInterfaceAbiHash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
 
     static std::string GetInterfaceName()
     {
@@ -118,12 +133,14 @@ struct TInterface : virtual public TSuper
         return nullptr;
 #endif
     }
+
 private:
     static RegisterInterface<TInterface<TInferior, TSuper>> s_register_interface;
+
 };
 
-template<typename TInferior, typename TSuper>
-RegisterInterface<TInterface<TInferior, TSuper>> TInterface<TInferior, TSuper>::s_register_interface;
+template<typename TInferior, typename TSuper, size_t Version>
+RegisterInterface<TInterface<TInferior, TSuper>> TInterface<TInferior, TSuper, Version>::s_register_interface;
 
 // IObject itself below is a special case as the base class
 // Also it doesn't hurt to have it coded up explicitly for reference
@@ -131,8 +148,19 @@ struct IObject
 {
 
     static uint32_t getHash() { return ct::ctcrc32(__CT_STRUCT_MAGIC_FUNCTION__); }
+    static const InterfaceID s_interfaceID
+#ifndef __CUDACC__
+        = ct::ctcrc32("IObject")
+#endif
+        ;
+
+    static bool InheritsFrom(InterfaceID id);
 
     virtual IObject* GetInterface(InterfaceID __iid);
+
+    static size_t GetInterfaceAbiHash(){
+        return 0;
+    }
 
     template< typename T>
     void GetInterface( T** pReturn )
@@ -141,8 +169,6 @@ struct IObject
         GetInterface( T::getHash(), static_cast<void**>(pReturn) );
 #endif
     }
-
-    static bool InheritsFrom(InterfaceID iid);
 
     static bool DirectlyInheritsFrom(InterfaceID iid);
 

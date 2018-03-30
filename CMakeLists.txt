@@ -228,6 +228,11 @@ install(DIRECTORY Aurora/RuntimeCompiler
         FILES_MATCHING PATTERN "*.hpp"
 )
 
+install(DIRECTORY Aurora/ct
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.hpp"
+)
+
 install(DIRECTORY Aurora/RuntimeObjectSystem
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
@@ -260,7 +265,7 @@ install(FILES
   DESTINATION "${CMAKE_INSTALL_PREFIX}/share/RCC" COMPONENT dev
 )
 
-install(EXPORT RCCTargets DESTINATION "${CMAKE_INSTALL_PREFIX}/share/RCC"
+install(EXPORT RCCTargets DESTINATION "share/RCC"
 )
 
 if(UNIX)
