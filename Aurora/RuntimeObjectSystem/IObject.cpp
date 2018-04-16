@@ -11,7 +11,7 @@ IObject::~IObject()
 
 }
 
-void IObject::Serialize(ISimpleSerializer */*pSerializer*/)
+void IObject::Serialize(ISimpleSerializer* /*pSerializer*/)
 {
 }
 
