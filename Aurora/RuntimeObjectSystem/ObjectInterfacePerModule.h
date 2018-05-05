@@ -44,7 +44,7 @@ class PerModuleInterface : public IPerModuleInterface
 {
 public:
     static PerModuleInterface*  GetInstance();
-    static SystemTable*            g_pSystemTable;
+    SystemTable*                m_pSystemTable = nullptr;
 
     void AddConstructor( IObjectConstructor* pConstructor );
 
@@ -54,7 +54,7 @@ public:
 
     SystemTable* GetSystemTable()
     {
-        return g_pSystemTable;
+        return m_pSystemTable;
     }
 
     virtual const std::vector<const char*>& GetRequiredSourceFiles() const;
