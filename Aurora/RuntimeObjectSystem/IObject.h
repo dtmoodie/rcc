@@ -68,7 +68,7 @@ struct TInterface : public TSuper
     {
         (void)&s_register_interface;
     }
-    static uint32_t getHash() { return ct::ctcrc32(__CT_STRUCT_MAGIC_FUNCTION__); }
+    static uint32_t getHash() { return ct::ctcrc32(CT_STRUCT_MAGIC_FUNCTION); }
 
     static const InterfaceID s_interfaceID
 #ifndef __CUDACC__
@@ -147,7 +147,7 @@ RegisterInterface<TInterface<TInferior, TSuper>> TInterface<TInferior, TSuper, V
 struct IObject
 {
 
-    static uint32_t getHash() { return ct::ctcrc32(__CT_STRUCT_MAGIC_FUNCTION__); }
+    static uint32_t getHash() { return ct::ctcrc32(CT_STRUCT_MAGIC_FUNCTION); }
     static const InterfaceID s_interfaceID
 #ifndef __CUDACC__
         = ct::ctcrc32("IObject")
