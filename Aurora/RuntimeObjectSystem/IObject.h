@@ -142,10 +142,18 @@ private:
 template<typename TInferior, typename TSuper, size_t Version>
 RegisterInterface<TInterface<TInferior, TSuper>> TInterface<TInferior, TSuper, Version>::s_register_interface;
 
+template<class Type>
+struct TDefaultInterfaceHelper: public Type
+{
+
+};
+
 // IObject itself below is a special case as the base class
 // Also it doesn't hurt to have it coded up explicitly for reference
 struct IObject
 {
+    template<class T>
+    using InterfaceHelper = TDefaultInterfaceHelper<T>;
 
     static uint32_t getHash() { return ct::ctcrc32(CT_STRUCT_MAGIC_FUNCTION); }
     static const InterfaceID s_interfaceID

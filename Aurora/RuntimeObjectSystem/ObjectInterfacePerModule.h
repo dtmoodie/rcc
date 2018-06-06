@@ -445,7 +445,7 @@ private:
 // ****************************************************************************************
 //                                 Concrete class
 // ****************************************************************************************
-template<typename T> class TActual: public T
+template<typename T> class TActual: public T::template  InterfaceHelper<T>
 {
 public:
     typedef T BASE_CLASS;
