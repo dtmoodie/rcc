@@ -152,6 +152,8 @@ struct TDefaultInterfaceHelper: public Type
 // Also it doesn't hurt to have it coded up explicitly for reference
 struct IObject
 {
+    using ParentClass = std::tuple<IObject>;
+
     template<class T>
     using InterfaceHelper = TDefaultInterfaceHelper<T>;
 
