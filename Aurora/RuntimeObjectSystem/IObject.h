@@ -35,6 +35,7 @@
 #include <assert.h>
 #include <ct/Hash.hpp>
 #include <ct/Object.hpp>
+#include <ct/VariadicTypedef.hpp>
 #include <iostream>
 
 struct ISimpleSerializer;
@@ -152,7 +153,7 @@ struct TDefaultInterfaceHelper: public Type
 // Also it doesn't hurt to have it coded up explicitly for reference
 struct IObject
 {
-    using ParentClass = std::tuple<IObject>;
+    using ParentClass = ct::variadic_typedef<IObject>;
 
     template<class T>
     using InterfaceHelper = TDefaultInterfaceHelper<T>;
