@@ -97,6 +97,12 @@ function(print_target_properties tgt)
     endforeach(prop)
 endfunction(print_target_properties)
 
+define_property(
+  TARGET PROPERTY RCC_MODULE
+    BRIEF_DOCS "Flag for rcc module"
+    FULL_DOCS "Use this flag to indicate that a target is a dynamically loaded shared library with an rcc module"
+)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
