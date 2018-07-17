@@ -127,11 +127,6 @@ endif()
 include(Aurora/cmake/ProjectFilesExternal.cmake)
 
 FIND_PACKAGE(CUDA QUIET)
-message(STATUS
-"RCC config:
-  IObject include dir: ${IObject_INCLUDE}
-  NVCC: ${CUDA_TOOLKIT_ROOT_DIR}"
-)
 
 if(RCC_INCLUDE_DEPENDENCIES)
   LIST(REMOVE_DUPLICATES RCC_INCLUDE_DEPENDENCIES)
@@ -146,8 +141,6 @@ if(RCC_LIBRARY_DIRS_RELWITHDEBINFO)
   LIST(REMOVE_DUPLICATES RCC_LIBRARY_DIRS_RELWITHDEBINFO)
 endif()
 
-#WRITE_RCC_CONFIG("${RCC_INCLUDE_DEPENDENCIES}" "${RCC_LIBARY_DIRS_DEBUG}" "${RCC_LIBRARY_DIRS_RELEASE}" "${RCC_COMPILE_FLAGS}")
-
 add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
 target_link_libraries(RuntimeCompiler ct)
 
@@ -156,6 +149,9 @@ target_link_libraries(RuntimeObjectSystem
 	RuntimeCompiler 
 	ct
 )
+
+set(RCC_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/Aurora" CACHE INTERNAL "" FORCE)
+
 set_property(TARGET RuntimeCompiler PROPERTY CXX_STANDARD 11)
 set_property(TARGET RuntimeObjectSystem PROPERTY CXX_STANDARD 11)
 if(NOT IObject_INCLUDE)
