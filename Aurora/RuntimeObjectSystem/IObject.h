@@ -69,6 +69,9 @@ struct TInterface : public TSuper
     {
         (void)&s_register_interface;
     }
+#ifdef _MSC_VER
+    constexpr
+#endif
     static uint32_t getHash() { return ct::ctcrc32(CT_STRUCT_MAGIC_FUNCTION); }
 
     static const InterfaceID s_interfaceID
