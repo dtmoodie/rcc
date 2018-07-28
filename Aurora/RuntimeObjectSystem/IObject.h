@@ -72,7 +72,7 @@ struct TInterface : public TSuper
 #ifdef _MSC_VER
     constexpr
 #endif
-    static uint32_t getHash() { return ct::ctcrc32(CT_STRUCT_MAGIC_FUNCTION); }
+    static uint32_t getHash() { return ct::crc32(CT_STRUCT_MAGIC_FUNCTION); }
 
     static const InterfaceID s_interfaceID
 #ifndef __CUDACC__
@@ -156,15 +156,15 @@ struct TDefaultInterfaceHelper: public Type
 // Also it doesn't hurt to have it coded up explicitly for reference
 struct IObject
 {
-    using ParentClass = ct::variadic_typedef<IObject>;
+    using ParentClass = ct::VariadicTypedef<IObject>;
 
     template<class T>
     using InterfaceHelper = TDefaultInterfaceHelper<T>;
 
-    static uint32_t getHash() { return ct::ctcrc32(CT_STRUCT_MAGIC_FUNCTION); }
+    static uint32_t getHash() { return ct::crc32(CT_STRUCT_MAGIC_FUNCTION); }
     static const InterfaceID s_interfaceID
 #ifndef __CUDACC__
-        = ct::ctcrc32("IObject")
+        = ct::crc32("IObject")
 #endif
         ;
 
