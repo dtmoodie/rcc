@@ -55,19 +55,26 @@ namespace rcc
         }
 
         shared_ptr(const weak_ptr<T>& other){
+            if(other.obj_state)
+            {
+                other.obj_state->IncrementState();
+            }
             this->obj_state = other.obj_state;
             if (obj_state)
+            {
                 obj_pointer = dynamic_cast<T*>(this->obj_state->GetIObject());
+            }
             if(obj_state && obj_pointer){
                 obj_state->IncrementObject();
-                obj_state->IncrementState();
             }
         }
 
         shared_ptr(weak_ptr<T>&& other){
             this->obj_state = other.obj_state;
             if (obj_state)
+            {
                 obj_pointer = dynamic_cast<T*>(this->obj_state->GetIObject());
+            }
             if(obj_state && obj_pointer){
                 other.obj_state = nullptr;
                 obj_state->IncrementObject();
@@ -621,23 +628,25 @@ private:
         {
             return obj_state;
         }
+
         bool operator==(T* p)
         {
-            if(obj_state)
+            if(obj_state != nullptr)
             {
                 return obj_state->GetIObject() == p;
+            }else
+            {
+                if((p == nullptr) && (obj_state == nullptr))
+                {
+                    return true;
+                }
             }
             return false;
         }
+
         bool operator != (T* p)
         {
-            if(obj_state)
-            {
-                return obj_state->GetIObject() != p;
-            }
-            if(p == nullptr && obj_state == nullptr)
-                return true;
-            return true;
+            return !((*this) == p);
         }
         bool operator == (weak_ptr const & r)
         {
