@@ -40,6 +40,12 @@ PerModuleInterface* PerModuleInterface::GetInstance()
     return ms_pObjectManager;
 }
 
+
+SystemTable* PerModuleInterface::GetSystemTable()
+{
+    return m_pSystemTable;
+}
+
 void PerModuleInterface::AddConstructor( IObjectConstructor* pConstructor )
 {
     m_ObjectConstructors.push_back( pConstructor );
@@ -48,6 +54,11 @@ void PerModuleInterface::AddConstructor( IObjectConstructor* pConstructor )
 std::vector<IObjectConstructor*>& PerModuleInterface::GetConstructors()
 {
     return m_ObjectConstructors;
+}
+
+void PerModuleInterface::SetModuleFileName( const char* name )
+{
+    m_ModuleFilename = name;
 }
 
 void PerModuleInterface::SetProjectIdForAllConstructors( unsigned short projectId_ )
@@ -62,6 +73,16 @@ void PerModuleInterface::SetProjectIdForAllConstructors( unsigned short projectI
 void PerModuleInterface::SetSystemTable( SystemTable* pSystemTable )
 {
     m_pSystemTable = pSystemTable;
+    for(auto func : m_DelayInitFuncs)
+    {
+        func(pSystemTable);
+    }
+}
+
+
+void PerModuleInterface::AddDelayInitFunction(void(*func)(SystemTable*))
+{
+    m_DelayInitFuncs.push_back(func);
 }
 
 PerModuleInterface::PerModuleInterface()
