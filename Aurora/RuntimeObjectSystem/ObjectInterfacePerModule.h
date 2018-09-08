@@ -48,21 +48,18 @@ public:
 
     void AddConstructor( IObjectConstructor* pConstructor );
 
-    virtual std::vector<IObjectConstructor*>& GetConstructors();
-    virtual void SetProjectIdForAllConstructors( unsigned short projectId_ );
-    virtual void SetSystemTable( SystemTable* pSystemTable );
+    virtual std::vector<IObjectConstructor*>& GetConstructors() override;
+    virtual void SetProjectIdForAllConstructors( unsigned short projectId_ ) override;
+    virtual void SetSystemTable( SystemTable* pSystemTable ) override;
 
-    SystemTable* GetSystemTable()
-    {
-        return m_pSystemTable;
-    }
+    SystemTable* GetSystemTable();
 
-    virtual const std::vector<const char*>& GetRequiredSourceFiles() const;
-    virtual void AddRequiredSourceFiles( const char* file_ );
-    virtual void SetModuleFileName( const char* name )
-    {
-        m_ModuleFilename = name;
-    }
+    virtual const std::vector<const char*>& GetRequiredSourceFiles() const override;
+    virtual void AddRequiredSourceFiles( const char* file_ ) override;
+
+    virtual void AddDelayInitFunction(void(*func)(SystemTable*)) override;
+    virtual void SetModuleFileName( const char* name ) override;
+
     const char* GetCompiledPath() const
     {
 #ifdef COMPILE_PATH
@@ -72,14 +69,14 @@ public:
 #endif
     }
 
-    virtual const char* GetModuleFileName() const
+    virtual const char* GetModuleFileName() const override
     {
         return m_ModuleFilename.c_str();
     }
 
     virtual void AddInterface(const std::string& name, unsigned int iid,
                               bool(*inheritance_f)(unsigned int),
-                              bool(*direct_inheritance_f)(unsigned int))
+                              bool(*direct_inheritance_f)(unsigned int)) override
     {
         InterfaceInfo info;
         info.iid = iid;
@@ -89,7 +86,7 @@ public:
         m_interface_info.emplace_back(std::move(info));
     }
 
-    virtual std::vector<InterfaceInfo> GetInterfaces() const
+    virtual std::vector<InterfaceInfo> GetInterfaces() const override
     {
         return m_interface_info;
     }
@@ -97,7 +94,7 @@ public:
 private:
     PerModuleInterface();
 
-    ~PerModuleInterface()
+    ~PerModuleInterface() override
     {
     }
 
@@ -107,6 +104,8 @@ private:
     std::vector<const char*>            m_RequiredSourceFiles;
     std::string                         m_ModuleFilename;
     std::vector<InterfaceInfo>  m_interface_info;
+    using DelayFunc_t = void(*)(SystemTable*);
+    std::vector<DelayFunc_t> m_DelayInitFuncs;
 };
 
 
