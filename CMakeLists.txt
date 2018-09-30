@@ -112,7 +112,10 @@ include(cmake/rcc_find_library.cmake)
 include(cmake/rcc_link_lib.cmake)
 include(cmake/rcc_strip_extension.cmake)
 include(cmake/rcc_config.cmake)
-add_subdirectory(Aurora/dependencies/ct)
+find_package(ct QUIET)
+if(NOT ct_FOUND)
+    add_subdirectory(Aurora/dependencies/ct)
+endif()
 cmake_policy(SET CMP0054 NEW)
 
 
