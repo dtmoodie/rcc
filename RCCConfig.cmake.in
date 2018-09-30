@@ -1,4 +1,4 @@
-# - Config file for the FooBar package
+# - Config file for the RuntimeCompiledCplusplus package
 # It defines the following variables
 #  RCC_INCLUDE_DIRS - include directories for rcc
 #  RCC_LIBRARIES    - libraries to link against
@@ -14,8 +14,13 @@ include(${RCC_DIR}/cmake/rcc_find_library.cmake)
 include(${RCC_DIR}/cmake/rcc_config.cmake)
 include(${RCC_DIR}/cmake/rcc_strip_extension.cmake)
 
+find_package(ct REQUIRED)
+
 if(NOT TARGET RuntimeCompiler AND NOT TARGET RuntimeObjectSystem)
   include("${RCC_DIR}/RCCTargets.cmake")
+  set_target_properties(RuntimeObjectSystem PROPERTIES
+    IMPORTED_LINK_DEPENDENT_LIBRARIES_RELEASE ct
+  )
 endif()
 
 set(RCC_LIBRARIES RuntimeCompiler RuntimeObjectSystem)
