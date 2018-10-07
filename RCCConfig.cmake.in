@@ -24,3 +24,5 @@ if(NOT TARGET RuntimeCompiler AND NOT TARGET RuntimeObjectSystem)
 endif()
 
 set(RCC_LIBRARIES RuntimeCompiler RuntimeObjectSystem)
+
+set(RCC_FOUND ON)

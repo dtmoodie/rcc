@@ -65,7 +65,8 @@ CMAKE_POLICY(SET CMP0048 NEW)
 project(RCC VERSION 1.0.0)
 set(CMAKE_DEBUG_POSTFIX "d")
 SET(RCC_VERBOSE_CONFIG FALSE CACHE BOOL "Set to true to output verbose debugging information in RCC macros")
-
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Get all propreties that cmake supports
 execute_process(COMMAND cmake --help-property-list OUTPUT_VARIABLE CMAKE_PROPERTY_LIST)
 
@@ -115,6 +116,8 @@ include(cmake/rcc_config.cmake)
 find_package(ct QUIET)
 if(NOT ct_FOUND)
     add_subdirectory(Aurora/dependencies/ct)
+else()
+    message("Using system install of ct")
 endif()
 cmake_policy(SET CMP0054 NEW)
 
