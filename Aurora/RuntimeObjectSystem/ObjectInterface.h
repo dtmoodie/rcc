@@ -21,6 +21,7 @@
 #define OBJECTINTERFACE_INCLUDED
 #include <string>
 #include <vector>
+#include <functional>
 #include <stdlib.h>
 
 
@@ -126,7 +127,7 @@ struct IPerModuleInterface
     virtual void SetSystemTable( SystemTable* pSystemTable ) = 0;
     virtual const std::vector<const char*>& GetRequiredSourceFiles() const = 0;
     virtual void AddRequiredSourceFiles( const char* file_ ) = 0;
-    virtual void AddDelayInitFunction(void(*func)(SystemTable*)) = 0;
+    virtual void AddDelayInitFunction(const std::function<void(SystemTable*)>&) = 0;
     virtual void SetModuleFileName( const char* name ) = 0;
     virtual const char* GetModuleFileName() const = 0;
     virtual void AddInterface(const std::string& name, unsigned int iid,

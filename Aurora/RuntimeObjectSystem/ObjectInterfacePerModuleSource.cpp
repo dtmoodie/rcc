@@ -80,15 +80,41 @@ void PerModuleInterface::SetSystemTable( SystemTable* pSystemTable )
 }
 
 
-void PerModuleInterface::AddDelayInitFunction(void(*func)(SystemTable*))
+void PerModuleInterface::AddDelayInitFunction(const std::function<void(SystemTable*)>& func)
 {
     m_DelayInitFuncs.push_back(func);
+}
+
+const char* PerModuleInterface::GetModuleFileName() const
+{
+    return m_ModuleFilename.c_str();
+}
+
+void PerModuleInterface::AddInterface(const std::string& name, unsigned int iid,
+                          bool(*inheritance_f)(unsigned int),
+                          bool(*direct_inheritance_f)(unsigned int))
+{
+    InterfaceInfo info;
+    info.iid = iid;
+    info.inheritance_f = inheritance_f;
+    info.direct_inheritance_f = direct_inheritance_f;
+    info.name = name;
+    m_interface_info.emplace_back(std::move(info));
+}
+
+std::vector<PerModuleInterface::InterfaceInfo> PerModuleInterface::GetInterfaces() const
+{
+    return m_interface_info;
 }
 
 PerModuleInterface::PerModuleInterface()
 {
     //ensure this file gets compiled
     AddRequiredSourceFiles( __FILE__ );
+}
+
+PerModuleInterface::~PerModuleInterface()
+{
 }
 
 const std::vector<const char*>& PerModuleInterface::GetRequiredSourceFiles() const

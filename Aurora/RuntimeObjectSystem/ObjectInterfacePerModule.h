@@ -57,7 +57,7 @@ public:
     virtual const std::vector<const char*>& GetRequiredSourceFiles() const override;
     virtual void AddRequiredSourceFiles( const char* file_ ) override;
 
-    virtual void AddDelayInitFunction(void(*func)(SystemTable*)) override;
+    virtual void AddDelayInitFunction(const std::function<void(SystemTable*)>&) override;
     virtual void SetModuleFileName( const char* name ) override;
 
     const char* GetCompiledPath() const
@@ -69,42 +69,25 @@ public:
 #endif
     }
 
-    virtual const char* GetModuleFileName() const override
-    {
-        return m_ModuleFilename.c_str();
-    }
+    virtual const char* GetModuleFileName() const override;
 
     virtual void AddInterface(const std::string& name, unsigned int iid,
                               bool(*inheritance_f)(unsigned int),
-                              bool(*direct_inheritance_f)(unsigned int)) override
-    {
-        InterfaceInfo info;
-        info.iid = iid;
-        info.inheritance_f = inheritance_f;
-        info.direct_inheritance_f = direct_inheritance_f;
-        info.name = name;
-        m_interface_info.emplace_back(std::move(info));
-    }
+                              bool(*direct_inheritance_f)(unsigned int)) override;
 
-    virtual std::vector<InterfaceInfo> GetInterfaces() const override
-    {
-        return m_interface_info;
-    }
+    virtual std::vector<InterfaceInfo> GetInterfaces() const override;
 
 private:
     PerModuleInterface();
 
-    ~PerModuleInterface() override
-    {
-    }
-
+    ~PerModuleInterface() override;
 
     static PerModuleInterface*          ms_pObjectManager;
     std::vector<IObjectConstructor*>    m_ObjectConstructors;
     std::vector<const char*>            m_RequiredSourceFiles;
     std::string                         m_ModuleFilename;
     std::vector<InterfaceInfo>  m_interface_info;
-    using DelayFunc_t = void(*)(SystemTable*);
+    using DelayFunc_t = std::function<void(SystemTable*)>;
     std::vector<DelayFunc_t> m_DelayInitFuncs;
 };
 
