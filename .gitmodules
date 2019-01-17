@@ -1,3 +1,0 @@
-[submodule "Aurora/dependencies/ct"]
-	path = Aurora/dependencies/ct
-	url = http://github.com/dtmoodie/ct

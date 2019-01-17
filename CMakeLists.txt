@@ -115,15 +115,7 @@ include(cmake/rcc_find_library.cmake)
 include(cmake/rcc_link_lib.cmake)
 include(cmake/rcc_strip_extension.cmake)
 include(cmake/rcc_config.cmake)
-if(NOT BUILD_DEPENDENCIES)
-  find_package(ct QUIET)
-endif()
 
-if(NOT ct_FOUND)
-    add_subdirectory(Aurora/dependencies/ct)
-else()
-    message("Using system install of ct")
-endif()
 cmake_policy(SET CMP0054 NEW)
 
 

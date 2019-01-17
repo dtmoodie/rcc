@@ -29,122 +29,18 @@
 
 #ifndef IOBJECT_INCLUDED
 #define IOBJECT_INCLUDED
+
 #include "RuntimeObjectSystem/InterfaceDatabase.hpp"
 #include "RuntimeObjectSystem/ObjectInterface.h"
+
 #include <algorithm>
 #include <assert.h>
-#include <ct/Hash.hpp>
-#include <ct/Object.hpp>
-#include <ct/VariadicTypedef.hpp>
 #include <iostream>
 
 struct ISimpleSerializer;
 class ObjectFactorySystem;
 
 typedef unsigned int InterfaceID;
-#ifdef _MSC_VER
-#define INTERFACE_HASH static constexpr InterfaceID class_hash() {return hashClassName(__FUNCTION__);}
-#else
-#define INTERFACE_HASH static constexpr InterfaceID class_hash() {return hashClassName(__PRETTY_FUNCTION__);}
-#endif
-
-
-template<class TInterface>
-struct RegisterInterface
-{
-    RegisterInterface()
-    {
-        rcc::InterfaceDatabase::RegisterInterface(TInterface::GetInterfaceName(),
-                                                              TInterface::getHash(),
-                                                              &TInterface::InheritsFrom,
-                                                              &TInterface::DirectlyInheritsFrom);
-    }
-};
-
-// Template to help with IIDs
-template< typename TInferior, typename TSuper, size_t Version = 0>
-struct TInterface : public TSuper
-{
-    TInterface()
-    {
-        (void)&s_register_interface;
-    }
-#ifdef _MSC_VER
-    constexpr
-#endif
-    static uint32_t getHash() { return ct::crc32(CT_STRUCT_MAGIC_FUNCTION); }
-
-    static const InterfaceID s_interfaceID
-#ifndef __CUDACC__
-        = getHash()
-#endif
-        ;
-
-    static size_t GetInterfaceVersion(){
-        return Version;
-    }
-    static size_t GetInterfaceAbiHash(){
-        size_t seed = Version;
-        seed ^= TSuper::GetInterfaceAbiHash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        return seed;
-    }
-
-    static std::string GetInterfaceName()
-    {
-#ifdef _MSC_VER
-        return std::string(__FUNCTION__).substr(ct::findFirst(__FUNCTION__, ' ') + 1,
-            ct::findFirst(__FUNCTION__, ',') - ct::findFirst(__FUNCTION__, ' ') - 1);
-#else
-        std::string str = __PRETTY_FUNCTION__;
-        auto pos1 = str.find("TInferior = ");
-        return str.substr(pos1 + 12, str.find(';', pos1+13) - pos1 - 12);
-#endif
-    }
-
-    static bool InheritsFrom(InterfaceID iid)
-    {
-#ifndef __CUDACC__
-        if(iid == TInterface::getHash())
-        {
-            return true;
-        }else
-        {
-            return TSuper::InheritsFrom(iid);
-        }
-#else
-        return false;
-#endif
-    }
-
-    static bool DirectlyInheritsFrom(InterfaceID iid)
-    {
-#ifndef __CUDACC__
-        return iid == TSuper::getHash();
-#else
-        return false;
-#endif
-    }
-
-    virtual IObject* GetInterface( InterfaceID _iid)
-    {
-#ifndef __CUDACC__
-        if(_iid == getHash())
-        {
-            return this;
-        }
-        return TSuper::GetInterface(_iid);
-#else
-        return nullptr;
-#endif
-    }
-
-private:
-    static RegisterInterface<TInterface<TInferior, TSuper>> s_register_interface;
-
-};
-
-template<typename TInferior, typename TSuper, size_t Version>
-RegisterInterface<TInterface<TInferior, TSuper>> TInterface<TInferior, TSuper, Version>::s_register_interface;
 
 template<class Type>
 struct TDefaultInterfaceHelper: public Type
@@ -156,17 +52,14 @@ struct TDefaultInterfaceHelper: public Type
 // Also it doesn't hurt to have it coded up explicitly for reference
 struct IObject
 {
-    using ParentClass = ct::VariadicTypedef<IObject>;
+    using ParentClass = std::tuple<void>;
 
     template<class T>
     using InterfaceHelper = TDefaultInterfaceHelper<T>;
 
-    static uint32_t getHash() { return ct::crc32(CT_STRUCT_MAGIC_FUNCTION); }
-    static const InterfaceID s_interfaceID
-#ifndef __CUDACC__
-        = ct::crc32("IObject")
-#endif
-        ;
+    static uint32_t getHash();
+
+    static const InterfaceID s_interfaceID;
 
     static bool InheritsFrom(InterfaceID id);
 
@@ -179,9 +72,7 @@ struct IObject
     template< typename T>
     void GetInterface( T** pReturn )
     {
-#ifndef __CUDACC__
         GetInterface( T::getHash(), static_cast<void**>(pReturn) );
-#endif
     }
 
     static bool DirectlyInheritsFrom(InterfaceID iid);

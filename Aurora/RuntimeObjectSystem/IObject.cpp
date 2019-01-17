@@ -1,5 +1,11 @@
 #include "IObject.h"
 
+uint32_t IObject::getHash()
+{
+    return 1234;
+}
+
+const InterfaceID IObject::s_interfaceID = IObject::getHash();
 
 IObject::IObject() : _isRuntimeDelete(false)
 {
