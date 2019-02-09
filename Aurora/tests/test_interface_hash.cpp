@@ -2,10 +2,6 @@
 #include "ct/Object.hpp"
 #include <iostream>
 
-#ifdef _MSC_VER
-#define __PRETTY_FUNCTION__ __FUNCTION__
-#endif
-
 struct Alpha{
     //DECLARE_CLASS_HASH
 
