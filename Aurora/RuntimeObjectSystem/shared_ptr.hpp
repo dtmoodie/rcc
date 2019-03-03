@@ -629,7 +629,7 @@ private:
             return obj_state;
         }
 
-        bool operator==(T* p)
+        bool operator==(T* p) const
         {
             if(obj_state != nullptr)
             {
@@ -644,18 +644,21 @@ private:
             return false;
         }
 
-        bool operator != (T* p)
+        bool operator != (T* p) const
         {
             return !((*this) == p);
         }
-        bool operator == (weak_ptr const & r)
+
+        bool operator == (weak_ptr const & r) const
         {
             return r.obj_state == obj_state;
         }
-        bool operator != (weak_ptr const& r)
+
+        bool operator != (weak_ptr const& r) const
         {
             return r.obj_state != obj_state;
         }
+
         operator bool() const
         {
             return !empty();
