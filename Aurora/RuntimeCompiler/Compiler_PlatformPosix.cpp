@@ -114,6 +114,24 @@ bool Compiler::GetIsComplete() const
             m_pImplData->m_PipeStdOut[0] = 0;
             close( m_pImplData->m_PipeStdErr[0] );
             m_pImplData->m_PipeStdErr[0] = 0;
+        }else {
+            if( m_pImplData->m_pLogger )
+            {
+                const size_t buffSize = 256 * 80; //should allow for a few lines...
+                char buffer[buffSize];
+                ssize_t numread = 0;
+                while( ( numread = read( m_pImplData->m_PipeStdOut[0], buffer, buffSize-1 ) ) > 0 )
+                {
+                    buffer[numread] = 0;
+                    m_pImplData->m_pLogger->LogWarning( buffer );
+                }
+
+                while( ( numread = read( m_pImplData->m_PipeStdErr[0], buffer, buffSize-1 ) )> 0 )
+                {
+                    buffer[numread] = 0;
+                    m_pImplData->m_pLogger->LogError( buffer );    //TODO: seperate warnings from errors.
+                }
+            }
         }
     }
     return m_pImplData->m_bCompileIsComplete;
@@ -216,7 +234,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     {
 #if __cplusplus > 201100L
         if(pCompileOptions){
-            compileString = nvccCompiler + " -ccbin " + compilerLocation + " --std=c++11 -g --compiler-options '-fPIC -fvisibility=hidden -shared ";
+            compileString = nvccCompiler + " -ccbin " + compilerLocation + " -g --compiler-options '-fPIC -fvisibility=hidden -shared ";
             std::stringstream ss;
             ss << pCompileOptions;
             std::string op;
@@ -227,7 +245,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
             }
             compileString += "' ";
         }else{
-            compileString = nvccCompiler + " -ccbin " + compilerLocation + " --std=c++11 -g --compiler-options '-fPIC -fvisibility=hidden -shared' ";
+            compileString = nvccCompiler + " -ccbin " + compilerLocation + " -g --compiler-options '-fPIC -fvisibility=hidden -shared' ";
         }
 
 #else
@@ -236,7 +254,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     }else
     {
 #if __cplusplus > 201100L
-    compileString = compilerLocation + " -g --std=c++11 -fPIC -fvisibility=hidden -shared ";
+    compileString = compilerLocation + " -g -fPIC -fvisibility=hidden -shared ";
 #else
     compileString = compilerLocation + " " + "-g -fPIC -fvisibility=hidden -shared ";
 #endif

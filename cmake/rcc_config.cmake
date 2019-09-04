@@ -135,6 +135,7 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS
 
                 get_target_property(int_link_lib ${tgt} LINK_LIBRARIES)
                 foreach(lib ${int_link_lib})
+
                     if(TARGET ${lib})
                         __target_helper(${LIB_DIR_VAR} ${INC_VAR} ${LIB_FILES_DEBUG} ${LIB_FILES_RELEASE} ${DEPS} ${lib} "${tab}  " ${TGTS})
                     else(TARGET ${lib})
