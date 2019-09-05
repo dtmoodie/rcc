@@ -34,10 +34,15 @@ struct IRuntimeIncludeFileList
     {
     }
 
-    // GetIncludeFile may return 0, so you should iterate through to GetMaxNum() ignoring 0 returns
-    virtual const char* GetIncludeFile( size_t Num_ ) const
+    virtual ~IRuntimeIncludeFileList()
     {
-        return 0;
+
+    }
+
+    // GetIncludeFile may return 0, so you should iterate through to GetMaxNum() ignoring 0 returns
+    virtual const char* GetIncludeFile( size_t ) const
+    {
+        return nullptr;
     }
     size_t MaxNum; // initialized in constructor below
 };
@@ -61,7 +66,7 @@ template< size_t COUNT > struct RuntimeIncludeFiles : public RuntimeIncludeFiles
         {
             return this->RuntimeIncludeFiles< COUNT-1 >::GetIncludeDir( Num_ );
         }
-        else return 0;
+        else return nullptr;
     }
 };
 
@@ -74,9 +79,9 @@ template<> struct RuntimeIncludeFiles<0> : public IRuntimeIncludeFileList
     {
     }
 
-    virtual const char* GetIncludeDir( size_t Num_ ) const
+    virtual const char* GetIncludeDir( size_t ) const
     {
-        return 0;
+        return nullptr;
     } 
 };
 
@@ -97,7 +102,7 @@ template<> struct RuntimeIncludeFiles<0> : public IRuntimeIncludeFileList
                 } \
                 else return this->RuntimeIncludeFiles< N >::GetIncludeFile( Num_ ); \
             } \
-            else return 0; \
+            else return nullptr; \
         } \
     }; \
 
