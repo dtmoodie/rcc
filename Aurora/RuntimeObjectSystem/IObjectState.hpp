@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RCC_IOBJECT_STATE_HPP
+#define RCC_IOBJECT_STATE_HPP
 #include "ObjectInterface.h"
 struct IObject;
 struct IObjectConstructor;
@@ -39,3 +40,4 @@ protected:
     int state_ref_count;
     PerTypeObjectId id;
 };
+#endif // RCC_IOBJECT_STATE_HPP
