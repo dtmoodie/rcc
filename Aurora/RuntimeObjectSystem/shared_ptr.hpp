@@ -1,5 +1,10 @@
-#pragma once
+#ifndef RCC_SHARED_PTR_HPP
+#define RCC_SHARED_PTR_HPP
 #include "IObjectState.hpp"
+
+#if __cplusplus < 201103L
+#error "This header requires c++11 or greater"
+#endif
 
 namespace rcc
 {
@@ -670,3 +675,4 @@ private:
         IObjectSharedState* obj_state = nullptr;
     };
 }
+#endif // RCC_SHARED_PTR_HPP
