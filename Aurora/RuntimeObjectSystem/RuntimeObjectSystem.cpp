@@ -28,6 +28,7 @@
 #include "ObjectFactorySystem/ObjectFactorySystem.h"
 #include "ObjectInterfacePerModule.h"
 #include <algorithm>
+#include <chrono>
 #include "RuntimeObjectSystem/IObject.h"
 
 #ifndef _WIN32
@@ -1059,8 +1060,27 @@ static int TestBuildFile( ICompilerLogger* pLog, RuntimeObjectSystem* pRTObjSys,
         }
         if( pRTObjSys->GetIsCompiling() )
         {
+            const auto start = std::chrono::high_resolution_clock::now();
+            bool warned = false;
             while( !pRTObjSys->GetIsCompiledComplete() )
             {
+                auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start).count();
+                if(elapsed_seconds > 40 && !warned)
+                {
+                    std::cout << "waited " << elapsed_seconds << " seconds for compile" << std::endl;
+                    warned = true;
+                }
+                if(elapsed_seconds > 200)
+                {
+                    std::cout << "Waited " << elapsed_seconds << " seconds for compile, aborting" << std::endl;
+                    if(!pRTObjSys->AbortCompilation())
+                    {
+                        std::cout << "Failed to abort compilation" << std::endl;
+                        if(!callback->TestBuildCallback(file.c_str(), TESTBUILDRRESULT_BUILD_FAILED)){ return -0xD1E;}
+                        return 0;
+                    }
+                }
+
                 if( !callback->TestBuildWaitAndUpdate() )
                 {
                     return -0xD1E;
