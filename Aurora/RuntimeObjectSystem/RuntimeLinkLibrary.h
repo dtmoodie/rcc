@@ -30,14 +30,16 @@
 
 struct IRuntimeLinkLibraryList
 {
+    virtual ~IRuntimeLinkLibraryList() = default;
+
     IRuntimeLinkLibraryList( size_t max ) : MaxNum( max )
     {
     }
 
     // GetIncludeFile may return 0, so you should iterate through to GetMaxNum() ignoring 0 returns
-    virtual const char* GetLinkLibrary( size_t Num_ ) const
+    virtual const char* GetLinkLibrary( size_t ) const
     {
-        return 0;
+        return nullptr;
     }
     size_t MaxNum; // initialized in constructor below
 };
@@ -61,7 +63,7 @@ template< size_t COUNT > struct RuntimeLinkLibrary : public RuntimeLinkLibrary<C
         {
             return this->RuntimeLinkLibrary< COUNT-1 >::GetLinkLibrary( Num_ );
         }
-        else return 0;
+        else return nullptr;
     }
 };
 
@@ -74,9 +76,9 @@ template<> struct RuntimeLinkLibrary<0> : public IRuntimeLinkLibraryList
     {
     }
 
-    virtual const char* GetLinkLibrary( size_t Num_ ) const
+    virtual const char* GetLinkLibrary( size_t ) const
     {
-        return 0;
+        return nullptr;
     } 
 };
 

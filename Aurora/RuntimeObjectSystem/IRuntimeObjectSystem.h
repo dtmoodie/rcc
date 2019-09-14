@@ -130,7 +130,7 @@ struct IRuntimeObjectSystem : public ITestBuildNotifier
     virtual void SetupObjectConstructors(IPerModuleInterface* pPerModuleInterface) = 0;
 
     //ensure subclasses are deleted correctly
-    virtual ~IRuntimeObjectSystem(){};
+    virtual ~IRuntimeObjectSystem(){}
 
     // exception handling to catch and protect main app from crashing when using runtime compiling
     virtual void SetProtectionEnabled( bool bProtectionEnabled_ ) = 0;
