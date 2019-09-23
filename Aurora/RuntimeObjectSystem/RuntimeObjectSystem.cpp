@@ -1067,15 +1067,24 @@ static int TestBuildFile( ICompilerLogger* pLog, RuntimeObjectSystem* pRTObjSys,
                 auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start).count();
                 if(elapsed_seconds > 40 && !warned)
                 {
-                    std::cout << "waited " << elapsed_seconds << " seconds for compile" << std::endl;
+                    if(pLog)
+                    {
+                        pLog->LogWarning("Waited %ul seconds for compile", elapsed_seconds);
+                    }
                     warned = true;
                 }
                 if(elapsed_seconds > 200)
                 {
-                    std::cout << "Waited " << elapsed_seconds << " seconds for compile, aborting" << std::endl;
+                    if(pLog)
+                    {
+                        pLog->LogWarning("Waited %ul seconds for compile, aborting compilation", elapsed_seconds);
+                    }
                     if(!pRTObjSys->AbortCompilation())
                     {
-                        std::cout << "Failed to abort compilation" << std::endl;
+                        if(pLog)
+                        {
+                            pLog->LogWarning("Failed to abort compilation", elapsed_seconds);
+                        }
                         if(!callback->TestBuildCallback(file.c_str(), TESTBUILDRRESULT_BUILD_FAILED)){ return -0xD1E;}
                         return 0;
                     }
