@@ -75,7 +75,7 @@ macro(_handle_imported_target LIB_DIR_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE TGT 
     endif(NOT "${TGT}" STREQUAL Threads::Threads)
 endmacro(_handle_imported_target)
 
-macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS tgt tab TGTS)
+macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS FLAGS tgt tab TGTS)
     list(FIND ${TGTS} ${tgt} index_)
     if(${index_} EQUAL -1 AND NOT "${tgt}" STREQUAL Threads::Threads)
         list(APPEND ${TGTS} ${tgt})
@@ -83,9 +83,18 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS
             get_target_property(imported_ ${tgt} IMPORTED)
             get_target_property(type_ ${tgt} TYPE)
             if(${type_} STREQUAL "INTERFACE_LIBRARY")
+                message("${tab} interface library: ${tgt}")
                 get_target_property(inc_dir ${tgt} INTERFACE_INCLUDE_DIRECTORIES)
                 if(inc_dir)
                     list(APPEND ${INC_VAR} ${inc_dir})
+                endif()
+
+                get_target_property(compile_features ${tgt} INTERFACE_COMPILE_FEATURES)
+                # TODO things and stuff
+                if(compile_features)
+                    if("cxx_return_type_deduction" STREQUAL ${compile_features})
+                        LIST(APPEND ${FLAGS} "-std=c++14")
+                    endif()
                 endif()
 
             else(${type_} STREQUAL "INTERFACE_LIBRARY")
@@ -129,7 +138,7 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS
                         if(RCC_VERBOSE_CONFIG)
                             message("${tab} Adding ${lib} to ${LIB_FILES_DEBUG}")
                         endif()
-                        __target_helper(${LIB_DIR_VAR} ${INC_VAR} ${LIB_FILES_DEBUG} ${LIB_FILES_RELEASE}  ${DEPS} ${lib} "${tab}  " ${TGTS})
+                        __target_helper(${LIB_DIR_VAR} ${INC_VAR} ${LIB_FILES_DEBUG} ${LIB_FILES_RELEASE}  ${DEPS} ${FLAGS} ${lib} "${tab}  " ${TGTS})
                     else(TARGET ${lib})
                         if(EXISTS ${lib})
                             get_filename_component(dir_ ${lib} DIRECTORY)
@@ -144,7 +153,7 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS
                 foreach(lib ${int_link_lib})
 
                     if(TARGET ${lib})
-                        __target_helper(${LIB_DIR_VAR} ${INC_VAR} ${LIB_FILES_DEBUG} ${LIB_FILES_RELEASE} ${DEPS} ${lib} "${tab}  " ${TGTS})
+                        __target_helper(${LIB_DIR_VAR} ${INC_VAR} ${LIB_FILES_DEBUG} ${LIB_FILES_RELEASE} ${DEPS} ${FLAGS} ${lib} "${tab}  " ${TGTS})
                     else(TARGET ${lib})
                         if(EXISTS ${lib})
                             get_filename_component(dir_ ${lib} DIRECTORY)
@@ -171,9 +180,9 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS
     endif(${index_} EQUAL -1 AND NOT "${tgt}" STREQUAL Threads::Threads)
 endmacro(__target_helper)
 
-macro(_target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS tgt tab)
+macro(_target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS DEFS tgt tab)
     set(TGT_LIST "")
-    __target_helper(${LIB_DIR_VAR} ${INC_VAR} ${LIB_FILES_DEBUG} ${LIB_FILES_RELEASE} ${DEPS} ${tgt} ${tab} TGT_LIST)
+    __target_helper(${LIB_DIR_VAR} ${INC_VAR} ${LIB_FILES_DEBUG} ${LIB_FILES_RELEASE} ${DEPS} ${DEFS} ${tgt} ${tab} TGT_LIST)
 endmacro(_target_helper)
 
 macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
@@ -184,7 +193,8 @@ macro(RCC_TARGET_CONFIG target LIB_FILES_DEBUG_VAR LIB_FILES_RELEASE_VAR)
     set(flags "")
     set(defs "")
     set(deps "")
-    _target_helper(lib_dirs inc_dirs ${LIB_FILES_DEBUG_VAR} ${LIB_FILES_RELEASE_VAR} deps ${target} "  ")
+    _target_helper(lib_dirs inc_dirs ${LIB_FILES_DEBUG_VAR} ${LIB_FILES_RELEASE_VAR} deps flags ${target} "  ")
+    message("${tgt} flags ------------- \n ${flags}")
 
     get_target_property(dest_dir ${target} CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
     if(NOT dest_dir)
