@@ -55,6 +55,9 @@ struct IObject
     using ParentClass = std::tuple<void>;
 
     template<class T>
+    using ConcreteImplementation_t = TActual<T>;
+
+    template<class T>
     using InterfaceHelper = TDefaultInterfaceHelper<T>;
 
     static uint32_t getHash();

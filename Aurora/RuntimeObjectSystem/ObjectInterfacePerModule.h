@@ -32,7 +32,7 @@
 #include "shared_ptr.hpp"
 
 #ifndef RCCPPOFF
-    #define AU_ASSERT( statement )  do { if (!(statement)) { volatile int* p = 0; int a = *p; if(a) {} } } while(0)
+    #define AU_ASSERT( statement )  do { if (!(statement)) { volatile int* p = nullptr; int a = *p; if(a) {} } } while(0)
 #else
     #define AU_ASSERT( statement ) assert( statement )
 #endif //RCCPPOFF
@@ -108,10 +108,10 @@ public:
 #endif
         bool                            bIsSingleton,
         bool                            bIsAutoConstructSingleton,
-        IObjectInfo*                    pObjectInfo = NULL)
+        IObjectInfo*                    pObjectInfo = nullptr)
         : m_bIsSingleton(               bIsSingleton )
         , m_bIsAutoConstructSingleton(  bIsAutoConstructSingleton )
-        , m_pModuleInterface(0)
+        , m_pModuleInterface(nullptr)
         , m_Project(0)
 #ifndef RCCPPOFF
         , m_FileName(                   Filename )
@@ -159,7 +159,7 @@ public:
             pT->SetPerTypeId( id );
             if(m_ConstructedObjects[id])
             {
-                AU_ASSERT(0 == m_ConstructedObjects[id]->GetIObject());
+                AU_ASSERT(nullptr == m_ConstructedObjects[id]->GetIObject());
                 m_ConstructedObjects[ id ]->object = pT;
             }else
             {
@@ -198,7 +198,7 @@ public:
             pT->SetPerTypeId( id );
             if(m_ConstructedObjects[id])
             {
-                AU_ASSERT(0 == m_ConstructedObjects[id]->GetIObject());
+                AU_ASSERT(nullptr == m_ConstructedObjects[id]->GetIObject());
                 m_ConstructedObjects[ id ]->object = pT;
             }else
             {
@@ -266,7 +266,7 @@ public:
             return m_pIncludeFileList->GetIncludeFile( Num_ );
         }
 #endif
-        return 0;
+        return nullptr;
     }
 
     virtual size_t GetMaxNumIncludeFiles() const
@@ -288,7 +288,7 @@ public:
             return m_pLinkLibraryList->GetLinkLibrary( Num_ );
         }
 #endif
-        return 0;
+        return nullptr;
     }
 
     virtual size_t GetMaxNumLinkLibraries() const
@@ -341,16 +341,18 @@ public:
             if(m_ConstructedObjects[id])
                 return m_ConstructedObjects[id]->GetIObject();
         }
-        return 0;
+        return nullptr;
     }
+
     virtual IObjectSharedState*  GetState( PerTypeObjectId num ) const
     {
         if( m_ConstructedObjects.size() > num )
         {
             return m_ConstructedObjects[num];
         }
-        return 0;
+        return nullptr;
     }
+
     virtual size_t     GetNumberConstructedObjects() const
     {
         size_t count = 0;
@@ -363,10 +365,12 @@ public:
         }
         return count;
     }
+
     virtual ConstructorId GetConstructorId() const
     {
         return m_Id;
     }
+
     virtual void SetConstructorId( ConstructorId id )
     {
         if( InvalidId == m_Id )
@@ -390,19 +394,23 @@ public:
             m_ConstructedObjects[ id ] = 0;
         }
     }
+
     virtual void ClearIfAllDeleted()
     {
         m_FreeIds.clear();
         m_ConstructedObjects.clear();
     }
+
     virtual uint32_t GetInterfaceId() const
     {
         return T::getHash();
     }
+
     std::string GetInterfaceName() const
     {
         return T::GetInterfaceName();
     }
+
     virtual const IPerModuleInterface*  GetPerModuleInterface() const
     {
         return m_pModuleInterface;
@@ -487,14 +495,14 @@ private:
         static RuntimeIncludeFiles< __COUNTER__ >       g_includeFileList_##T; \
         static RuntimeSourceDependency< __COUNTER__ >   g_sourceDependencyList_##T; \
         static RuntimeLinkLibrary< __COUNTER__ >        g_linkLibraryList_##T; \
-    template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( __FILE__, &g_includeFileList_##T, &g_sourceDependencyList_##T, &g_linkLibraryList_##T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo);\
-    template<> const char* TActual< T >::GetTypeNameStatic() { return #T; } \
-    template class TActual< T >;
+    template<> TObjectConstructorConcrete< T::ConcreteImplementation_t< T > > T::ConcreteImplementation_t< T >::m_Constructor( __FILE__, &g_includeFileList_##T, &g_sourceDependencyList_##T, &g_linkLibraryList_##T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo);\
+    template<> const char* T::ConcreteImplementation_t< T >::GetTypeNameStatic() { return #T; } \
+    //template class T::ConcreteImplementation_t< T >;
 #else
     #define REGISTERBASE( T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo )    \
-    template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( bIsSingleton, bIsAutoConstructSingleton, pObjectInfo); \
-    template<> const char* TActual< T >::GetTypeNameStatic() { return #T; } \
-    template class TActual< T >;
+    template<> TObjectConstructorConcrete< typename T::ConcreteImplementation_t< T > > typename T::ConcreteImplementation_t< T >::m_Constructor( bIsSingleton, bIsAutoConstructSingleton, pObjectInfo); \
+    template<> const char* typename T::ConcreteImplementation_t< T >::GetTypeNameStatic() { return #T; } \
+    template class typename T::ConcreteImplementation_t< T >;
 #endif
 
 //NOTE: the file macro will only emit the full path if /FC option is used in visual studio or /ZI (Which forces /FC)
