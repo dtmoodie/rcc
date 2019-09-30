@@ -147,14 +147,10 @@ if(RCC_LIBRARY_DIRS_RELWITHDEBINFO)
 endif()
 
 add_library(RuntimeCompiler ${BUILD_TYPE} ${RuntimeCompiler_SRCS})
-#target_link_libraries(RuntimeCompiler 
-  #ct
-#)
 
 add_library(RuntimeObjectSystem STATIC ${RuntimeObjectSystem_SRCS})
 target_link_libraries(RuntimeObjectSystem 
 	RuntimeCompiler 
-	#ct
 )
 
 set(RCC_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/Aurora" CACHE INTERNAL "" FORCE)
