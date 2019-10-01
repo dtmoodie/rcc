@@ -1,4 +1,5 @@
 #include "IObject.h"
+#include "ObjectInterface.h"
 
 uint32_t IObject::getHash()
 {

@@ -25,13 +25,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-
 #ifndef IOBJECT_INCLUDED
 #define IOBJECT_INCLUDED
-
-#include "RuntimeObjectSystem/InterfaceDatabase.hpp"
-#include "RuntimeObjectSystem/ObjectInterface.h"
 
 #include <algorithm>
 #include <assert.h>
@@ -39,8 +34,50 @@
 
 struct ISimpleSerializer;
 class ObjectFactorySystem;
+class IObjectConstructor;
 
-typedef unsigned int InterfaceID;
+using InterfaceID = unsigned int ;
+
+const size_t InvalidId = (size_t)-1;
+using PerTypeObjectId = size_t;
+using ConstructorId = size_t;
+
+struct ObjectId
+{
+    ObjectId() : m_PerTypeId(InvalidId), m_ConstructorId(InvalidId) {}
+
+    PerTypeObjectId m_PerTypeId;
+    ConstructorId    m_ConstructorId;
+    bool operator<( ObjectId lhs ) const
+    {
+        if( m_ConstructorId < lhs.m_ConstructorId )
+        {
+            return true;
+        }
+        if( m_ConstructorId == lhs.m_ConstructorId )
+        {
+            return m_PerTypeId < lhs.m_PerTypeId;
+        }
+        return false;
+    }
+    bool operator==( const ObjectId& rhs) const
+    {
+        return (m_ConstructorId == rhs.m_ConstructorId && m_PerTypeId == rhs.m_PerTypeId);
+    }
+    bool operator!=(const ObjectId& rhs) const
+    {
+        return !(m_ConstructorId == rhs.m_ConstructorId && m_PerTypeId == rhs.m_PerTypeId);
+    }
+    bool IsValid() const
+    {
+        return (m_ConstructorId != InvalidId && m_PerTypeId != InvalidId);
+    }
+    void SetInvalid()
+    {
+        m_ConstructorId = InvalidId;
+        m_PerTypeId = InvalidId;
+    }
+};
 
 template<class Type>
 struct TDefaultInterfaceHelper: public Type
@@ -48,15 +85,15 @@ struct TDefaultInterfaceHelper: public Type
 
 };
 
+template<class T>
+class TActual;
+
 // IObject itself below is a special case as the base class
 // Also it doesn't hurt to have it coded up explicitly for reference
 struct IObject
 {
     using ParentClass = std::tuple<void>;
-
-    template<class T>
-    using ConcreteImplementation_t = TActual<T>;
-
+    
     template<class T>
     using InterfaceHelper = TDefaultInterfaceHelper<T>;
 

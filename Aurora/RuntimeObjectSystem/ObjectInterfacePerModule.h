@@ -15,21 +15,19 @@
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
-#pragma once
-
 #ifndef OBJECTINTERFACEPERMODULE_INCLUDED
 #define OBJECTINTERFACEPERMODULE_INCLUDED
+
 #include "ObjectInterface.h"
 #include "RuntimeInclude.h"
 #include "RuntimeLinkLibrary.h"
+#include "RuntimeMacros.hpp"
 #include "RuntimeSourceDependency.h"
+#include <RuntimeObjectSystem/IObjectInfo.h>
+
+#include <assert.h>
 #include <string>
 #include <vector>
-#include <assert.h>
-#include <RuntimeObjectSystem/IObjectInfo.h>
-#include "RuntimeMacros.hpp"
-#include "IObjectState.hpp"
-#include "shared_ptr.hpp"
 
 #ifndef RCCPPOFF
     #define AU_ASSERT( statement )  do { if (!(statement)) { volatile int* p = nullptr; int a = *p; if(a) {} } } while(0)
@@ -96,19 +94,20 @@ private:
 //                                 Concrete constructor
 // ****************************************************************************************
 
-template<typename T> class TObjectConstructorConcrete: public IObjectConstructor
+template<typename T> 
+class TObjectConstructorConcrete: public IObjectConstructor
 {
 public:
     TObjectConstructorConcrete(
 #ifndef RCCPPOFF
         const char* Filename,
-        IRuntimeIncludeFileList*        pIncludeFileList_,
-        IRuntimeSourceDependencyList*   pSourceDependencyList_,
-        IRuntimeLinkLibraryList*        pLinkLibraryList,
+        const IRuntimeIncludeFileList*        pIncludeFileList_,
+        const IRuntimeSourceDependencyList*   pSourceDependencyList_,
+        const IRuntimeLinkLibraryList*        pLinkLibraryList,
 #endif
         bool                            bIsSingleton,
         bool                            bIsAutoConstructSingleton,
-        IObjectInfo*                    pObjectInfo = nullptr)
+        const IObjectInfo*              pObjectInfo = nullptr)
         : m_bIsSingleton(               bIsSingleton )
         , m_bIsAutoConstructSingleton(  bIsAutoConstructSingleton )
         , m_pModuleInterface(nullptr)
@@ -132,24 +131,27 @@ public:
         m_Id = InvalidId;
     }
 
-    virtual IObject* Construct()
+    rcc::shared_ptr<IObject> Construct() override
     {
-        T* pT = 0;
-        if( m_bIsSingleton && m_ConstructedObjects.size() && m_ConstructedObjects[0] )
+        if( m_bIsSingleton && !m_ConstructedObjects.empty() )
         {
-            if(m_ConstructedObjects[0])
+            auto obj = m_ConstructedObjects[0].lock();
+            if(obj)
             {
-                return m_ConstructedObjects[0]->GetIObject();
+                return {obj};
             }
         }
-
+        T* pT = nullptr;
+        rcc::shared_ptr<IObject> out;
         if( m_FreeIds.empty() )
         {
             PerTypeObjectId id = m_ConstructedObjects.size();
 
             pT = new T();
             pT->SetPerTypeId( id );
-            m_ConstructedObjects.push_back( new IObjectSharedState(pT, this) );
+            auto control_block = std::make_shared<TObjectControlBlock<T>>(pT);
+            out = rcc::shared_ptr<IObject>( control_block );
+            m_ConstructedObjects.push_back( control_block );
         }
         else
         {
@@ -157,28 +159,35 @@ public:
             m_FreeIds.pop_back();
             pT = new T();
             pT->SetPerTypeId( id );
-            if(m_ConstructedObjects[id])
+            auto control_block = m_ConstructedObjects[ id ].lock();
+            if(control_block)
             {
-                AU_ASSERT(nullptr == m_ConstructedObjects[id]->GetIObject());
-                m_ConstructedObjects[ id ]->object = pT;
+                AU_ASSERT(nullptr == control_block->GetObject());
+                control_block->SetObject(pT);
+                m_ConstructedObjects[ id ] = control_block;
             }else
             {
-                m_ConstructedObjects[ id ] = new IObjectSharedState(pT, this);
+                control_block = std::make_shared<TObjectControlBlock<T>>(pT);
+                m_ConstructedObjects[ id ] = control_block;
             }
+            out = rcc::shared_ptr<IObject>(control_block);
         }
-        return pT;
+        return out;
     }
 
-    virtual IObject* Construct(IObjectSharedState* state)
+    // hopefully since we're now using shared ptrs to control blocks, we can get rid of this overload soon
+    rcc::shared_ptr<IObject> Construct(std::shared_ptr<IObjectControlBlock> control_block) override
     {
-        T* pT = 0;
-        if( m_bIsSingleton && m_ConstructedObjects.size() && m_ConstructedObjects[0] )
+        if( m_bIsSingleton && !m_ConstructedObjects.empty() )
         {
-            if(m_ConstructedObjects[0])
+            auto obj = m_ConstructedObjects[0].lock();
+            if(obj)
             {
-                return m_ConstructedObjects[0]->GetIObject();
+                return {obj};
             }
         }
+
+        T* pT = nullptr;
 
         if( m_FreeIds.empty() )
         {
@@ -186,9 +195,9 @@ public:
 
             pT = new T();
             pT->SetPerTypeId( id );
-            state->SetObject(pT);
-            state->SetConstructor(this);
-            m_ConstructedObjects.push_back( state );
+            control_block->SetObject(pT);
+            auto typed_control_block = std::dynamic_pointer_cast<TObjectControlBlock<T>>(control_block);
+            m_ConstructedObjects.push_back( typed_control_block );
         }
         else
         {
@@ -196,56 +205,61 @@ public:
             m_FreeIds.pop_back();
             pT = new T();
             pT->SetPerTypeId( id );
-            if(m_ConstructedObjects[id])
+            auto _control_block = m_ConstructedObjects[ id ].lock();
+            if(_control_block)
             {
-                AU_ASSERT(nullptr == m_ConstructedObjects[id]->GetIObject());
-                m_ConstructedObjects[ id ]->object = pT;
+                AU_ASSERT(nullptr == _control_block->GetObject());
+                _control_block->SetObject(pT);
+                m_ConstructedObjects[ id ] = _control_block;
+                control_block = _control_block;
             }else
             {
-                state->SetObject(pT);
-                state->SetConstructor(this);
-                m_ConstructedObjects[ id ] = state;
+                control_block->SetObject(pT);
+                auto typed_control_block = std::dynamic_pointer_cast<TObjectControlBlock<T>>(control_block);
+                m_ConstructedObjects[ id ] = typed_control_block;
             }
+            control_block = _control_block;
         }
-        return pT;
+        return rcc::shared_ptr<IObject>(control_block);
     }
 
-    virtual void ConstructNull()
+    void ConstructNull() override
     {
         // should not occur for singletons
         AU_ASSERT( !m_bIsSingleton );
-        m_ConstructedObjects.push_back( NULL );
+        m_ConstructedObjects.push_back( {} );
     }
 
-    virtual const char* GetName()
+    const char* GetName() override
     {
         return T::GetTypeNameStatic();
     }
 
-    virtual void SetProjectId( unsigned short projectId_ )
+    void SetProjectId( unsigned short projectId_ ) override
     {
         m_Project = projectId_;
     }
 
-    virtual unsigned short GetProjectId() const
+    unsigned short GetProjectId() const override
     {
         return m_Project;
     }
-    virtual IObjectInfo* GetObjectInfo() const
+
+    const IObjectInfo* GetObjectInfo() const override
     {
         return m_pObjectInfo;
     }
 
-    virtual const char* GetFileName()
+    const char* GetFileName() override
     {
 #ifndef RCCPPOFF
         return m_FileName.c_str();
 #else
-        return 0;
+        return nullptr;
 #endif
     }
 
-    virtual const char* GetCompiledPath()
+    const char* GetCompiledPath() override
     {
 #ifndef RCCPPOFF
          #ifdef COMPILE_PATH
@@ -254,11 +268,11 @@ public:
             return "";
         #endif
 #else
-        return 0;
+        return nullptr;
 #endif
    }
 
-    virtual const char* GetIncludeFile( size_t Num_ ) const
+    const char* GetIncludeFile( size_t Num_ ) const override
     {
 #ifndef RCCPPOFF
         if( m_pIncludeFileList )
@@ -269,7 +283,7 @@ public:
         return nullptr;
     }
 
-    virtual size_t GetMaxNumIncludeFiles() const
+    size_t GetMaxNumIncludeFiles() const override
     {
 #ifndef RCCPPOFF
         if( m_pIncludeFileList )
@@ -280,7 +294,7 @@ public:
         return 0;
     }
 
-    virtual const char* GetLinkLibrary( size_t Num_ ) const
+    const char* GetLinkLibrary( size_t Num_ ) const override
     {
 #ifndef RCCPPOFF
         if( m_pLinkLibraryList )
@@ -291,7 +305,7 @@ public:
         return nullptr;
     }
 
-    virtual size_t GetMaxNumLinkLibraries() const
+    size_t GetMaxNumLinkLibraries() const override
     {
 #ifndef RCCPPOFF
         if( m_pLinkLibraryList )
@@ -302,7 +316,7 @@ public:
         return 0;
     }
 
-    virtual SourceDependencyInfo GetSourceDependency( size_t Num_ ) const
+    SourceDependencyInfo GetSourceDependency( size_t Num_ ) const override
     {
 #ifndef RCCPPOFF
         if( m_pSourceDependencyList )
@@ -313,7 +327,7 @@ public:
         return SourceDependencyInfo::GetNULL();
     }
 
-    virtual size_t GetMaxNumSourceDependencies() const
+    size_t GetMaxNumSourceDependencies() const override
     {
 #ifndef RCCPPOFF
         if( m_pSourceDependencyList )
@@ -324,41 +338,44 @@ public:
         return 0;
     }
 
-    virtual bool GetIsSingleton() const
+    bool GetIsSingleton() const override
     {
         return m_bIsSingleton;
     }
-    virtual bool        GetIsAutoConstructSingleton() const
+
+    bool GetIsAutoConstructSingleton() const override
     {
         return m_bIsSingleton && m_bIsAutoConstructSingleton;
     }
 
 
-    virtual IObject* GetConstructedObject( PerTypeObjectId id ) const
+    rcc::shared_ptr<IObject> GetConstructedObject( PerTypeObjectId id ) const override
     {
         if( m_ConstructedObjects.size() > id )
         {
-            if(m_ConstructedObjects[id])
-                return m_ConstructedObjects[id]->GetIObject();
+            auto obj = m_ConstructedObjects[id].lock();
+            if(obj)
+                return {obj};
         }
-        return nullptr;
+        return {};
     }
 
-    virtual IObjectSharedState*  GetState( PerTypeObjectId num ) const
+    std::shared_ptr<IObjectControlBlock>  GetControlBlock( PerTypeObjectId num ) const override
     {
         if( m_ConstructedObjects.size() > num )
         {
-            return m_ConstructedObjects[num];
+            return m_ConstructedObjects[num].lock();
         }
-        return nullptr;
+        return {};
     }
 
-    virtual size_t     GetNumberConstructedObjects() const
+    size_t     GetNumberConstructedObjects() const override
     {
         size_t count = 0;
-        for(auto& obj : m_ConstructedObjects)
+        for(auto& control_block : m_ConstructedObjects)
         {
-            if(obj->GetIObject())
+            auto locked = control_block.lock();
+            if(locked && locked->GetObject())
             {
                 ++count;
             }
@@ -366,12 +383,12 @@ public:
         return count;
     }
 
-    virtual ConstructorId GetConstructorId() const
+    ConstructorId GetConstructorId() const override
     {
         return m_Id;
     }
 
-    virtual void SetConstructorId( ConstructorId id )
+    void SetConstructorId( ConstructorId id ) override
     {
         if( InvalidId == m_Id )
         {
@@ -379,66 +396,51 @@ public:
         }
     }
 
-    void DeRegister( PerTypeObjectId id )
-    {
-        //remove from constructed objects.
-        //use swap with last one
-        if( m_ConstructedObjects.size() - 1 == id )
-        {
-            //it's the last one, just remove it.
-            m_ConstructedObjects.pop_back();
-        }
-        else
-        {
-            m_FreeIds.push_back( id );
-            m_ConstructedObjects[ id ] = 0;
-        }
-    }
-
-    virtual void ClearIfAllDeleted()
+    void ClearIfAllDeleted() override
     {
         m_FreeIds.clear();
         m_ConstructedObjects.clear();
     }
 
-    virtual uint32_t GetInterfaceId() const
+    uint32_t GetInterfaceId() const override
     {
         return T::getHash();
     }
 
-    std::string GetInterfaceName() const
+    std::string GetInterfaceName() const override
     {
         return T::GetInterfaceName();
     }
 
-    virtual const IPerModuleInterface*  GetPerModuleInterface() const
+    const IPerModuleInterface*  GetPerModuleInterface() const override
     {
         return m_pModuleInterface;
     }
 private:
     bool                            m_bIsSingleton;
     bool                            m_bIsAutoConstructSingleton;
-    std::vector<IObjectSharedState*>                 m_ConstructedObjects;
+    std::vector<std::weak_ptr<TObjectControlBlock<T>>>                 m_ConstructedObjects;
     std::vector<PerTypeObjectId>    m_FreeIds;
     ConstructorId                   m_Id;
     PerModuleInterface*             m_pModuleInterface;
     unsigned short                  m_Project;
-    IObjectInfo*                    m_pObjectInfo;
+    const IObjectInfo*              m_pObjectInfo;
 #ifndef RCCPPOFF
     std::string                     m_FileName;
-    IRuntimeIncludeFileList*        m_pIncludeFileList;
-    IRuntimeSourceDependencyList*   m_pSourceDependencyList;
-    IRuntimeLinkLibraryList*        m_pLinkLibraryList;
+    const IRuntimeIncludeFileList*        m_pIncludeFileList;
+    const IRuntimeSourceDependencyList*   m_pSourceDependencyList;
+    const IRuntimeLinkLibraryList*        m_pLinkLibraryList;
 #endif
 };
 
 // ****************************************************************************************
 //                                 Concrete class
 // ****************************************************************************************
-template<typename T> class TActual: public T::template  InterfaceHelper<T>
+template<typename T> 
+class TActual: public T::template InterfaceHelper<T>
 {
 public:
-    typedef T BASE_CLASS;
+    using BASE_CLASS = T;
     // overload new/delete to get alignment correct
 #ifdef _WIN32
     void* operator new(size_t size)
@@ -446,11 +448,14 @@ public:
         size_t align = __alignof( TActual<T> );
         return _aligned_malloc( size, align );
     }
+
     void operator delete(void* p)
     {
         _aligned_free( p );
     }
-#else
+
+#else // Unix platforms
+
     void* operator new(size_t size)
     {
         size_t align = __alignof__( TActual<T> );
@@ -459,33 +464,44 @@ public:
         (void)retval;    //unused
         return pRet;
     }
+
     void operator delete(void* p)
     {
         free( p );
     }
+
 #endif //_WIN32
+
     friend class TObjectConstructorConcrete<TActual>;
     virtual ~TActual()
     {
         if(!T::IsRuntimeDelete())
         {
-            if(auto state = m_Constructor.GetState(m_Id))
-                state->SetObject(nullptr);
+            // I think this is no longer needed because we can get rid of the old control block?
+            // I think this is no longer needed because the control block is what is deleting this object
+            //if(auto control_block = m_Constructor.GetControlBlock(m_Id))    control_block->SetObject(nullptr);
         }
     }
+
     virtual PerTypeObjectId GetPerTypeId() const { return m_Id; }
+    
     virtual IObjectConstructor* GetConstructor() const { return &m_Constructor; }
+    
     static IObjectConstructor* GetConstructorStatic(){ return &m_Constructor; }
+    
     static const char* GetTypeNameStatic();
+    
     virtual const char* GetTypeName() const
     {
         return GetTypeNameStatic();
     }
+
 private:
     void SetPerTypeId( PerTypeObjectId id ) { m_Id = id; }
     PerTypeObjectId m_Id;
     static TObjectConstructorConcrete<TActual> m_Constructor;
 };
+
 // ****************************************************************************************
 //                                 Registration Macros
 // ****************************************************************************************
@@ -495,14 +511,14 @@ private:
         static RuntimeIncludeFiles< __COUNTER__ >       g_includeFileList_##T; \
         static RuntimeSourceDependency< __COUNTER__ >   g_sourceDependencyList_##T; \
         static RuntimeLinkLibrary< __COUNTER__ >        g_linkLibraryList_##T; \
-    template<> TObjectConstructorConcrete< T::ConcreteImplementation_t< T > > T::ConcreteImplementation_t< T >::m_Constructor( __FILE__, &g_includeFileList_##T, &g_sourceDependencyList_##T, &g_linkLibraryList_##T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo);\
-    template<> const char* T::ConcreteImplementation_t< T >::GetTypeNameStatic() { return #T; } \
-    //template class T::ConcreteImplementation_t< T >;
+    template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( __FILE__, &g_includeFileList_##T, &g_sourceDependencyList_##T, &g_linkLibraryList_##T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo);\
+    template<> const char* TActual< T >::GetTypeNameStatic() { return #T; } \
+    template class TActual< T >;
 #else
     #define REGISTERBASE( T, bIsSingleton, bIsAutoConstructSingleton, pObjectInfo )    \
-    template<> TObjectConstructorConcrete< typename T::ConcreteImplementation_t< T > > typename T::ConcreteImplementation_t< T >::m_Constructor( bIsSingleton, bIsAutoConstructSingleton, pObjectInfo); \
-    template<> const char* typename T::ConcreteImplementation_t< T >::GetTypeNameStatic() { return #T; } \
-    template class typename T::ConcreteImplementation_t< T >;
+    template<> TObjectConstructorConcrete< TActual< T > > TActual< T >::m_Constructor( bIsSingleton, bIsAutoConstructSingleton, pObjectInfo); \
+    template<> const char* TActual< T >::GetTypeNameStatic() { return #T; } \
+    template class TActual< T >;
 #endif
 
 //NOTE: the file macro will only emit the full path if /FC option is used in visual studio or /ZI (Which forces /FC)

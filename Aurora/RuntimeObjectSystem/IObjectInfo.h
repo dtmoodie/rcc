@@ -1,6 +1,8 @@
-#pragma once
+#ifndef RCC_IOBJECT_INFO_HPP
+#define RCC_IOBJECT_INFO_HPP
+
 #include <string>
-#include <RuntimeObjectSystem/shared_ptr.hpp>
+
 struct IObjectConstructor;
 typedef unsigned int InterfaceID;
 struct IObjectInfo
@@ -28,3 +30,5 @@ struct IObjectInfo
     virtual IObjectConstructor* GetConstructor() const = 0;
     virtual bool InheritsFrom(InterfaceID iid) const = 0;
 };
+
+#endif // RCC_IOBJECT_INFO_HPP

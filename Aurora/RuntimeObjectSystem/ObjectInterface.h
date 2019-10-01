@@ -15,15 +15,16 @@
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
-#pragma once
-
 #ifndef OBJECTINTERFACE_INCLUDED
 #define OBJECTINTERFACE_INCLUDED
+#include "IObject.h"
+#include "shared_ptr.hpp"
+
+#include <functional>
+#include <memory>
+#include <stdlib.h>
 #include <string>
 #include <vector>
-#include <functional>
-#include <stdlib.h>
-
 
 struct SystemTable; //This is the interface to your own engine code, which you need to define yourself if required.
 struct IObject;
@@ -31,52 +32,13 @@ struct IObjectInfo;
 struct SourceDependencyInfo;
 struct IObjectSharedState;
 struct IPerModuleInterface;
-const size_t InvalidId = (size_t)-1;
-typedef size_t PerTypeObjectId;
-typedef size_t ConstructorId;
-
-struct ObjectId
-{
-    ObjectId() : m_PerTypeId(InvalidId), m_ConstructorId(InvalidId) {}
-
-    PerTypeObjectId m_PerTypeId;
-    ConstructorId    m_ConstructorId;
-    bool operator<( ObjectId lhs ) const
-    {
-        if( m_ConstructorId < lhs.m_ConstructorId )
-        {
-            return true;
-        }
-        if( m_ConstructorId == lhs.m_ConstructorId )
-        {
-            return m_PerTypeId < lhs.m_PerTypeId;
-        }
-        return false;
-    }
-    bool operator==( const ObjectId& rhs) const
-    {
-        return (m_ConstructorId == rhs.m_ConstructorId && m_PerTypeId == rhs.m_PerTypeId);
-    }
-    bool operator!=(const ObjectId& rhs) const
-    {
-        return !(m_ConstructorId == rhs.m_ConstructorId && m_PerTypeId == rhs.m_PerTypeId);
-    }
-    bool IsValid() const
-    {
-        return (m_ConstructorId != InvalidId && m_PerTypeId != InvalidId);
-    }
-    void SetInvalid()
-    {
-        m_ConstructorId = InvalidId;
-        m_PerTypeId = InvalidId;
-    }
-};
+struct IObjectControlBlock;
 
 struct IObjectConstructor
 {
     virtual                      ~IObjectConstructor() {}
-    virtual IObject*             Construct() = 0;
-    virtual IObject*             Construct(IObjectSharedState* state) = 0;
+    virtual rcc::shared_ptr<IObject>  Construct() = 0;
+    virtual rcc::shared_ptr<IObject>  Construct(std::shared_ptr<IObjectControlBlock> control_block) = 0;
     virtual void                 ConstructNull() = 0;    //for use in object replacement, ensures a deleted object can be replaced
     virtual const char*          GetName() = 0;
     virtual const char*          GetFileName() = 0;
@@ -89,19 +51,19 @@ struct IObjectConstructor
     virtual SourceDependencyInfo GetSourceDependency( size_t Num_ ) const = 0;
     virtual void                 SetProjectId( unsigned short projectId_ ) = 0;
     virtual unsigned short       GetProjectId() const = 0;
-    virtual IObjectInfo*         GetObjectInfo() const = 0;
+    virtual const IObjectInfo*   GetObjectInfo() const = 0;
     virtual const IPerModuleInterface*  GetPerModuleInterface() const = 0;
 
     // Singleton functions
     virtual bool                 GetIsSingleton() const = 0;
     virtual bool                 GetIsAutoConstructSingleton() const = 0;
-    IObject*                     GetSingleton()
+    rcc::shared_ptr<IObject>     GetSingleton()
     {
         return Construct();
     }
 
-    virtual IObject*             GetConstructedObject( PerTypeObjectId num ) const = 0;    //should return 0 for last or deleted object
-    virtual IObjectSharedState*  GetState( PerTypeObjectId num ) const = 0;
+    virtual rcc::shared_ptr<IObject>  GetConstructedObject( PerTypeObjectId num ) const = 0;    //should return 0 for last or deleted object
+    virtual std::shared_ptr<IObjectControlBlock>  GetControlBlock( PerTypeObjectId num ) const = 0;
     virtual size_t               GetNumberConstructedObjects() const = 0;
     virtual ConstructorId        GetConstructorId() const = 0;
     virtual void                 SetConstructorId( ConstructorId id ) = 0;                    //take care how you use this - should only be used by id service
@@ -109,9 +71,6 @@ struct IObjectConstructor
 
     virtual uint32_t             GetInterfaceId() const = 0;
     virtual std::string          GetInterfaceName() const = 0;
-protected:
-    friend struct IObjectSharedState;
-    virtual void                 DeRegister(PerTypeObjectId id) = 0;
 };
 
 struct IPerModuleInterface
@@ -142,6 +101,8 @@ typedef IPerModuleInterface* (__cdecl *GETPerModuleInterface_PROC)(void);
 #else
 typedef IPerModuleInterface* ( *GETPerModuleInterface_PROC)(void);
 #endif
+
+#include "IObjectControlBlock.hpp"
 
 
 #endif //OBJECTINTERFACE_INCLUDED

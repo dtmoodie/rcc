@@ -1,7 +1,9 @@
-#pragma once
-#include <string>
+#ifndef RCC_INTERFACE_DATABASE_HPP
+#define RCC_INTERFACE_DATABASE_HPP
+
 #include "ObjectInterfacePerModule.h"
 
+#include <string>
 
 namespace rcc
 {
@@ -17,3 +19,5 @@ namespace rcc
     };
 
 }
+
+#endif // RCC_INTERFACE_DATABASE_HPP

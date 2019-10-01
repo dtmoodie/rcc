@@ -17,10 +17,10 @@
 
 #include "ObjectFactorySystem.h"
 
+#include "../IRuntimeObjectSystem.h"
 #include "../ObjectInterface.h"
 #include "../ObjectInterfacePerModule.h"
 #include "RuntimeObjectSystem/IObject.h"
-#include "../IRuntimeObjectSystem.h"
 
 
 IObjectConstructor* ObjectFactorySystem::GetConstructor( const char* type ) const
@@ -67,10 +67,10 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
         size_t numObjects = pOldConstructor->GetNumberConstructedObjects();
         for( size_t j = 0; j < numObjects; ++j )
         {
-            IObject* pOldObject = pOldConstructor->GetConstructedObject( j );
+            auto pOldObject = pOldConstructor->GetConstructedObject( j );
             if (pOldObject)
             {
-                m_Serializer.Serialize( pOldObject );
+                m_Serializer.Serialize( pOldObject.get() );
             }
         }
     }
@@ -79,7 +79,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
 
     m_ProtectedPhase = PHASE_CONSTRUCTNEW;
     TConstructors& constructorsNew = m_pObjectFactorySystem->m_Constructors;
-    std::vector<IObject*> old_objects;
+    std::vector<rcc::shared_ptr<IObject>> old_objects;
     //swap old constructors with new ones and create new objects
     for( size_t i = 0; i < m_ConstructorsToAdd.size(); ++i )
     {
@@ -103,11 +103,11 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
             {
                 // create new object
 
-                if(IObject* old_object = pOldConstructor->GetConstructedObject( objId ) )
+                if(auto old_object = pOldConstructor->GetConstructedObject( objId ) )
                 {
                     old_objects.push_back(old_object);
-                    auto state = pOldConstructor->GetState(objId);
-                    pConstructor->Construct(state);
+                    auto control_block = pOldConstructor->GetControlBlock(objId);
+                    pConstructor->Construct(control_block);
                 }
                 else
                 {
@@ -136,10 +136,10 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
         for( PerTypeObjectId objId = 0; objId < pConstructor->GetNumberConstructedObjects(); ++ objId )
         {
             // Serialize new object
-            IObject* pObject = pConstructor->GetConstructedObject( objId );
+            auto pObject = pConstructor->GetConstructedObject( objId );
             if (pObject)
             {
-                m_Serializer.Serialize( pObject );
+                m_Serializer.Serialize( pObject.get() );
             }
         }
     }
@@ -180,7 +180,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
         IObjectConstructor* pConstructor = constructorsNew[i];
         for( PerTypeObjectId objId = 0; objId < pConstructor->GetNumberConstructedObjects(); ++ objId )
         {
-            IObject* pObject = pConstructor->GetConstructedObject( objId );
+            auto pObject = pConstructor->GetConstructedObject( objId );
             if (pObject)
             {
                 // if a singleton was newly constructed in earlier phase, pass true to init.
@@ -190,7 +190,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
                     //test serialize out for all new objects, we assume old objects are OK.
                     SimpleSerializer tempSerializer;
                     tempSerializer.SetIsLoading( false );
-                    tempSerializer.Serialize( pObject );
+                    tempSerializer.Serialize( pObject.get() );
                 }
             }
         }

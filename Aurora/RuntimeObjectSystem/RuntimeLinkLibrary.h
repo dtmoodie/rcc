@@ -72,6 +72,7 @@ template<> struct RuntimeLinkLibrary<0> : public IRuntimeLinkLibraryList
     RuntimeLinkLibrary( size_t max ) : IRuntimeLinkLibraryList( max )
     {
     }
+    
     RuntimeLinkLibrary() : IRuntimeLinkLibraryList( 0 )
     {
     }

@@ -1,5 +1,5 @@
-#include <RuntimeObjectSystem/ObjectInterfacePerModule.h>
 #include <RuntimeObjectSystem/IObject.h>
+#include <RuntimeObjectSystem/ObjectInterfacePerModule.h>
 #include <iostream>
 
 bool destroyed = false;
@@ -11,7 +11,7 @@ public:
     }
 };
 
-struct Fixture{
+/*struct Fixture{
     Fixture(IObjectSharedState* state_, const char* name_)
         : state(state_)
         , weak(state_)
@@ -271,4 +271,10 @@ int main(){
     assert(destroyed);
     std::cout << "All is well" << std::endl;
     return 0;
+}
+*/
+
+int main()
+{
+    
 }
