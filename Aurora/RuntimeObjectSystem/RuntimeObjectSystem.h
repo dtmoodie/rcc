@@ -19,11 +19,11 @@
 
 #ifndef RUNTIMEOBJECTSYSTEM_INCLUDED
 #define RUNTIMEOBJECTSYSTEM_INCLUDED
-#include "../RuntimeCompiler/IFileChangeNotifier.h"
-#include "../RuntimeCompiler/BuildTool.h"
 #include "../RuntimeCompiler/AUArray.h"
-#include "ObjectInterface.h"
+#include "../RuntimeCompiler/BuildTool.h"
+#include "../RuntimeCompiler/IFileChangeNotifier.h"
 #include "IRuntimeObjectSystem.h"
+#include "ObjectInterface.h"
 
 
 #ifdef _WIN32
@@ -33,11 +33,8 @@
 #else
     typedef void* HMODULE;
 #endif
-#include <vector>
 #include <map>
-
-
-
+#include <vector>
 
 #include "../RuntimeCompiler/FileSystemUtils.h"
 

@@ -149,7 +149,7 @@ public:
 
             pT = new T();
             pT->SetPerTypeId( id );
-            auto control_block = std::make_shared<TObjectControlBlock<T>>(pT);
+            auto control_block = std::make_shared<TObjectControlBlock<typename T::BASE_CLASS>>(pT);
             out = rcc::shared_ptr<IObject>( control_block );
             m_ConstructedObjects.push_back( control_block );
         }
@@ -167,7 +167,7 @@ public:
                 m_ConstructedObjects[ id ] = control_block;
             }else
             {
-                control_block = std::make_shared<TObjectControlBlock<T>>(pT);
+                control_block = std::make_shared<TObjectControlBlock<typename T::BASE_CLASS>>(pT);
                 m_ConstructedObjects[ id ] = control_block;
             }
             out = rcc::shared_ptr<IObject>(control_block);
@@ -196,7 +196,9 @@ public:
             pT = new T();
             pT->SetPerTypeId( id );
             control_block->SetObject(pT);
-            auto typed_control_block = std::dynamic_pointer_cast<TObjectControlBlock<T>>(control_block);
+            auto typed_control_block = std::dynamic_pointer_cast<TObjectControlBlock<typename T::BASE_CLASS>>(control_block);
+            assert(typed_control_block != nullptr);
+            assert(typed_control_block.use_count() > 2); // If the use count == 1, then this object is about to be deleted and no one cares for it
             m_ConstructedObjects.push_back( typed_control_block );
         }
         else
@@ -215,7 +217,7 @@ public:
             }else
             {
                 control_block->SetObject(pT);
-                auto typed_control_block = std::dynamic_pointer_cast<TObjectControlBlock<T>>(control_block);
+                auto typed_control_block = std::dynamic_pointer_cast<TObjectControlBlock<typename T::BASE_CLASS>>(control_block);
                 m_ConstructedObjects[ id ] = typed_control_block;
             }
             control_block = _control_block;
@@ -419,7 +421,7 @@ public:
 private:
     bool                            m_bIsSingleton;
     bool                            m_bIsAutoConstructSingleton;
-    std::vector<std::weak_ptr<TObjectControlBlock<T>>>                 m_ConstructedObjects;
+    std::vector<std::weak_ptr<TObjectControlBlock<typename T::BASE_CLASS>>>                 m_ConstructedObjects;
     std::vector<PerTypeObjectId>    m_FreeIds;
     ConstructorId                   m_Id;
     PerModuleInterface*             m_pModuleInterface;

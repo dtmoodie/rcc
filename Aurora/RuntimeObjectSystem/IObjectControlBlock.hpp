@@ -2,7 +2,6 @@
 #define RCC_IOBJECT_CONTROL_BLOCK_HPP
 
 #include "IObject.h"
-#include "ObjectInterface.h"
 
 #include <memory>
 
@@ -21,17 +20,63 @@ struct IObjectControlBlock
     virtual void DeleteObject() = 0;
 };
 
+template<class T, class U, class E = void>
+struct TObjectControlBlockImpl;
+
 template<class T>
-struct TObjectControlBlock: IObjectControlBlock
+struct TObjectControlBlock: TObjectControlBlockImpl<T, typename T::ParentClass>
 {
+    using Super = TObjectControlBlockImpl<T, typename T::ParentClass>;
+    using Super::GetTypedObject;
+
     TObjectControlBlock(T* obj = nullptr):
+        Super(obj),
         m_obj(obj)
     {
 
     }
 
-    ~TObjectControlBlock() override
+    void GetTypedObject(T** ret) const
     {
+        *ret = m_obj;
+    }
+
+    void SetObject(IObject* obj) override
+    {
+        Super::SetObject(obj);
+        m_obj = dynamic_cast<T*>(obj);
+    }
+
+    void SetTypedObject(T* obj)
+    {
+        m_obj = obj;
+    }
+private:
+    T* m_obj = nullptr;
+};
+
+template<class T, class U, class E>
+struct TObjectControlBlockImpl: TObjectControlBlock<U>
+{
+    TObjectControlBlockImpl(T* obj):
+        TObjectControlBlock<U>(obj)
+    {
+        
+    }
+};
+
+template<>
+struct TObjectControlBlock<IObject>: IObjectControlBlock
+{
+    TObjectControlBlock(IObject* obj = nullptr):
+        m_obj(obj)
+    {
+
+    }
+
+    ~TObjectControlBlock()
+    {
+        // Only delete it from this specialization
         delete m_obj;
     }
 
@@ -40,17 +85,7 @@ struct TObjectControlBlock: IObjectControlBlock
         return m_obj;
     }
 
-    T* GetTypedObject() const
-    {
-        return m_obj;
-    }
-
     void SetObject(IObject* obj) override
-    {
-        m_obj = dynamic_cast<T*>(obj);
-    }
-
-    void SetTypedObject(T* obj)
     {
         m_obj = obj;
     }
@@ -60,8 +95,17 @@ struct TObjectControlBlock: IObjectControlBlock
         delete m_obj;
         m_obj = nullptr;
     }
+
+    void GetTypedObject(IObject** ret)
+    {
+        *ret = m_obj;
+    }
+    void SetTypedObject(IObject* obj)
+    {
+        m_obj = obj;
+    }
 private:
-    T* m_obj = nullptr;
+    IObject* m_obj = nullptr;
 };
 
 #endif // RCC_IOBJECT_CONTROL_BLOCK_HPP

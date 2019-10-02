@@ -79,7 +79,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
 
     m_ProtectedPhase = PHASE_CONSTRUCTNEW;
     TConstructors& constructorsNew = m_pObjectFactorySystem->m_Constructors;
-    std::vector<rcc::shared_ptr<IObject>> old_objects;
+    std::vector<IObject*> old_objects;
     //swap old constructors with new ones and create new objects
     for( size_t i = 0; i < m_ConstructorsToAdd.size(); ++i )
     {
@@ -105,7 +105,7 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
 
                 if(auto old_object = pOldConstructor->GetConstructedObject( objId ) )
                 {
-                    old_objects.push_back(old_object);
+                    old_objects.push_back(static_cast<IObject*>(old_object));
                     auto control_block = pOldConstructor->GetControlBlock(objId);
                     pConstructor->Construct(control_block);
                 }

@@ -1,60 +1,131 @@
+#include <RuntimeCompiler/ICompilerLogger.h>
 #include <RuntimeObjectSystem/IObject.h>
 #include <RuntimeObjectSystem/ObjectInterfacePerModule.h>
+#include <RuntimeObjectSystem/RuntimeObjectSystem.h>
+
 #include <iostream>
+#include <stdarg.h>
+#include <stdio.h>
+#include <string>
 
 bool destroyed = false;
 
-class TestSharedPtrObj: public IObject{
+class TestBaseObj: public IObject
+{
 public:
-    ~TestSharedPtrObj(){
+    using ParentClass = IObject;
+
+    ~TestBaseObj()
+    {
         destroyed = true;
+    }
+
+    int foo()
+    {
+        return 20;
     }
 };
 
-/*struct Fixture{
-    Fixture(IObjectSharedState* state_, const char* name_)
-        : state(state_)
-        , weak(state_)
-        , ptr(state_)
-        , name(name_){
-        start_state_count = state_->StateCount();
-        start_obj_count = state_->ObjectCount();
+class TestDerivedObj: public TestBaseObj
+{
+public:
+    using ParentClass = TestBaseObj;
+
+    int foo()
+    {
+        return 10;
     }
-    ~Fixture(){
-        assert(state);
-        assert(!destroyed);
-        assert(state->StateCount() == start_state_count);
-        assert(state->ObjectCount() == start_obj_count);
+};
+
+REGISTERCLASS(TestBaseObj);
+REGISTERCLASS(TestDerivedObj);
+
+struct Fixture
+{
+    Fixture()
+    {
+        
     }
 
-    IObjectSharedState* state;
-    int start_state_count = 0;
-    int start_obj_count = 0;
-    const char* name = nullptr;
-    rcc::shared_ptr<TestSharedPtrObj> ptr;
-    rcc::weak_ptr<TestSharedPtrObj> weak;
+    ~Fixture()
+    {
+        assert(destroyed == true);
+        destroyed = false;
+    }
 };
 
 #define TEST_CASE(NAME) struct Fixture_##NAME: public Fixture{ \
-    Fixture_##NAME(IObjectSharedState* state_):\
-      Fixture(state_, #NAME){} \
+    Fixture_##NAME():\
+      Fixture(){} \
     void testCase()
 
 #define END_TEST_CASE  };
 
-TEST_CASE(ctr_strong_from_weak){
-    rcc::shared_ptr<TestSharedPtrObj> ptr(weak);
-    assert(state->ObjectCount() == start_obj_count + 1);
-    assert(state->StateCount() == start_state_count + 1);
+IObjectConstructor* base_ctr = nullptr;
+IObjectConstructor* derived_ctr = nullptr;
+
+TEST_CASE(casting)
+{
+    TObjectControlBlock<TestDerivedObj> obj(nullptr);
+    TObjectControlBlock<TestBaseObj>* ptr = &obj;
+    auto derived = dynamic_cast<TObjectControlBlock<TestDerivedObj>*>(ptr);
+    assert(derived);
+    destroyed = true;
 }END_TEST_CASE
 
-TEST_CASE(ctr_strong_from_state){
-    rcc::shared_ptr<TestSharedPtrObj> ptr(state);
-    assert(state->ObjectCount() == start_obj_count + 1);
-    assert(state->StateCount() == start_state_count + 1);
+TEST_CASE(construct)
+{
+    auto ctrs = PerModuleInterface::GetInstance()->GetConstructors();
+    for(auto ct : ctrs)
+    {
+        if(std::string("TestBaseObj") ==  ct->GetName())
+        {
+            base_ctr = ct;
+        }
+        if(std::string("TestDerivedObj") == ct->GetName())
+        {
+            derived_ctr = ct;
+        }
+    }
+
+    assert(derived_ctr != nullptr);
+    assert(base_ctr != nullptr);
+    {
+        auto obj = base_ctr->Construct();
+        assert(obj);
+        assert(destroyed == false);
+    }
+    
 }END_TEST_CASE
 
-TEST_CASE(ctr_strong_from_strong){
+TEST_CASE(typed_pointer)
+{
+    {
+        auto obj = base_ctr->Construct();
+        assert(obj);
+        rcc::shared_ptr<TestBaseObj> typed(obj);
+        assert(typed);
+        assert(typed->foo() == 20);
+    }
+}END_TEST_CASE
+
+TEST_CASE(derived_pointer)
+{
+    {
+        auto obj = derived_ctr->Construct();
+        assert(obj);
+        rcc::shared_ptr<TestBaseObj> base_ptr(obj);
+        assert(base_ptr);
+        assert(base_ptr->foo() == 20);
+        rcc::shared_ptr<TestDerivedObj> derived_ptr(base_ptr);
+        assert(derived_ptr);
+        assert(derived_ptr->foo() == 10);
+    }
+
+} END_TEST_CASE
+
+
+/*TEST_CASE(ctr_strong_from_strong){
     rcc::shared_ptr<TestSharedPtrObj> ptr(this->ptr);
     assert(state->ObjectCount() == start_obj_count + 1);
     assert(state->StateCount() == start_state_count + 1);
@@ -217,13 +288,17 @@ TEST_CASE(remove_weak_from_weak){
     assert(state->StateCount() == start_state_count);
     start_state_count -= 1;
 } END_TEST_CASE
+*/
 
 
-REGISTERCLASS(TestSharedPtrObj);
 
 int main(){
     {
-        auto ctrs = PerModuleInterface::GetInstance()->GetConstructors();
+        Fixture_casting().testCase();
+        Fixture_construct().testCase();
+        Fixture_typed_pointer().testCase();
+        Fixture_derived_pointer().testCase();
+        /*auto ctrs = PerModuleInterface::GetInstance()->GetConstructors();
         IObjectConstructor* ctr = ctrs[0];
 
         rcc::shared_ptr<TestSharedPtrObj> ptr(ctr->Construct());
@@ -266,15 +341,10 @@ int main(){
         Fixture_remove_strong_from_strong(state).testCase();
         Fixture_remove_weak_from_strong(state).testCase();
         Fixture_remove_weak_from_weak(state).testCase();
-        assert(!destroyed);
+        assert(!destroyed);*/
     }
-    assert(destroyed);
-    std::cout << "All is well" << std::endl;
+    /*assert(destroyed);
+    std::cout << "All is well" << std::endl;*/
     return 0;
 }
-*/
 
-int main()
-{
-    
-}

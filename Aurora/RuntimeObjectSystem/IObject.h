@@ -92,7 +92,7 @@ class TActual;
 // Also it doesn't hurt to have it coded up explicitly for reference
 struct IObject
 {
-    using ParentClass = std::tuple<void>;
+    using ParentClass = void;
     
     template<class T>
     using InterfaceHelper = TDefaultInterfaceHelper<T>;
@@ -103,7 +103,7 @@ struct IObject
 
     static bool InheritsFrom(InterfaceID id);
 
-    virtual IObject* GetInterface(InterfaceID __iid);
+    virtual void* GetInterface(InterfaceID __iid);
 
     static size_t GetInterfaceAbiHash(){
         return 0;
@@ -112,7 +112,7 @@ struct IObject
     template< typename T>
     void GetInterface( T** pReturn )
     {
-        GetInterface( T::getHash(), static_cast<void**>(pReturn) );
+        *pReturn = static_cast<T*>(GetInterface(T::getHash()));
     }
 
     static bool DirectlyInheritsFrom(InterfaceID iid);

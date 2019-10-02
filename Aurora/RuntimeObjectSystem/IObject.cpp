@@ -28,14 +28,13 @@ void IObject::Init( bool /*isFirstInit*/ )
 
 }
 
-IObject* IObject::GetInterface(InterfaceID __iid)
+void* IObject::GetInterface(InterfaceID __iid)
 {
     if(__iid == getHash())
     {
         return this;
     }
     return nullptr;
-
 }
 
 
