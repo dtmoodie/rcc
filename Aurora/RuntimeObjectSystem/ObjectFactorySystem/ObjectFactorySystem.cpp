@@ -99,14 +99,16 @@ void ObjectFactorySystem::ProtectedObjectSwapper::ProtectedFunc()
             // replace and construct
             pConstructor->SetConstructorId( pOldConstructor->GetConstructorId() );
             constructorsNew[ pConstructor->GetConstructorId() ] = pConstructor;
-            for( PerTypeObjectId objId = 0; objId < pOldConstructor->GetNumberConstructedObjects(); ++ objId )
+            const auto num_objects = pOldConstructor->GetNumberConstructedObjects();
+            if(num_objects && m_pLogger) m_pLogger->LogDebug("Swapping %d objects of type %s", num_objects, pConstructor->GetName());
+            for( PerTypeObjectId objId = 0; objId < num_objects; ++ objId )
             {
                 // create new object
-
-                if(auto old_object = pOldConstructor->GetConstructedObject( objId ) )
+                auto old_object = pOldConstructor->GetConstructedObject( objId );
+                if( old_object )
                 {
                     old_objects.push_back(static_cast<IObject*>(old_object));
-                    auto control_block = pOldConstructor->GetControlBlock(objId);
+                    auto control_block = old_object.GetControlBlock();
                     pConstructor->Construct(control_block);
                 }
                 else

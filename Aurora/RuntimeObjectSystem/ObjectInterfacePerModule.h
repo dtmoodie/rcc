@@ -373,7 +373,8 @@ public:
 
     size_t     GetNumberConstructedObjects() const override
     {
-        size_t count = 0;
+        return m_ConstructedObjects.size();
+        /*size_t count = 0;
         for(auto& control_block : m_ConstructedObjects)
         {
             auto locked = control_block.lock();
@@ -382,7 +383,7 @@ public:
                 ++count;
             }
         }
-        return count;
+        return count;*/
     }
 
     ConstructorId GetConstructorId() const override
