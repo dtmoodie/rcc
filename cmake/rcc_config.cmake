@@ -92,7 +92,13 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS
                 # TODO things and stuff
                 if(compile_features)
                     if("cxx_return_type_deduction" STREQUAL ${compile_features})
-                        LIST(APPEND ${FLAGS} "-std=c++14")
+                        if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+                            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
+                                LIST(APPEND ${FLAGS} "-std=c++14")
+                            else()
+                                LIST(APPEND ${FLAGS} "-std=c++1y")
+                            endif()
+                        endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
                     endif()
                 endif()
 
