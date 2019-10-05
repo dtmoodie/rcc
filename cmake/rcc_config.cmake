@@ -83,7 +83,6 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS
             get_target_property(imported_ ${tgt} IMPORTED)
             get_target_property(type_ ${tgt} TYPE)
             if(${type_} STREQUAL "INTERFACE_LIBRARY")
-                message("${tab} interface library: ${tgt}")
                 get_target_property(inc_dir ${tgt} INTERFACE_INCLUDE_DIRECTORIES)
                 if(inc_dir)
                     list(APPEND ${INC_VAR} ${inc_dir})
