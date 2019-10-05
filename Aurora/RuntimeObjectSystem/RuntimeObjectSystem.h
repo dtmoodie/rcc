@@ -208,7 +208,7 @@ private:
 
         TFileList                           m_RuntimeFileList;
         TFileToFilesMap                     m_RuntimeIncludeMap;
-        TFileToFilesMap                        m_RuntimeLinkLibraryMap;
+        TFileToFilesMap                     m_RuntimeLinkLibraryMap;
         TFileToFilesMap                     m_RuntimeSourceDependencyMap;
 
         std::vector<BuildTool::FileToBuild> m_BuildFileList;
