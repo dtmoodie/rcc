@@ -102,6 +102,11 @@ macro(__target_helper LIB_DIR_VAR INC_VAR LIB_FILES_DEBUG LIB_FILES_RELEASE DEPS
                     endif()
                 endif()
 
+                get_target_property(compile_flags ${tgt} INTERFACE_COMPILE_OPTIONS)
+                if(compile_flags)
+                    LIST(APPEND ${FLAGS} "${compile_flags}")
+                endif(compile_flags)
+
             else(${type_} STREQUAL "INTERFACE_LIBRARY")
                 get_target_property(rcc_mod ${tgt} RCC_MODULE)
                 if(rcc_mod)
