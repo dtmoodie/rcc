@@ -26,6 +26,9 @@ namespace rcc
 
         template<class U>
         shared_ptr(const shared_ptr<U>& sp);
+
+        template<class U>
+        shared_ptr<U> DynamicCast() const;
         
         T* get() const;
 
@@ -36,6 +39,11 @@ namespace rcc
         operator T*() const;
 
         operator bool() const;
+
+        template<class U>
+        bool operator ==(const shared_ptr<U>& other);
+        template<class U>
+        bool operator !=(const shared_ptr<U>& other);
 
         std::shared_ptr<IObjectControlBlock> GetControlBlock() const;
     private:
@@ -50,10 +58,23 @@ namespace rcc
         using element_type = T;
         weak_ptr(std::weak_ptr<IObjectControlBlock> control_block = {});
         weak_ptr(std::shared_ptr<IObjectControlBlock> control_block);
+        weak_ptr(T& obj);
 
         weak_ptr(const shared_ptr<T>& sp);
+        template<class U>
+        weak_ptr(const shared_ptr<U>& sp);
 
         shared_ptr<T> lock() const;
+
+        template<class U>
+        bool operator ==(const weak_ptr<U>& other);
+        template<class U>
+        bool operator !=(const weak_ptr<U>& other);
+        template<class U>
+        bool operator ==(const shared_ptr<U>& other);
+        template<class U>
+        bool operator !=(const shared_ptr<U>& other);
+
     private:
         std::weak_ptr<IObjectControlBlock> m_control_block;
     };
@@ -107,6 +128,13 @@ namespace rcc
     }
 
     template<class T>
+    template<class U>
+    shared_ptr<U> shared_ptr<T>::DynamicCast() const
+    {
+        return shared_ptr<T>(std::dynamic_pointer_cast<TObjectControlBlock<U>>(GetControlBlock()));
+    }
+
+    template<class T>
     T* shared_ptr<T>::operator->() const
     {
         return get();
@@ -128,6 +156,20 @@ namespace rcc
     shared_ptr<T>::operator bool() const
     {
         return m_control_block != nullptr;
+    }
+
+    template<class T>
+    template<class U>
+    bool shared_ptr<T>::operator ==(const shared_ptr<U>& other)
+    {
+        return m_control_block == other.m_control_block;
+    }
+
+    template<class T>
+    template<class U>
+    bool shared_ptr<T>::operator !=(const shared_ptr<U>& other)
+    {
+        return !(*this == other);
     }
 
     template<class T>
@@ -158,10 +200,56 @@ namespace rcc
     }
 
     template<class T>
+    weak_ptr<T>::weak_ptr(T& obj)
+    {
+        const auto id = obj.GetPerTypeId();
+        const auto ctr = obj.GetConstructor();
+        m_control_block = ctr->GetControlBlock(id);
+    }
+
+    template<class T>
+    template<class U>
+    weak_ptr<T>::weak_ptr(const shared_ptr<U>& sp):
+        m_control_block(sp.GetControlBlock())
+    {
+        static_assert(std::is_base_of<T, U>::value || std::is_base_of<U, T>::value, "Must derive one way or the other from this type");
+    }
+
+    template<class T>
+    template<class U>
+    bool weak_ptr<T>::operator ==(const weak_ptr<U>& other)
+    {
+        return other.m_control_block == this->m_control_block;
+    }
+
+    template<class T>
+    template<class U>
+    bool weak_ptr<T>::operator !=(const weak_ptr<U>& other)
+    {
+        return !(*this == other);
+    }
+
+    template<class T>
+    template<class U>
+    bool weak_ptr<T>::operator ==(const shared_ptr<U>& other)
+    {
+        auto cb = other.GetControlBlock();
+        return cb == this->m_control_block;
+    }
+
+    template<class T>
+    template<class U>
+    bool weak_ptr<T>::operator !=(const shared_ptr<U>& other)
+    {
+        return !(*this == other);
+    }
+
+    template<class T>
     shared_ptr<T> weak_ptr<T>::lock() const
     {
         return shared_ptr<T>(m_control_block.lock());
     }
+
 
 }
 #endif // RCC_SHARED_PTR_HPP
