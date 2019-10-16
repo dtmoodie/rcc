@@ -20,7 +20,8 @@ namespace rcc
 
         shared_ptr(T& obj);
 
-        shared_ptr(std::shared_ptr<IObjectControlBlock> control_block = {});
+        shared_ptr();
+        shared_ptr(std::shared_ptr<IObjectControlBlock> control_block);
         
         shared_ptr(const shared_ptr<IObject>& sp);
 
@@ -41,11 +42,12 @@ namespace rcc
         operator bool() const;
 
         template<class U>
-        bool operator ==(const shared_ptr<U>& other);
+        bool operator ==(const shared_ptr<U>& other) const;
         template<class U>
-        bool operator !=(const shared_ptr<U>& other);
+        bool operator !=(const shared_ptr<U>& other) const;
 
         std::shared_ptr<IObjectControlBlock> GetControlBlock() const;
+        void reset();
     private:
         void SetControlBlock(std::shared_ptr<IObjectControlBlock>);
         std::shared_ptr<TObjectControlBlock<T>> m_control_block;
@@ -67,13 +69,15 @@ namespace rcc
         shared_ptr<T> lock() const;
 
         template<class U>
-        bool operator ==(const weak_ptr<U>& other);
+        bool operator ==(const weak_ptr<U>& other) const;
         template<class U>
-        bool operator !=(const weak_ptr<U>& other);
+        bool operator !=(const weak_ptr<U>& other) const;
         template<class U>
-        bool operator ==(const shared_ptr<U>& other);
+        bool operator ==(const shared_ptr<U>& other) const;
         template<class U>
-        bool operator !=(const shared_ptr<U>& other);
+        bool operator !=(const shared_ptr<U>& other) const;
+
+        bool operator ==(const T* obj) const;
 
     private:
         std::weak_ptr<IObjectControlBlock> m_control_block;
@@ -94,6 +98,12 @@ namespace rcc
         const auto id = obj.GetPerTypeId();
         const auto ctr = obj.GetConstructor();
         SetControlBlock(ctr->GetControlBlock(id));
+    }
+
+    template<class T> 
+    shared_ptr<T>::shared_ptr()
+    {
+
     }
 
     template<class T>
@@ -160,14 +170,14 @@ namespace rcc
 
     template<class T>
     template<class U>
-    bool shared_ptr<T>::operator ==(const shared_ptr<U>& other)
+    bool shared_ptr<T>::operator ==(const shared_ptr<U>& other) const
     {
         return m_control_block == other.m_control_block;
     }
 
     template<class T>
     template<class U>
-    bool shared_ptr<T>::operator !=(const shared_ptr<U>& other)
+    bool shared_ptr<T>::operator !=(const shared_ptr<U>& other) const
     {
         return !(*this == other);
     }
@@ -182,6 +192,12 @@ namespace rcc
     void shared_ptr<T>::SetControlBlock(std::shared_ptr<IObjectControlBlock> block_)
     {
         m_control_block = std::dynamic_pointer_cast<TObjectControlBlock<T>>(block_);
+    }
+
+    template<class T>
+    void shared_ptr<T>::reset()
+    {
+        m_control_block.reset();
     }
 
     template<class T>
@@ -217,31 +233,41 @@ namespace rcc
 
     template<class T>
     template<class U>
-    bool weak_ptr<T>::operator ==(const weak_ptr<U>& other)
+    bool weak_ptr<T>::operator ==(const weak_ptr<U>& other) const
     {
-        return other.m_control_block == this->m_control_block;
+        auto l1 = m_control_block.lock();
+        auto l2 = other.m_control_block.lock();
+        return l1 == l1;
     }
 
     template<class T>
     template<class U>
-    bool weak_ptr<T>::operator !=(const weak_ptr<U>& other)
+    bool weak_ptr<T>::operator !=(const weak_ptr<U>& other) const
     {
         return !(*this == other);
     }
 
     template<class T>
     template<class U>
-    bool weak_ptr<T>::operator ==(const shared_ptr<U>& other)
+    bool weak_ptr<T>::operator ==(const shared_ptr<U>& other) const
     {
         auto cb = other.GetControlBlock();
-        return cb == this->m_control_block;
+        auto cb1 = m_control_block.lock();
+        return cb == cb1;
     }
 
     template<class T>
     template<class U>
-    bool weak_ptr<T>::operator !=(const shared_ptr<U>& other)
+    bool weak_ptr<T>::operator !=(const shared_ptr<U>& other) const
     {
         return !(*this == other);
+    }
+
+    template<class T>
+    bool weak_ptr<T>::operator ==(const T* obj) const
+    {
+        auto s = lock();
+        return s == obj;
     }
 
     template<class T>
