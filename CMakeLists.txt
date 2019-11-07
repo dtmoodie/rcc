@@ -191,8 +191,8 @@ target_include_directories(RuntimeObjectSystem
 set(RCC_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/Aurora" CACHE PATH "")
 
 if(NOT WIN32)
-    target_compile_options(RuntimeCompiler PRIVATE -fPIC -fvisibility=hidden)
-    target_compile_options(RuntimeObjectSystem PRIVATE -fPIC -fvisibility=hidden)
+    target_compile_options(RuntimeCompiler PUBLIC -fPIC -fvisibility=hidden)
+    target_compile_options(RuntimeObjectSystem PUBLIC -fPIC -fvisibility=hidden)
 endif(NOT WIN32)
 
 configure_file(RCCConfig.cmake.in
