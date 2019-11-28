@@ -34,7 +34,7 @@
 
 struct ISimpleSerializer;
 class ObjectFactorySystem;
-class IObjectConstructor;
+struct IObjectConstructor;
 
 using InterfaceID = unsigned int ;
 
