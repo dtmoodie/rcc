@@ -26,6 +26,12 @@
 #include <string>
 #include <vector>
 
+// more msvc macro stuffs -_-
+#ifdef GetModuleFileName
+#undef GetModuleFileName
+#endif
+
+
 struct SystemTable; //This is the interface to your own engine code, which you need to define yourself if required.
 struct IObject;
 struct IObjectInfo;
