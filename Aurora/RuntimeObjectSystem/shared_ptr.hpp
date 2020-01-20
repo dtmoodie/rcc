@@ -191,7 +191,8 @@ namespace rcc
     template<class T>
     void shared_ptr<T>::SetControlBlock(std::shared_ptr<IObjectControlBlock> block_)
     {
-        m_control_block = std::dynamic_pointer_cast<TObjectControlBlock<T>>(block_);
+        auto typed = std::dynamic_pointer_cast<TObjectControlBlock<T>>(block_);
+        m_control_block = std::move(typed);
     }
 
     template<class T>

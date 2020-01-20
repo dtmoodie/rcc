@@ -30,10 +30,9 @@ struct TObjectControlBlock: TObjectControlBlockImpl<T, typename T::ParentClass>
     using Super::GetTypedObject;
 
     TObjectControlBlock(T* obj = nullptr):
-        Super(obj),
-        m_obj(obj)
+        Super(obj)
     {
-
+        this->SetObject(obj);
     }
 
     void GetTypedObject(T** ret) const
@@ -68,10 +67,9 @@ struct TObjectControlBlockImpl: TObjectControlBlock<U>
 template<>
 struct TObjectControlBlock<IObject>: IObjectControlBlock
 {
-    TObjectControlBlock(IObject* obj = nullptr):
-        m_obj(obj)
+    TObjectControlBlock(IObject* obj = nullptr)
     {
-
+        m_obj = obj;
     }
 
     ~TObjectControlBlock()

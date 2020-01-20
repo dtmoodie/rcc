@@ -138,7 +138,7 @@ public:
             auto obj = m_ConstructedObjects[0].lock();
             if(obj)
             {
-                return {obj};
+                return rcc::shared_ptr<IObject>(obj);
             }
         }
         T* pT = nullptr;
@@ -357,9 +357,11 @@ public:
         {
             auto obj = m_ConstructedObjects[id].lock();
             if(obj)
-                return {obj};
+            {
+                return rcc::shared_ptr<IObject>(obj);
+            }
         }
-        return {};
+        return rcc::shared_ptr<IObject>();
     }
 
     std::shared_ptr<IObjectControlBlock>  GetControlBlock( PerTypeObjectId num ) const override
@@ -368,7 +370,7 @@ public:
         {
             return m_ConstructedObjects[num].lock();
         }
-        return {};
+        return std::shared_ptr<IObjectControlBlock>();
     }
 
     size_t     GetNumberConstructedObjects() const override
