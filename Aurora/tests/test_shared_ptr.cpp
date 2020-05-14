@@ -13,7 +13,7 @@ bool destroyed = false;
 class TestBaseObj: public IObject
 {
 public:
-    using ParentClass = IObject;
+    using BaseTypes = IObject;
 
     ~TestBaseObj()
     {
@@ -29,7 +29,7 @@ public:
 class TestDerivedObj: public TestBaseObj
 {
 public:
-    using ParentClass = TestBaseObj;
+    using BaseTypes = TestBaseObj;
 
     int foo()
     {
