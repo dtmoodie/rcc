@@ -24,9 +24,9 @@ template<class T, class U, class E = void>
 struct TObjectControlBlockImpl;
 
 template<class T>
-struct TObjectControlBlock: TObjectControlBlockImpl<T, typename T::ParentClass>
+struct TObjectControlBlock: TObjectControlBlockImpl<T, typename T::BaseTypes>
 {
-    using Super = TObjectControlBlockImpl<T, typename T::ParentClass>;
+    using Super = TObjectControlBlockImpl<T, typename T::BaseTypes>;
     using Super::GetTypedObject;
 
     TObjectControlBlock(T* obj = nullptr):
