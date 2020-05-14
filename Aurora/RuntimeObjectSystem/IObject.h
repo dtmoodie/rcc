@@ -92,7 +92,7 @@ class TActual;
 // Also it doesn't hurt to have it coded up explicitly for reference
 struct IObject
 {
-    using ParentClass = void;
+    using BaseTypes = void;
     
     template<class T>
     using InterfaceHelper = TDefaultInterfaceHelper<T>;
