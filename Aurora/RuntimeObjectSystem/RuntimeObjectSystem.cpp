@@ -22,14 +22,14 @@
 #undef GetObject
 #endif
 #include "../RuntimeCompiler/AUArray.h"
-#include "../RuntimeCompiler/ICompilerLogger.h"
 #include "../RuntimeCompiler/FileChangeNotifier.h"
+#include "../RuntimeCompiler/ICompilerLogger.h"
 #include "IObjectFactorySystem.h"
 #include "ObjectFactorySystem/ObjectFactorySystem.h"
 #include "ObjectInterfacePerModule.h"
+#include "RuntimeObjectSystem/IObject.h"
 #include <algorithm>
 #include <chrono>
-#include "RuntimeObjectSystem/IObject.h"
 
 #ifndef _WIN32
 //TODO: fix below in a better generic fashion.
@@ -37,9 +37,9 @@
 #include <dlfcn.h>
 #endif
 #include <fstream>
-#include <string>
 #include <iostream>
 #include <sstream>
+#include <string>
 using FileSystemUtils::Path;
 
 FileSystemUtils::Path RuntimeObjectSystem::ProjectSettings::ms_DefaultIntermediatePath;
@@ -631,6 +631,17 @@ void RuntimeObjectSystem::SetupObjectConstructors(IPerModuleInterface* pPerModul
     }
 
     m_pObjectFactorySystem->AddConstructors(constructors);
+
+    pPerModuleInterface->SetConstructorAddedCallback([this](IObjectConstructor* ctr) mutable
+    {
+        AUDynArray<IObjectConstructor*> ctrs;
+        ctrs.Add(ctr);
+        if (this->m_bAutoCompile)
+        {
+            this->SetupRuntimeFileTracking(ctrs);
+        }   
+        this->m_pObjectFactorySystem->AddConstructors(ctrs);
+    });
 
 }
 

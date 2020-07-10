@@ -99,6 +99,7 @@ struct IPerModuleInterface
                               bool(*inheritance_f)(unsigned int),
                               bool(*direct_inheritance_f)(unsigned int)) = 0;
     virtual std::vector<InterfaceInfo> GetInterfaces() const = 0;
+    virtual void SetConstructorAddedCallback(std::function<void(IObjectConstructor*)>) = 0;
     virtual ~IPerModuleInterface() {}
 };
 

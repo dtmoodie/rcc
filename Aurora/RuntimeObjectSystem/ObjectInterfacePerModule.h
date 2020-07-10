@@ -75,6 +75,8 @@ public:
 
     virtual std::vector<InterfaceInfo> GetInterfaces() const override;
 
+    virtual void SetConstructorAddedCallback(std::function<void(IObjectConstructor*)> foo);
+
 private:
     PerModuleInterface();
 
@@ -87,6 +89,7 @@ private:
     std::vector<InterfaceInfo>  m_interface_info;
     using DelayFunc_t = std::function<void(SystemTable*)>;
     std::vector<DelayFunc_t> m_DelayInitFuncs;
+    std::function<void(IObjectConstructor*)> m_ctr_added_callback;
 };
 
 

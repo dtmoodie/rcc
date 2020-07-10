@@ -49,6 +49,10 @@ SystemTable* PerModuleInterface::GetSystemTable()
 void PerModuleInterface::AddConstructor( IObjectConstructor* pConstructor )
 {
     m_ObjectConstructors.push_back( pConstructor );
+    if(m_ctr_added_callback)
+    {
+        m_ctr_added_callback(pConstructor);
+    }
 }
 
 std::vector<IObjectConstructor*>& PerModuleInterface::GetConstructors()
@@ -111,6 +115,11 @@ PerModuleInterface::PerModuleInterface()
 {
     //ensure this file gets compiled
     AddRequiredSourceFiles( __FILE__ );
+}
+
+void PerModuleInterface::SetConstructorAddedCallback(std::function<void(IObjectConstructor*)> foo)
+{
+    m_ctr_added_callback = std::move(foo);
 }
 
 PerModuleInterface::~PerModuleInterface()
