@@ -138,10 +138,10 @@ public:
     {
         if( m_bIsSingleton && !m_ConstructedObjects.empty() )
         {
-            auto obj = m_ConstructedObjects[0].lock();
-            if(obj)
+            auto control_block = m_ConstructedObjects[0].lock();
+            if(control_block)
             {
-                return rcc::shared_ptr<IObject>(obj);
+                return rcc::shared_ptr<IObject>(std::static_pointer_cast<IObjectControlBlock>(control_block));
             }
         }
         T* pT = nullptr;
@@ -153,7 +153,7 @@ public:
             pT = new T();
             pT->SetPerTypeId( id );
             auto control_block = std::make_shared<TObjectControlBlock<typename T::BASE_CLASS>>(pT);
-            out = rcc::shared_ptr<IObject>( control_block );
+            out = rcc::shared_ptr<IObject>( std::static_pointer_cast<IObjectControlBlock>(control_block) );
             m_ConstructedObjects.push_back( control_block );
         }
         else
@@ -173,7 +173,7 @@ public:
                 control_block = std::make_shared<TObjectControlBlock<typename T::BASE_CLASS>>(pT);
                 m_ConstructedObjects[ id ] = control_block;
             }
-            out = rcc::shared_ptr<IObject>(control_block);
+            out = rcc::shared_ptr<IObject>(std::static_pointer_cast<IObjectControlBlock>(control_block));
         }
         return out;
     }
