@@ -76,10 +76,14 @@ void PerModuleInterface::SetProjectIdForAllConstructors( unsigned short projectI
 
 void PerModuleInterface::SetSystemTable( SystemTable* pSystemTable )
 {
-    m_pSystemTable = pSystemTable;
-    for(auto func : m_DelayInitFuncs)
+    if(m_pSystemTable == nullptr)
     {
-        func(pSystemTable);
+        m_pSystemTable = pSystemTable;
+        for(auto func : m_DelayInitFuncs)
+        {
+            func(pSystemTable);
+        }
+        m_DelayInitFuncs.clear();
     }
 }
 
