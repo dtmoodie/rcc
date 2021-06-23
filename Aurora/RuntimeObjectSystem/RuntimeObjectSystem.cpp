@@ -51,7 +51,11 @@ static Path GetIntermediateFolder( Path basePath_, RCppOptimizationLevel optimiz
 #ifdef _DEBUG
     folder = "DEBUG_";
 #else
+#ifdef NDEBUG
     folder = "RELEASE_";
+#else
+    folder = "DEBUG_";
+#endif
 #endif
     folder +=  RCppOptimizationLevelStrings[ GetActualOptimizationLevel( optimizationLevel_ ) ];
     Path runtimeFolder = basePath_ / folder;
@@ -494,11 +498,15 @@ void RuntimeObjectSystem::StartRecompile()
     for( size_t i = 0; i < ourBuildFileList.size(); ++ i )
     {
 
-        TFileToFilesEqualRange range = m_Projects[ project ].m_RuntimeLinkLibraryMap.equal_range( ourBuildFileList[ i ].filePath );
-        for(TFileToFilesIterator it=range.first; it!=range.second; ++it)
+        auto itr= m_Projects[ project ].m_RuntimeLinkLibraryMap.find( ourBuildFileList[ i ].filePath.m_string );
+        if(itr != m_Projects[ project ].m_RuntimeLinkLibraryMap.end())
         {
-            linkLibraryList.push_back( it->second );
+          for(auto itr2 = itr->second.begin(); itr2 != itr->second.end(); ++itr2)
+          {
+            linkLibraryList.push_back( *itr2 );  
+          } 
         }
+        
     }
 
 
@@ -685,7 +693,12 @@ void RuntimeObjectSystem::SetupRuntimeFileTracking(const IAUDynArray<IObjectCons
             }
 
             //remove previous link libraries for this file
-            project.m_RuntimeLinkLibraryMap.erase( filePath );
+            auto itr = project.m_RuntimeLinkLibraryMap.find(filePath.m_string);
+            if(itr != project.m_RuntimeLinkLibraryMap.end())
+            {
+              project.m_RuntimeLinkLibraryMap.erase(itr);
+            }
+            //project.m_RuntimeLinkLibraryMap.erase( filePath );
 
             //remove previous source dependencies
             project.m_RuntimeSourceDependencyMap.erase( filePath );
@@ -710,8 +723,15 @@ void RuntimeObjectSystem::SetupRuntimeFileTracking(const IAUDynArray<IObjectCons
             }
         }
 
-
-         //add link library file mappings
+        auto itr = project.m_RuntimeLinkLibraryMap.find(filePath.m_string);
+        if(itr == project.m_RuntimeLinkLibraryMap.end())
+        {
+          project.m_RuntimeLinkLibraryMap[filePath.m_string] = std::vector<FileSystemUtils::Path>();
+          itr = project.m_RuntimeLinkLibraryMap.find(filePath.m_string);
+          
+        }
+        std::set<std::string> tmp_link_library_set;
+        //add link library file mappings
         for (size_t linklibraryNum = 0; linklibraryNum <= constructors_[i]->GetMaxNumLinkLibraries(); ++linklibraryNum)
         {
             const char* pLinkLibrary = constructors_[i]->GetLinkLibrary(linklibraryNum);
@@ -719,13 +739,12 @@ void RuntimeObjectSystem::SetupRuntimeFileTracking(const IAUDynArray<IObjectCons
             {
                 // We do not use FindFiles for Linked Libraries as these are searched for on
                 // the library paths, which are themselves searched for.
-                TFileToFilePair linklibraryPathPair;
-                linklibraryPathPair.first = filePath;
-                linklibraryPathPair.second = pLinkLibrary;
-                project.m_RuntimeLinkLibraryMap.insert( linklibraryPathPair );
+                //itr->second.push_back( pLinkLibrary );
+                tmp_link_library_set.insert(pLinkLibrary);
             }
         }
-
+        itr->second.insert(itr->second.end(), tmp_link_library_set.begin(), tmp_link_library_set.end());
+        
         //add source dependency file mappings
         for (size_t num = 0; num <= constructors_[i]->GetMaxNumSourceDependencies(); ++num)
         {
@@ -822,6 +841,22 @@ const char* RuntimeObjectSystem::GetAdditionalCompileOptions(unsigned short proj
 {
     return GetProject( projectId_ ).m_CompilerOptions.compileOptions.c_str();
 }
+
+void RuntimeObjectSystem::AppendAdditionalLinkLibraries( const char* library, unsigned short projectId_)
+{
+    GetProject(projectId_).m_CompilerOptions.linkLibraries.push_back(library);
+}
+
+void RuntimeObjectSystem::AppendAdditionalDebugLinkLibraries( const char* library, unsigned short projectId_)
+{
+    GetProject(projectId_).m_CompilerOptions.debugLinkLibraries.push_back(library);
+}
+
+void RuntimeObjectSystem::AppendAdditionalReleaseLinkLibraries( const char* library, unsigned short projectId_)
+{
+    GetProject(projectId_).m_CompilerOptions.releaseLinkLibraries.push_back(library);
+}
+
 void RuntimeObjectSystem::SetCompilerLocation( const char *path, unsigned short projectId_ )
 {
     GetProject( projectId_ ).m_CompilerOptions.compilerLocation = path;
@@ -1171,7 +1206,7 @@ int RuntimeObjectSystem::TestBuildAllRuntimeSourceFiles(  ITestBuildNotifier* ca
         for( TFileList::iterator it = filesToTest.begin(); it != filesToTest.end(); ++it )
         {
             const Path& file = *it;
-            if( file.Extension() != ".h" ) // exclude headers, use TestBuildAllRuntimeHeaders
+            if( file.Extension() != ".h" && file.Extension() != ".hpp") // exclude headers, use TestBuildAllRuntimeHeaders
             {
                 int fileErrors = TestBuildFile( m_pCompilerLogger, this, file, failCallbackLocal, bTestFileTracking );
                 if( fileErrors < 0 )

@@ -16,7 +16,8 @@ namespace rcc
     {
         using element_type = T;
 
-        static shared_ptr create();
+        template<class ... ARGS>
+        static shared_ptr create(ARGS&&... args);
 
         shared_ptr(T& obj);
 
@@ -87,9 +88,10 @@ namespace rcc
     // Implementation
 
     template<class T>
-    shared_ptr<T> shared_ptr<T>::create()
+    template<class ... ARGS>
+    shared_ptr<T> shared_ptr<T>::create(ARGS&& ... args)
     {
-        return T::create();
+        return T::create(std::forward<ARGS>(args)...);
     }
 
     template<class T>

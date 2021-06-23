@@ -20,3 +20,8 @@ macro(rcc_strip_extension input output)
     string(SUBSTRING "${tmp}" 0 ${pos} ${output})
   endif()
 endmacro()
+
+macro(rcc_stip_lib input output)
+    #if on linux
+    string(SUBSTRING "${input}" "3" "-1" ${output})
+endmacro()

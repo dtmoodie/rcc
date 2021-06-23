@@ -105,6 +105,9 @@ struct IRuntimeObjectSystem : public ITestBuildNotifier
     virtual void AddLibraryDir(                 const char *path_,      unsigned short projectId_ = 0 ) = 0;
     virtual void SetAdditionalCompileOptions(   const char *options,    unsigned short projectId_ = 0 ) = 0;
     virtual void AppendAdditionalCompileOptions(   const char* options,    unsigned short projectId_ = 0 ) = 0;
+    virtual void AppendAdditionalLinkLibraries( const char* library, unsigned short projectId_ = 0) = 0;
+    virtual void AppendAdditionalDebugLinkLibraries( const char* library, unsigned short projectId_ = 0) = 0;
+    virtual void AppendAdditionalReleaseLinkLibraries( const char* library, unsigned short projectId_ = 0) = 0;
     virtual const char* GetAdditionalCompileOptions(unsigned short projectId_ = 0) = 0;
     virtual void SetAdditionalLinkOptions(      const char *options,    unsigned short projectId_ = 0 ) = 0;
     virtual void SetCompilerLocation        (   const char* path,       unsigned short projectId_ = 0 ) = 0;

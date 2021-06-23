@@ -32,6 +32,9 @@ struct CompilerOptions
     std::vector<FileSystemUtils::Path>    libraryDirList;
     std::string                            compileOptions;
     std::string                            linkOptions;
+    std::vector<std::string>               linkLibraries;
+    std::vector<std::string>               debugLinkLibraries;
+    std::vector<std::string>               releaseLinkLibraries;
       RCppOptimizationLevel                optimizationLevel;
     FileSystemUtils::Path                baseIntermediatePath;
     FileSystemUtils::Path                intermediatePath;
@@ -70,4 +73,6 @@ public:
 private:
     PlatformCompilerImplData* m_pImplData;
     bool                      m_bFastCompileMode;
+    
+    void ReadFromPipe() const;
 };

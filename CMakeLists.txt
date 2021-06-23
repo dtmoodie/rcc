@@ -188,6 +188,18 @@ target_include_directories(RuntimeObjectSystem
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/Aurora/RuntimeObjectSystem;
 				      ${CMAKE_CURRENT_SOURCE_DIR}/Aurora/RuntimeCompiler>
 )
+
+target_include_directories(RuntimeObjectSystem
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/Aurora>
+
+)
+
+target_include_directories(RuntimeObjectSystem
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/Aurora>
+)
+
 set(RCC_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/Aurora" CACHE PATH "")
 
 if(NOT WIN32)

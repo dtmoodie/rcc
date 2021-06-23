@@ -34,6 +34,8 @@
 #include <sstream>
 
 #include "assert.h"
+#include <fcntl.h>
+#include <sys/select.h>
 #include <sys/wait.h>
 
 #include "ICompilerLogger.h"
@@ -77,6 +79,54 @@ std::string Compiler::GetObjectFileExtension() const
     return ".o";
 }
 
+void Compiler::ReadFromPipe() const 
+{
+  if( m_pImplData->m_pLogger )
+  {
+    const size_t buffSize = 1024 * 80; //should allow for a few lines...
+    char buffer[buffSize];
+    fd_set set;
+    struct timeval timeout;
+    int rv = 0;
+    FD_ZERO(&set); /* clear the set */
+    FD_SET(m_pImplData->m_PipeStdOut[0], &set); /* add our file descriptor to the set */
+    //FD_SET(m_pImplData->m_PipeStdErr[0], &set);
+    
+    
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 10000;
+    rv = select(m_pImplData->m_PipeStdOut[0] + 1,&set, nullptr, nullptr, &timeout);
+    if(rv == -1)
+    {
+      m_pImplData->m_pLogger->LogError("An error occured reading from stdout");
+    }
+    ssize_t numread = 0;
+    if(rv > 0)
+    {
+      while( ( numread = read( m_pImplData->m_PipeStdOut[0], buffer, buffSize-1 ) ) > 0 )
+      {
+        buffer[numread] = 0;
+        m_pImplData->m_pLogger->LogWarning( buffer );
+      }  
+    }
+    FD_ZERO(&set); /* clear the set */
+    FD_SET(m_pImplData->m_PipeStdErr[0], &set); /* add our file descriptor to the set */
+    rv = select(m_pImplData->m_PipeStdErr[0] + 1, &set, nullptr, nullptr, &timeout);
+    if(rv == -1)
+    {
+      m_pImplData->m_pLogger->LogError("An error occured when reading from stderr");
+    }
+    if(rv > 0)
+    {
+      while( ( numread = read( m_pImplData->m_PipeStdErr[0], buffer, buffSize-1 ) )> 0 )
+      {
+        buffer[numread] = 0;
+        m_pImplData->m_pLogger->LogError( buffer );
+      }  
+    }
+  }
+}
+
 bool Compiler::GetIsComplete() const
 {
     if( !m_pImplData->m_bCompileIsComplete && m_pImplData->m_ChildForCompilationPID )
@@ -91,23 +141,7 @@ bool Compiler::GetIsComplete() const
             m_pImplData->m_ChildForCompilationPID = 0;
 
             // get output and log
-            if( m_pImplData->m_pLogger )
-            {
-                const size_t buffSize = 256 * 80; //should allow for a few lines...
-                char buffer[buffSize];
-                ssize_t numread = 0;
-                while( ( numread = read( m_pImplData->m_PipeStdOut[0], buffer, buffSize-1 ) ) > 0 )
-                {
-                    buffer[numread] = 0;
-                    m_pImplData->m_pLogger->LogWarning( buffer );
-                }
-
-                while( ( numread = read( m_pImplData->m_PipeStdErr[0], buffer, buffSize-1 ) )> 0 )
-                {
-                    buffer[numread] = 0;
-                    m_pImplData->m_pLogger->LogError( buffer );    //TODO: seperate warnings from errors.
-                }
-            }
+            ReadFromPipe();
 
             // close the pipes as this process no longer needs them.
             close( m_pImplData->m_PipeStdOut[0] );
@@ -115,23 +149,7 @@ bool Compiler::GetIsComplete() const
             close( m_pImplData->m_PipeStdErr[0] );
             m_pImplData->m_PipeStdErr[0] = 0;
         }else {
-            if( m_pImplData->m_pLogger )
-            {
-                const size_t buffSize = 256 * 80; //should allow for a few lines...
-                char buffer[buffSize];
-                ssize_t numread = 0;
-                while( ( numread = read( m_pImplData->m_PipeStdOut[0], buffer, buffSize-1 ) ) > 0 )
-                {
-                    buffer[numread] = 0;
-                    m_pImplData->m_pLogger->LogWarning( buffer );
-                }
-
-                while( ( numread = read( m_pImplData->m_PipeStdErr[0], buffer, buffSize-1 ) )> 0 )
-                {
-                    buffer[numread] = 0;
-                    m_pImplData->m_pLogger->LogError( buffer );    //TODO: seperate warnings from errors.
-                }
-            }
+            ReadFromPipe();
         }
     }
     return m_pImplData->m_bCompileIsComplete;
@@ -186,12 +204,14 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     //create pipes
     if ( pipe( m_pImplData->m_PipeStdOut ) != 0 )
     {
+        
         if( m_pImplData->m_pLogger )
         {
             m_pImplData->m_pLogger->LogError( "Error in Compiler::RunCompile, cannot create pipe - perhaps insufficient memory?\n");
         }
         return;
     }
+    fcntl(m_pImplData->m_PipeStdOut[0], F_SETFL, O_NONBLOCK);
     //create pipes
     if ( pipe( m_pImplData->m_PipeStdErr ) != 0 )
     {
@@ -201,7 +221,8 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
         }
         return;
     }
-
+    fcntl(m_pImplData->m_PipeStdErr[0], F_SETFL, O_NONBLOCK);
+    const RCppOptimizationLevel optimizationLevel = GetActualOptimizationLevel( compilerOptions_.optimizationLevel );
     pid_t retPID;
     switch( retPID = fork() )
     {
@@ -264,7 +285,7 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     compileString += "-m32 ";
 #endif
 
-    RCppOptimizationLevel optimizationLevel = GetActualOptimizationLevel( compilerOptions_.optimizationLevel );
+    
     switch( optimizationLevel )
     {
     case RCCPPOPTIMIZATIONLEVEL_DEFAULT:
@@ -356,6 +377,24 @@ void Compiler::RunCompile( const std::vector<FileSystemUtils::Path>&	filesToComp
     for( std::set<std::string>::const_iterator it = uniqueLibraries.begin(); it != uniqueLibraries.end(); ++it)
     {
         compileString += " " + *it + " ";
+    }
+
+    for(size_t i = 0; i < compilerOptions_.linkLibraries.size(); ++i)
+    {
+        compileString += " " + compilerOptions_.linkLibraries[i];
+    }
+    if(RCCPPOPTIMIZATIONLEVEL_DEBUG == optimizationLevel)
+    {
+        for(size_t i = 0; i < compilerOptions_.debugLinkLibraries.size(); ++i)
+        {
+            compileString += " " + compilerOptions_.debugLinkLibraries[i];
+        }
+    }else
+    {
+        for(size_t i = 0; i < compilerOptions_.releaseLinkLibraries.size(); ++i)
+        {
+            compileString += " " + compilerOptions_.releaseLinkLibraries[i];
+        }
     }
 
     if( bCopyOutput )
