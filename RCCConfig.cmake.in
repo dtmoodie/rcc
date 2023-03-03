@@ -14,7 +14,11 @@ include(${RCC_DIR}/cmake/rcc_find_library.cmake)
 include(${RCC_DIR}/cmake/rcc_config.cmake)
 include(${RCC_DIR}/cmake/rcc_strip_extension.cmake)
 
-find_package(ct REQUIRED)
+if(RCC_FIND_QUIETLY)
+    find_package(ct QUIET)
+else()
+    find_package(ct REQUIRED)
+endif()
 
 if(NOT TARGET RuntimeCompiler AND NOT TARGET RuntimeObjectSystem)
   include("${RCC_DIR}/RCCTargets.cmake")
