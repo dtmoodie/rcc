@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <cstdint>
 #include <iostream>
 
 struct ISimpleSerializer;
